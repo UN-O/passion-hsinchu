@@ -1,0 +1,222 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --font-sans: var(--font-noto-sans-tc);
+
+  /* Passion Camp 深色主題配色系統 */
+  --color-background: #0a0a0a;
+  --color-foreground: #ffffff;
+  --color-card: #1a1a1a;
+  --color-card-foreground: #ffffff;
+  --color-muted: #262626;
+  --color-muted-foreground: #a3a3a3;
+  --color-border: #404040;
+  --color-input: #262626;
+  --color-ring: #525252;
+
+  /* 三個區域的主題色彩 */
+  --color-region-r: #ff0080; /* 愛心區 - 粉紅色系 */
+  --color-region-g: #9aff02; /* 盼望區 - 綠色系 */
+  --color-region-o: #ff8040; /* 信心區 - 橙色系 */
+
+  /* 發光效果變數 */
+  --glow-r: 0 0 20px rgba(255, 0, 128, 0.5);
+  --glow-g: 0 0 20px rgba(154, 255, 2, 0.5);
+  --glow-o: 0 0 20px rgba(255, 128, 64, 0.5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground min-h-screen;
+    /* 十字網格背景裝飾 */
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}
+
+@layer utilities {
+  /* 區域主題色彩工具類 */
+  .text-region-r {
+    color: var(--color-region-r);
+  }
+  .text-region-g {
+    color: var(--color-region-g);
+  }
+  .text-region-o {
+    color: var(--color-region-o);
+  }
+
+  .bg-region-r {
+    background-color: var(--color-region-r);
+  }
+  .bg-region-g {
+    background-color: var(--color-region-g);
+  }
+  .bg-region-o {
+    background-color: var(--color-region-o);
+  }
+
+  .border-region-r {
+    border-color: var(--color-region-r);
+  }
+  .border-region-g {
+    border-color: var(--color-region-g);
+  }
+  .border-region-o {
+    border-color: var(--color-region-o);
+  }
+
+  /* 發光效果工具類 */
+  .glow-r {
+    box-shadow: var(--glow-r);
+  }
+  .glow-g {
+    box-shadow: var(--glow-g);
+  }
+  .glow-o {
+    box-shadow: var(--glow-o);
+  }
+
+  .text-glow-r {
+    text-shadow: var(--glow-r);
+  }
+  .text-glow-g {
+    text-shadow: var(--glow-g);
+  }
+  .text-glow-o {
+    text-shadow: var(--glow-o);
+  }
+
+  /* 十字動畫效果 */
+  .cross-animate {
+    position: relative;
+  }
+
+  .cross-animate::before,
+  .cross-animate::after {
+    content: "+";
+    position: absolute;
+    color: rgba(255, 255, 255, 0.1);
+    font-size: 1.5rem;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .cross-animate::before {
+    top: -10px;
+    left: -10px;
+    animation-delay: 0s;
+  }
+
+  .cross-animate::after {
+    bottom: -10px;
+    right: -10px;
+    animation-delay: 1.5s;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+      opacity: 0.1;
+    }
+    50% {
+      transform: translateY(-10px) rotate(180deg);
+      opacity: 0.3;
+    }
+  }
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1); /* 深色背景時把 icon 顏色反轉 */
+  cursor: pointer;
+}

@@ -1,0 +1,46 @@
+{
+  "name": "passion-camp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "lint": "next lint",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@emotion/is-prop-valid": "latest",
+    "@neondatabase/serverless": "latest",
+    "@radix-ui/react-checkbox": "latest",
+    "@radix-ui/react-dialog": "latest",
+    "@radix-ui/react-progress": "latest",
+    "@radix-ui/react-select": "^2.1.2",
+    "@radix-ui/react-slot": "^1.1.1",
+    "bcryptjs": "^2.4.3",
+    "canvas-confetti": "latest",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "latest",
+    "immer": "latest",
+    "lucide-react": "^0.468.0",
+    "next": "15.1.11",
+    "ogl": "latest",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "recharts": "latest",
+    "tailwind-merge": "^2.5.4",
+    "tailwindcss": "^4.1.9",
+    "tailwindcss-animate": "^1.0.7",
+    "tw-animate-css": "latest",
+    "use-sync-external-store": "latest",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "postcss": "^8.5",
+    "typescript": "^5.7.2"
+  }
+}
