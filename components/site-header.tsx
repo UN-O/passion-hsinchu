@@ -1,0 +1,69 @@
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { Menu, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+const navItems = [
+  { href: "#about", label: "關於 PASSION" },
+  { href: "#camp", label: "PASSION CAMP" },
+  { href: "#conference", label: "PASSION CONFERENCE" },
+  { href: "#video", label: "宣傳影片" },
+  { href: "#gallery", label: "宣傳圖文" },
+  { href: "#links", label: "相關連結" },
+]
+
+export function SiteHeader() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <header className="sticky top-0 z-50 border-b border-border bg-background">
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
+        <button
+          type="button"
+          aria-label={open ? "關閉選單" : "開啟選單"}
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:border-foreground/40"
+        >
+          {open ? <X className="size-5" /> : <Menu className="size-5" />}
+        </button>
+
+        <Link href="#top" className="flex items-center">
+          <Image
+            src="/images/passion-logo.png"
+            alt="PASSION®"
+            width={979}
+            height={178}
+            priority
+            className="h-6 w-auto brightness-0 invert sm:h-7"
+          />
+        </Link>
+
+        <Button asChild size="sm" className="ml-auto">
+          <Link href="#camp">立即報名</Link>
+        </Button>
+      </div>
+
+      {open && (
+        <nav className="border-t border-border bg-background">
+          <ul className="mx-auto flex max-w-6xl flex-col px-4 py-2 sm:px-6">
+            {navItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="block py-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+    </header>
+  )
+}
