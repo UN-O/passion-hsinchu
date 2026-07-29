@@ -1,9 +1,10 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { LogoutDialog } from "@/components/opening/logout-dialog"
 import { useCampFlow } from "@/components/opening/camp-flow-context"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
 import { openingGradients } from "@/lib/opening-gradients"
@@ -41,16 +42,22 @@ function WelcomeContent() {
 }
 
 export default function CampWelcomePage() {
-  const router = useRouter()
+  const [logoutOpen, setLogoutOpen] = useState(false)
 
   return (
-    <ImmersiveScreen
-      background={{ type: "shader", colors: openingGradients.campWelcome }}
-      enableTapZones={false}
-      enableSwipe={false}
-      onBack={() => router.push("/signin")}
-    >
-      <WelcomeContent />
-    </ImmersiveScreen>
+    <>
+      <ImmersiveScreen
+        background={{ type: "shader", colors: openingGradients.campWelcome }}
+        enableTapZones={false}
+        enableSwipe={false}
+        totalSteps={1}
+        backLabel="登出"
+        onBack={() => setLogoutOpen(true)}
+      >
+        <WelcomeContent />
+      </ImmersiveScreen>
+
+      <LogoutDialog open={logoutOpen} onOpenChange={setLogoutOpen} />
+    </>
   )
 }

@@ -49,3 +49,8 @@ export async function markOpeningComplete() {
   if (!session) return
   await setSessionCookie({ ...session, hasCompletedOpening: true })
 }
+
+export async function clearSession() {
+  const store = await cookies()
+  store.delete(SESSION_COOKIE_NAME)
+}

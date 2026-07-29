@@ -91,14 +91,14 @@ export const versePrayerContent: VersePrayerContent[] = [
     verse: "祢話是我腳前的燈，是我路上的光。",
     verseRef: "詩篇 119:105",
     prayerTemplate:
-      "親愛的上帝，面對未來的迷茫，{} 心中難免有恐懼。求祢賜下信心，讓 {} 不看環境，只看著祢。請作 {} 腳前的燈，指引跨出每一步，深信祢的恩手必一路牽引。奉主耶穌的名求，阿們。",
+      "親愛的上帝，面對未來的迷茫，{} 心中難免有恐懼。求祢賜下信心，讓 {} 不是看著環境，只定睛在祢的身上。請作 {} 腳前的燈，指引跨出每一步，深信祢的恩手必一路牽引。奉主耶穌的名求，阿們。",
   },
   {
     itemId: "face-failure",
     verse: "因為，義人雖七次跌倒，仍必興起；惡人卻被災禍傾倒。",
     verseRef: "箴言 24:16",
     prayerTemplate:
-      "掌管明天的主，當挫折與失敗讓 {} 心灰意冷時，求祢聖靈親自的安慰。求祢讓 {} 看見這不是終點，而是磨練信心的過程。賜下重新站立的勇氣，宣告在祢裡面仍有盼望。奉主耶穌名求，阿們。",
+      "掌管明天的主，當挫折與失敗讓 {} 心灰意冷時，求祢聖靈親自的安慰。求祢打開 {} 屬靈的眼睛，看見這是磨練信心的過程。賜下重新站立的勇氣，宣告在祢裡面仍有盼望。奉主耶穌名求，阿們。",
   },
   {
     itemId: "express-love",
@@ -153,6 +153,10 @@ export const versePrayerContent: VersePrayerContent[] = [
 
 export function getVersePrayerContent(itemId: string): VersePrayerContent | undefined {
   return versePrayerContent.find((entry) => entry.itemId === itemId)
+}
+
+export function getCategoryForItem(itemId: string): ConferenceCategory | undefined {
+  return conferenceCategories.find((category) => category.items.some((item) => item.id === itemId))
 }
 
 // TODO: 使用者尚未提供實際工作坊清單，先放合理佔位文案

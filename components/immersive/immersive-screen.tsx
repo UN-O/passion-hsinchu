@@ -20,6 +20,7 @@ type ImmersiveScreenProps = {
   background: ImmersiveBackgroundConfig
   scrim?: boolean | number
   onBack?: () => void
+  backLabel?: string
   totalSteps?: number
   index?: number
   onIndexChange?: (index: number) => void
@@ -36,6 +37,7 @@ export function ImmersiveScreen({
   background,
   scrim = true,
   onBack,
+  backLabel,
   totalSteps,
   index: controlledIndex,
   onIndexChange,
@@ -92,11 +94,16 @@ export function ImmersiveScreen({
           >
             <button
               type="button"
-              aria-label="返回"
+              aria-label={backLabel ?? "返回"}
               onClick={() => (onBack ? onBack() : router.back())}
-              className="flex size-9 shrink-0 items-center justify-center rounded-full border border-white/30 bg-black/20 text-white transition-colors hover:border-white/60"
+              className={
+                backLabel
+                  ? "flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-white/30 bg-black/20 px-3 text-sm font-medium text-white transition-colors hover:border-white/60"
+                  : "flex size-9 shrink-0 items-center justify-center rounded-full border border-white/30 bg-black/20 text-white transition-colors hover:border-white/60"
+              }
             >
               <ArrowLeft className="size-5" />
+              {backLabel}
             </button>
 
             {progress && totalSteps ? (

@@ -1,7 +1,7 @@
 "use server"
 
 import { redirect } from "next/navigation"
-import { setSessionCookie } from "@/lib/fake-session"
+import { clearSession, setSessionCookie } from "@/lib/fake-session"
 
 export type SigninState = {
   error: string | null
@@ -18,4 +18,9 @@ export async function signIn(_prevState: SigninState, formData: FormData): Promi
 
   await setSessionCookie({ church, sessionType, name, hasCompletedOpening: false })
   redirect(`/opening/${sessionType}/welcome`)
+}
+
+export async function logout() {
+  await clearSession()
+  redirect("/signin")
 }
