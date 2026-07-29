@@ -25,13 +25,20 @@ export const metadata: Metadata = {
     siteName: siteConfig.orgName,
     title: `${siteConfig.edition}《${siteConfig.themeZh}》`,
     description: siteConfig.description,
-    images: ["/posts/00-1-1.webp"],
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: `${siteConfig.edition}《${siteConfig.themeZh}》`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: `${siteConfig.edition}《${siteConfig.themeZh}》`,
     description: siteConfig.description,
-    images: ["/posts/00-1-1.webp"],
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,
