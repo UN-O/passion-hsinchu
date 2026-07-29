@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { QuizOptionBox } from "@/components/opening/quiz-option-box"
 import { useCampFlow } from "@/components/opening/camp-flow-context"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
+import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
 import { campQuizQuestions } from "@/lib/opening-camp-content"
 import { openingGradients } from "@/lib/opening-gradients"
 
@@ -37,7 +38,7 @@ function QuizContent() {
                 : "flex flex-col items-center gap-3 rounded-2xl border border-white/30 p-4 text-white"
             }
           >
-            <QuizOptionBox />
+            <QuizOptionBox imageSrc={option.imageSrc} alt={option.label} />
             <span className="text-sm font-medium">{option.label}</span>
           </button>
         ))}
@@ -63,17 +64,19 @@ export default function CampQuizPage() {
   if (missingHeroName) return null
 
   return (
-    <ImmersiveScreen
-      background={{ type: "shader", colors: openingGradients.campQuiz }}
-      enableTapZones={false}
-      enableSwipe={false}
-      totalSteps={campQuizQuestions.length}
-      index={index}
-      onIndexChange={setIndex}
-      progress={{ mode: "manual", value: 0 }}
-      onBack={() => (index === 0 ? router.push("/opening/camp/welcome") : setIndex(index - 1))}
-    >
-      <QuizContent />
-    </ImmersiveScreen>
+    <OpeningTransitionProvider>
+      <ImmersiveScreen
+        background={{ type: "shader", colors: openingGradients.campQuiz }}
+        enableTapZones={false}
+        enableSwipe={false}
+        totalSteps={campQuizQuestions.length}
+        index={index}
+        onIndexChange={setIndex}
+        progress={{ mode: "manual", value: 0 }}
+        onBack={() => (index === 0 ? router.push("/opening/camp/welcome") : setIndex(index - 1))}
+      >
+        <QuizContent />
+      </ImmersiveScreen>
+    </OpeningTransitionProvider>
   )
 }

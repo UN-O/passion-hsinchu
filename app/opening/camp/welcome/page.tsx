@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { LogoutDialog } from "@/components/opening/logout-dialog"
 import { useCampFlow } from "@/components/opening/camp-flow-context"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
+import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
 import { openingGradients } from "@/lib/opening-gradients"
 
 function WelcomeContent() {
@@ -45,7 +46,7 @@ export default function CampWelcomePage() {
   const [logoutOpen, setLogoutOpen] = useState(false)
 
   return (
-    <>
+    <OpeningTransitionProvider>
       <ImmersiveScreen
         background={{ type: "shader", colors: openingGradients.campWelcome }}
         enableTapZones={false}
@@ -58,6 +59,6 @@ export default function CampWelcomePage() {
       </ImmersiveScreen>
 
       <LogoutDialog open={logoutOpen} onOpenChange={setLogoutOpen} />
-    </>
+    </OpeningTransitionProvider>
   )
 }

@@ -130,7 +130,7 @@ export function ImmersiveScreen({
             )}
           </header>
 
-          <div className="relative flex-1 overflow-y-auto">
+          <div className="relative flex-1 overflow-x-hidden overflow-y-auto">
             {children}
             {(enableTapZones || enableSwipe) && (
               <TapZones enableTap={enableTapZones} enableSwipe={enableSwipe} />

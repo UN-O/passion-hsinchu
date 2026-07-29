@@ -11,7 +11,7 @@ import { versePrayerCategoryDraw } from "@/lib/opening-gradients"
 import { ExportCard } from "@/components/opening/export-card"
 import { downloadNodeAsImage } from "@/lib/export-image"
 import { Button } from "@/components/ui/button"
-import { FadeTransitionOverlay } from "@/components/opening/fade-transition-overlay"
+import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
 
 function VersePrayerContent({
   name,
@@ -67,7 +67,6 @@ export function VersePrayerScreen({ name }: { name: string }) {
   const router = useRouter()
   const { selectedItemId } = useConferenceFlow()
   const [index, setIndex] = useState(0)
-  const [revealed, setRevealed] = useState(false)
   const missingItem = !selectedItemId
   const category = selectedItemId ? getCategoryForItem(selectedItemId) : undefined
   const draw = useMemo(() => versePrayerCategoryDraw(category?.key), [category?.key])
@@ -75,16 +74,13 @@ export function VersePrayerScreen({ name }: { name: string }) {
   useEffect(() => {
     if (missingItem) {
       router.replace("/opening/conference/heart-select")
-      return
     }
-    const id = setTimeout(() => setRevealed(true), 60)
-    return () => clearTimeout(id)
   }, [missingItem, router])
 
   if (missingItem) return null
 
   return (
-    <>
+    <OpeningTransitionProvider>
       <ImmersiveScreen
         background={{ type: "canvas", draw }}
         enableTapZones={false}
@@ -99,7 +95,6 @@ export function VersePrayerScreen({ name }: { name: string }) {
       >
         <VersePrayerContent name={name} selectedItemId={selectedItemId as string} categoryKey={category?.key} />
       </ImmersiveScreen>
-      <FadeTransitionOverlay active={!revealed} />
-    </>
+    </OpeningTransitionProvider>
   )
 }

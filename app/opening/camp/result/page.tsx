@@ -7,6 +7,7 @@ import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
 import { Button } from "@/components/ui/button"
 import { useCampFlow } from "@/components/opening/camp-flow-context"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
+import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
 import { CampProfileCard } from "@/components/opening/camp-profile-card"
 import { campQuizQuestions, getCampProfileResult } from "@/lib/opening-camp-content"
 import { openingGradients, staticDarkCanvasDraw } from "@/lib/opening-gradients"
@@ -18,7 +19,7 @@ function ResultContent({ heroName, aCount }: { heroName: string; aCount: number 
 
   if (index === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-6 px-6 text-center">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-6 text-center">
         <CampProfileCard heroName={heroName} result={result} />
         <Button size="lg" onClick={advance}>
           了解更多
@@ -59,21 +60,23 @@ export default function CampResultPage() {
   if (incomplete) return null
 
   return (
-    <ImmersiveScreen
-      background={
-        index === 0
-          ? { type: "canvas", draw: staticDarkCanvasDraw }
-          : { type: "shader", colors: openingGradients.campWelcome }
-      }
-      enableTapZones={false}
-      enableSwipe={false}
-      totalSteps={2}
-      index={index}
-      onIndexChange={setIndex}
-      progress={{ mode: "manual", value: 0 }}
-      onBack={() => (index === 0 ? router.push("/opening/camp/quiz") : setIndex(index - 1))}
-    >
-      <ResultContent heroName={heroName} aCount={aCount} />
-    </ImmersiveScreen>
+    <OpeningTransitionProvider>
+      <ImmersiveScreen
+        background={
+          index === 0
+            ? { type: "canvas", draw: staticDarkCanvasDraw }
+            : { type: "shader", colors: openingGradients.campWelcome }
+        }
+        enableTapZones={false}
+        enableSwipe={false}
+        totalSteps={2}
+        index={index}
+        onIndexChange={setIndex}
+        progress={{ mode: "manual", value: 0 }}
+        onBack={() => (index === 0 ? router.push("/opening/camp/quiz") : setIndex(index - 1))}
+      >
+        <ResultContent heroName={heroName} aCount={aCount} />
+      </ImmersiveScreen>
+    </OpeningTransitionProvider>
   )
 }

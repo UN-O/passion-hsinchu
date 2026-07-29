@@ -18,12 +18,42 @@
   --sunpillar-clr-6: var(--sunpillar-6);
 }
 
+/* vendor 的 .pc-card 用 aspect-ratio 從 height 反推 width，寬螢幕/高視窗下會超出
+   .camp-profile-card 的 320px 而造成手機版跑版，這裡直接鎖住 shell/card 的寬度上限。 */
+.camp-profile-card .pc-card-shell,
+.camp-profile-card .pc-card {
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* icon pattern tile 本身是 56x54，這裡用更大的固定 tile 尺寸做 mask，讓圖樣更清楚且不那麼密集；
+   同時保留可透過 CSS 變數覆寫的空間，讓 /playground/profile-card 依舊能微調。 */
+:root {
+  --pc-icon-mask-size: 337px 450px;
+  --pc-icon-brightness: 1.03;
+  --pc-icon-contrast: 2.34;
+  --pc-icon-saturate: 0.71;
+  --pc-icon-opacity: 0.27;
+  --pc-hover-shine-opacity: 0.43;
+}
+
 .camp-profile-card .pc-shine {
-  filter: brightness(0.5) contrast(1.1) saturate(0.25) opacity(0.4);
+  mask-size: var(--pc-icon-mask-size);
+  filter: brightness(var(--pc-icon-brightness)) contrast(var(--pc-icon-contrast)) saturate(var(--pc-icon-saturate))
+    opacity(var(--pc-icon-opacity));
 }
 
 .camp-profile-card .pc-glare {
   filter: brightness(0.6) contrast(1);
+}
+
+/* hover/tilt 互動時 vendor 預設會把全息反射光拉到 opacity:1，太刺眼，這裡降低一點。 */
+.camp-profile-card .pc-card:hover .pc-shine::before,
+.camp-profile-card .pc-card.active .pc-shine::before,
+.camp-profile-card .pc-card:hover .pc-shine::after,
+.camp-profile-card .pc-card.active .pc-shine::after {
+  opacity: var(--pc-hover-shine-opacity);
 }
 
 .camp-profile-card .pc-contact-btn {
@@ -49,4 +79,101 @@
   margin: 0 auto;
   line-height: 1.6;
   background-image: linear-gradient(to bottom, #fff, #cbb85e);
+}
+
+/* quote 字級在寬螢幕（vendor 沒有對應的 media query，維持它最大的預設 16px）縮小一點；
+   窄螢幕已經有 vendor 自己的 breakpoint 在管，這裡只鎖寬螢幕範圍避免蓋掉那些值。 */
+@media (min-width: 769px) {
+  .camp-profile-card .pc-details p {
+    font-size: 13px;
+  }
+}
+
+/* 卡片整體高度在小螢幕比 vendor 預設更高一點，維持比例的同時讓卡面感覺更飽滿。 */
+@media (max-width: 768px) {
+  .camp-profile-card .pc-card {
+    height: 78svh;
+    max-height: 520px;
+  }
+}
+
+@media (max-width: 480px) {
+  .camp-profile-card .pc-card {
+    height: 74svh;
+    max-height: 460px;
+  }
+}
+
+@media (max-width: 320px) {
+  .camp-profile-card .pc-card {
+    height: 68svh;
+    max-height: 400px;
+  }
+}
+
+/* 入場「抽卡」動畫：卡片從上方落下，側面翻正，並伴隨一次發光脈衝。
+   時長用 CSS 變數（有 fallback 預設值），方便 /playground/profile-card 除錯頁即時覆寫。 */
+.camp-profile-card-stage {
+  position: relative;
+  width: 100%;
+  --pc-draw-duration: 1.8s;
+  --pc-glow-duration: 2.65s;
+}
+
+.camp-profile-card-stage::before {
+  content: "";
+  position: absolute;
+  inset: -12% -30%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(246, 237, 142, 0.55) 0%, rgba(246, 237, 142, 0) 70%);
+  filter: blur(40px);
+  opacity: 0;
+  animation: camp-card-glow var(--pc-glow-duration) ease-out both;
+}
+
+.camp-profile-card-draw {
+  position: relative;
+  z-index: 1;
+  perspective: 1400px;
+}
+
+.camp-profile-card-draw > * {
+  transform-style: preserve-3d;
+  animation: camp-card-draw var(--pc-draw-duration) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes camp-card-draw {
+  0% {
+    opacity: 0;
+    transform: translateY(-60svh) rotateY(90deg) scale(0.94);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(0) rotateY(0deg) scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateY(0deg) scale(1);
+  }
+}
+
+@keyframes camp-card-glow {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .camp-profile-card-draw > *,
+  .camp-profile-card-stage::before {
+    animation: none;
+  }
 }

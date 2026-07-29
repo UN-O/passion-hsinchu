@@ -1,10 +1,10 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
+import { useOpeningNavigate } from "@/components/opening/opening-transition"
 
 export function useOpeningStepAdvance(nextRoute: string | null) {
-  const router = useRouter()
+  const navigate = useOpeningNavigate()
   const { index, total, next } = useImmersiveNav()
 
   return () => {
@@ -13,7 +13,7 @@ export function useOpeningStepAdvance(nextRoute: string | null) {
       return
     }
     if (nextRoute) {
-      router.push(nextRoute)
+      navigate(nextRoute)
     }
   }
 }

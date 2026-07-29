@@ -6,6 +6,7 @@ import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
 import { Button } from "@/components/ui/button"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
+import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
 import { conferenceWorkshops } from "@/lib/opening-conference-content"
 import { openingGradients } from "@/lib/opening-gradients"
 import { completeOpening } from "@/app/opening/actions"
@@ -43,19 +44,21 @@ export default function ConferenceOnboardingPage() {
   const [index, setIndex] = useState(0)
 
   return (
-    <ImmersiveScreen
-      background={{ type: "shader", colors: openingGradients.conferenceOnboarding }}
-      enableTapZones={false}
-      enableSwipe={false}
-      totalSteps={conferenceWorkshops.length}
-      index={index}
-      onIndexChange={setIndex}
-      progress={{ mode: "manual", value: 0 }}
-      onBack={() =>
-        index === 0 ? router.push("/opening/conference/verse-and-prayer") : setIndex(index - 1)
-      }
-    >
-      <OnboardingContent />
-    </ImmersiveScreen>
+    <OpeningTransitionProvider>
+      <ImmersiveScreen
+        background={{ type: "shader", colors: openingGradients.conferenceOnboarding }}
+        enableTapZones={false}
+        enableSwipe={false}
+        totalSteps={conferenceWorkshops.length}
+        index={index}
+        onIndexChange={setIndex}
+        progress={{ mode: "manual", value: 0 }}
+        onBack={() =>
+          index === 0 ? router.push("/opening/conference/verse-and-prayer") : setIndex(index - 1)
+        }
+      >
+        <OnboardingContent />
+      </ImmersiveScreen>
+    </OpeningTransitionProvider>
   )
 }

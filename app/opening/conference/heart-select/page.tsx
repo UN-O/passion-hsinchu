@@ -5,22 +5,21 @@ import { useRouter } from "next/navigation"
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { Button } from "@/components/ui/button"
 import { useConferenceFlow } from "@/components/opening/conference-flow-context"
-import { FadeTransitionOverlay } from "@/components/opening/fade-transition-overlay"
+import { OpeningTransitionProvider, useOpeningNavigate } from "@/components/opening/opening-transition"
 import { conferenceCategories, type ConferenceCategory } from "@/lib/opening-conference-content"
 import { conferenceCategoryColors, openingGradients } from "@/lib/opening-gradients"
 
-const TRANSITION_MS = 500
-
-function HeartSelectContent({ onConfirm }: { onConfirm: () => void }) {
+function HeartSelectContent() {
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<ConferenceCategory["key"] | null>(null)
   const [pendingItemId, setPendingItemId] = useState<string | null>(null)
   const { setSelectedItemId } = useConferenceFlow()
+  const navigate = useOpeningNavigate()
   const category = conferenceCategories.find((c) => c.key === selectedCategoryKey)
 
   const handleConfirm = () => {
     if (!pendingItemId) return
     setSelectedItemId(pendingItemId)
-    onConfirm()
+    navigate("/opening/conference/verse-and-prayer")
   }
 
   return (
@@ -89,15 +88,9 @@ function HeartSelectContent({ onConfirm }: { onConfirm: () => void }) {
 
 export default function ConferenceHeartSelectPage() {
   const router = useRouter()
-  const [transitioning, setTransitioning] = useState(false)
-
-  const handleConfirm = () => {
-    setTransitioning(true)
-    setTimeout(() => router.push("/opening/conference/verse-and-prayer"), TRANSITION_MS)
-  }
 
   return (
-    <>
+    <OpeningTransitionProvider>
       <ImmersiveScreen
         background={{ type: "shader", colors: openingGradients.conferenceHeartSelect }}
         enableTapZones={false}
@@ -105,9 +98,8 @@ export default function ConferenceHeartSelectPage() {
         totalSteps={1}
         onBack={() => router.push("/opening/conference/welcome")}
       >
-        <HeartSelectContent onConfirm={handleConfirm} />
+        <HeartSelectContent />
       </ImmersiveScreen>
-      <FadeTransitionOverlay active={transitioning} />
-    </>
+    </OpeningTransitionProvider>
   )
 }

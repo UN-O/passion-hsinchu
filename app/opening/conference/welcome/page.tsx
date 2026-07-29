@@ -5,6 +5,7 @@ import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { Button } from "@/components/ui/button"
 import { LogoutDialog } from "@/components/opening/logout-dialog"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
+import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
 import { openingGradients } from "@/lib/opening-gradients"
 
 function WelcomeContent() {
@@ -27,7 +28,7 @@ export default function ConferenceWelcomePage() {
   const [logoutOpen, setLogoutOpen] = useState(false)
 
   return (
-    <>
+    <OpeningTransitionProvider>
       <ImmersiveScreen
         background={{ type: "shader", colors: openingGradients.conferenceWelcome }}
         enableTapZones={false}
@@ -40,6 +41,6 @@ export default function ConferenceWelcomePage() {
       </ImmersiveScreen>
 
       <LogoutDialog open={logoutOpen} onOpenChange={setLogoutOpen} />
-    </>
+    </OpeningTransitionProvider>
   )
 }
