@@ -139,8 +139,13 @@
   perspective: 1400px;
 }
 
+/* 這裡不需要 transform-style: preserve-3d，卡片本身沒有子層要共用 3D 空間翻面。
+   加上 preserve-3d 會讓卡片內部所有帶 filter 的元素（logo、pc-shine、pc-glare…）
+   落入 WebKit 的 preserve-3d + backface-visibility 已知渲染 bug：手機版 Safari 在
+   rotateY 動畫結束、圖層被 GPU 回收重繪後，這些帶 filter 的圖片會整個消失且不會再畫回來，
+   桌機瀏覽器（非 WebKit 3D 合成路徑）則不受影響。拿掉即可避免整個卡片消失，
+   動畫本身（父層的 perspective + 自身 rotateY）視覺上不受影響。 */
 .camp-profile-card-draw > * {
-  transform-style: preserve-3d;
   animation: camp-card-draw var(--pc-draw-duration) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
