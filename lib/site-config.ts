@@ -6,7 +6,7 @@ export const siteConfig = {
   edition: "PASSION® 26",
   year: 2026,
   description:
-    "五年，一場屬於新竹地區的營會。2026 PASSION 26《勇者世代》，8 月於新竹聖經書院／築聖館，火熱營會與社青特會等你加入。",
+    "五年，一場屬於新竹地區的營會。2026 PASSION 26《勇者世代》，8 月於新竹聖經書院／築聖館，火熱營會與火熱特會等你加入。",
   url: "https://passion-hsinchu.example.com",
   venue: "新竹聖經書院／築聖館",
   venueAddress: "新竹市東區高峰路56號",
@@ -17,24 +17,37 @@ export const siteConfig = {
 // 一週前（活動開始前一週）：hero CTA 從「立即報名」切換成「進入 CAMP」／「進入 Conference」兩顆按鈕
 export const heroSwitchDate = "2026-08-15T00:00:00+08:00"
 
-export const camp = {
+export type Program = {
+  name: string
+  label: string
+  audience: string
+  dateLabel: string
+  timeEntries: string[]
+  durationLabel?: string
+  feeLabel: string
+  feeNote: string
+  formUrl: string
+}
+
+export const camp: Program = {
   name: "PASSION CAMP",
   label: "火熱營會",
   audience: "國中至大學學生",
   dateLabel: "8.25 - 8.27（二）-（四）",
-  timeLabel: "2026/8/25（二）13:00 - 8/27（四）17:00",
+  timeEntries: ["8/25（二）13:00", "8/27（四）17:00"],
+  durationLabel: "三天兩夜",
   feeLabel: "早鳥 3,300 元（4/25-5/31）／火熱報名 3,500 元（6/1-8/16）",
   feeNote: "費用包含住宿、膳食及紀念 T 恤",
   formUrl:
     "https://docs.google.com/forms/d/e/1FAIpQLSeymjgFHXkX1v94k8SzvVSaoa76vJ1dLavHsEMl2Q-Rwh33_w/viewform",
 }
 
-export const conference = {
+export const conference: Program = {
   name: "PASSION CONFERENCE",
-  label: "社青特會",
+  label: "火熱特會",
   audience: "20 歲以上社青",
   dateLabel: "8.28 - 8.29（五）-（六）",
-  timeLabel: "8/28（五）19:00-21:00、8/29（六）14:00-17:00、19:00-21:00",
+  timeEntries: ["8/28（五）19:00-21:00", "8/29（六）14:00-21:00"],
   feeLabel: "早鳥 1,200 元（4/25-5/31）／火熱報名 1,500 元（6/1-8/16）",
   feeNote: "報名費用以繳費時間為計算基準",
   formUrl:

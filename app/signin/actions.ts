@@ -8,7 +8,9 @@ export type SigninState = {
 }
 
 export async function signIn(_prevState: SigninState, formData: FormData): Promise<SigninState> {
-  const church = String(formData.get("church") ?? "").trim()
+  const rawChurch = String(formData.get("church") ?? "").trim()
+  const otherChurch = String(formData.get("otherChurch") ?? "").trim()
+  const church = rawChurch === "其他" ? otherChurch : rawChurch
   const sessionType = String(formData.get("sessionType") ?? "")
   const name = String(formData.get("name") ?? "").trim()
 

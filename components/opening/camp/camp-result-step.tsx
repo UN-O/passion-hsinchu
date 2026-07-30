@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,10 @@ import { OpeningTransitionProvider } from "@/components/opening/opening-transiti
 import { CampProfileCard } from "@/components/opening/camp-profile-card"
 import { campQuizQuestions, getCampProfileResult } from "@/lib/opening-camp-content"
 import { openingGradients, staticDarkCanvasDraw } from "@/lib/opening-gradients"
+import { HERO_AVATAR_PLACEHOLDER_URI } from "@/lib/hero-card-visuals"
+import { campStepFromPath, type CampStep } from "@/lib/opening-steps"
+
+export const resultImages = ["/images/passion-logo.png", HERO_AVATAR_PLACEHOLDER_URI]
 
 function ResultContent({ heroName, aCount }: { heroName: string; aCount: number }) {
   const { index } = useImmersiveNav()
@@ -29,8 +33,14 @@ function ResultContent({ heroName, aCount }: { heroName: string; aCount: number 
   }
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-4 overflow-y-auto px-6 py-8 text-left text-white/90">
-      <div className="aspect-square w-full max-w-40 self-center rounded-2xl border border-white/30" />
+    <div className="flex h-full flex-col items-center justify-center gap-4 overflow-y-auto px-6 py-8 text-center text-white/90">
+      <Image
+        src={HERO_AVATAR_PLACEHOLDER_URI}
+        alt="Place holder png"
+        width={160}
+        height={160}
+        className="aspect-square w-full max-w-40 self-center rounded-2xl border border-white/30 object-cover"
+      />
       <p>{result.description}</p>
       <div>
         <p className="text-sm font-medium text-white/60">勇者特質</p>
@@ -47,20 +57,19 @@ function ResultContent({ heroName, aCount }: { heroName: string; aCount: number 
   )
 }
 
-export default function CampResultPage() {
-  const router = useRouter()
+export function CampResultStep({ onStepChange }: { onStepChange: (step: CampStep) => void }) {
   const { aCount, answers, heroName } = useCampFlow()
   const [index, setIndex] = useState(0)
   const incomplete = Object.keys(answers).length < campQuizQuestions.length
 
   useEffect(() => {
-    if (incomplete) router.replace("/opening/camp/quiz")
-  }, [incomplete, router])
+    if (incomplete) onStepChange("quiz")
+  }, [incomplete, onStepChange])
 
   if (incomplete) return null
 
   return (
-    <OpeningTransitionProvider>
+    <OpeningTransitionProvider onNavigate={(path) => onStepChange(campStepFromPath(path))}>
       <ImmersiveScreen
         background={
           index === 0
@@ -73,7 +82,7 @@ export default function CampResultPage() {
         index={index}
         onIndexChange={setIndex}
         progress={{ mode: "manual", value: 0 }}
-        onBack={() => (index === 0 ? router.push("/opening/camp/quiz") : setIndex(index - 1))}
+        onBack={() => (index === 0 ? onStepChange("quiz") : setIndex(index - 1))}
       >
         <ResultContent heroName={heroName} aCount={aCount} />
       </ImmersiveScreen>

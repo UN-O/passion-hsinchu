@@ -5,6 +5,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { LogoutDialog } from "@/components/opening/logout-dialog"
+import type { FakeSession } from "@/lib/fake-session"
+import { camp, conference } from "@/lib/site-config"
 
 const navItems = [
   { href: "#about", label: "關於 PASSION" },
@@ -15,8 +18,9 @@ const navItems = [
   { href: "#links", label: "相關連結" },
 ]
 
-export function SiteHeader() {
+export function SiteHeader({ session }: { session: FakeSession | null }) {
   const [open, setOpen] = useState(false)
+  const [logoutOpen, setLogoutOpen] = useState(false)
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
@@ -42,9 +46,21 @@ export function SiteHeader() {
           />
         </Link>
 
-        <Button asChild size="sm" className="ml-auto">
-          <Link href="#camp">立即報名</Link>
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          {session ? (
+            <Button variant="outline" size="sm" onClick={() => setLogoutOpen(true)}>
+              登出 {session.sessionType === "camp" ? camp.label : conference.label}
+            </Button>
+          ) : (
+            <Button asChild variant="outline" size="sm">
+              <Link href="/signin">報到</Link>
+            </Button>
+          )}
+
+          <Button asChild size="sm">
+            <Link href="#camp">立即報名</Link>
+          </Button>
+        </div>
       </div>
 
       {open && (
@@ -64,6 +80,8 @@ export function SiteHeader() {
           </ul>
         </nav>
       )}
+
+      {session && <LogoutDialog open={logoutOpen} onOpenChange={setLogoutOpen} />}
     </header>
   )
 }

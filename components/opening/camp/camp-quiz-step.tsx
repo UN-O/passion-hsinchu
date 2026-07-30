@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
 import { Button } from "@/components/ui/button"
@@ -11,8 +10,13 @@ import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
 import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
 import { campQuizQuestions } from "@/lib/opening-camp-content"
 import { openingGradients } from "@/lib/opening-gradients"
+import { campStepFromPath, type CampStep } from "@/lib/opening-steps"
 
-function QuizContent() {
+export const quizImages = campQuizQuestions.flatMap((question) =>
+  question.options.map((option) => option.imageSrc).filter((src): src is string => Boolean(src))
+)
+
+function QuizContent({ onStepChange }: { onStepChange: (step: CampStep) => void }) {
   const { index } = useImmersiveNav()
   const { answers, setAnswer } = useCampFlow()
   const advance = useOpeningStepAdvance("/opening/camp/result")
@@ -51,20 +55,19 @@ function QuizContent() {
   )
 }
 
-export default function CampQuizPage() {
-  const router = useRouter()
+export function CampQuizStep({ onStepChange }: { onStepChange: (step: CampStep) => void }) {
   const { heroName } = useCampFlow()
   const [index, setIndex] = useState(0)
   const missingHeroName = !heroName.trim()
 
   useEffect(() => {
-    if (missingHeroName) router.replace("/opening/camp/welcome")
-  }, [missingHeroName, router])
+    if (missingHeroName) onStepChange("welcome")
+  }, [missingHeroName, onStepChange])
 
   if (missingHeroName) return null
 
   return (
-    <OpeningTransitionProvider>
+    <OpeningTransitionProvider onNavigate={(path) => onStepChange(campStepFromPath(path))}>
       <ImmersiveScreen
         background={{ type: "shader", colors: openingGradients.campQuiz }}
         enableTapZones={false}
@@ -73,9 +76,9 @@ export default function CampQuizPage() {
         index={index}
         onIndexChange={setIndex}
         progress={{ mode: "manual", value: 0 }}
-        onBack={() => (index === 0 ? router.push("/opening/camp/welcome") : setIndex(index - 1))}
+        onBack={() => (index === 0 ? onStepChange("welcome") : setIndex(index - 1))}
       >
-        <QuizContent />
+        <QuizContent onStepChange={onStepChange} />
       </ImmersiveScreen>
     </OpeningTransitionProvider>
   )

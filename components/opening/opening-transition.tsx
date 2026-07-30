@@ -21,7 +21,12 @@ export function useOpeningNavigate() {
   return ctx.navigate
 }
 
-export function OpeningTransitionProvider({ children }: { children: React.ReactNode }) {
+type OpeningTransitionProviderProps = {
+  children: React.ReactNode
+  onNavigate?: (path: string) => void
+}
+
+export function OpeningTransitionProvider({ children, onNavigate }: OpeningTransitionProviderProps) {
   const router = useRouter()
   const [revealed, setRevealed] = useState(false)
   const [exiting, setExiting] = useState(false)
@@ -41,9 +46,12 @@ export function OpeningTransitionProvider({ children }: { children: React.ReactN
   const navigate = useCallback(
     (path: string) => {
       setExiting(true)
-      exitTimerRef.current = setTimeout(() => router.push(path), TRANSITION_MS)
+      exitTimerRef.current = setTimeout(() => {
+        if (onNavigate) onNavigate(path)
+        else router.push(path)
+      }, TRANSITION_MS)
     },
-    [router]
+    [router, onNavigate]
   )
 
   return (

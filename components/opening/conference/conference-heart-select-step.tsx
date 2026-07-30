@@ -1,13 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { Button } from "@/components/ui/button"
 import { useConferenceFlow } from "@/components/opening/conference-flow-context"
 import { OpeningTransitionProvider, useOpeningNavigate } from "@/components/opening/opening-transition"
 import { conferenceCategories, type ConferenceCategory } from "@/lib/opening-conference-content"
 import { conferenceCategoryColors, openingGradients } from "@/lib/opening-gradients"
+import { conferenceStepFromPath, type ConferenceStep } from "@/lib/opening-steps"
 
 function HeartSelectContent() {
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<ConferenceCategory["key"] | null>(null)
@@ -37,7 +37,7 @@ function HeartSelectContent() {
                   setSelectedCategoryKey(cat.key)
                   setPendingItemId(null)
                 }}
-                className="flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-lg leading-snug font-semibold"
+                className="flex aspect-[3/2] flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-lg leading-snug font-semibold"
                 style={{
                   borderColor: conferenceCategoryColors[cat.key],
                   color: conferenceCategoryColors[cat.key],
@@ -86,17 +86,19 @@ function HeartSelectContent() {
   )
 }
 
-export default function ConferenceHeartSelectPage() {
-  const router = useRouter()
-
+export function ConferenceHeartSelectStep({
+  onStepChange,
+}: {
+  onStepChange: (step: ConferenceStep) => void
+}) {
   return (
-    <OpeningTransitionProvider>
+    <OpeningTransitionProvider onNavigate={(path) => onStepChange(conferenceStepFromPath(path))}>
       <ImmersiveScreen
         background={{ type: "shader", colors: openingGradients.conferenceHeartSelect }}
         enableTapZones={false}
         enableSwipe={false}
         totalSteps={1}
-        onBack={() => router.push("/opening/conference/welcome")}
+        onBack={() => onStepChange("welcome")}
       >
         <HeartSelectContent />
       </ImmersiveScreen>

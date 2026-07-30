@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
@@ -12,6 +11,7 @@ import { ExportCard } from "@/components/opening/export-card"
 import { downloadNodeAsImage } from "@/lib/export-image"
 import { Button } from "@/components/ui/button"
 import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
+import { conferenceStepFromPath, type ConferenceStep } from "@/lib/opening-steps"
 
 function VersePrayerContent({
   name,
@@ -55,16 +55,22 @@ function VersePrayerContent({
         </Button>
       </div>
 
-      {/* 畫面上不顯示框限樣式，這個節點永遠隱藏在畫面外，只有按下「儲存圖片」時才拿去擷取成 4:5 直式圖片 */}
-      <div className="pointer-events-none fixed top-0 -left-[9999px]" aria-hidden>
+      {/* 用 opacity-0 而不是移到畫面外：手機瀏覽器（尤其 iOS Safari）會把定位在可視範圍外的 canvas 內容釋放掉，
+          等按下「儲存圖片」擷取時就會拿到空白圖片。opacity-0 讓節點仍在畫面範圍內、canvas 保持有內容，但視覺上看不到。 */}
+      <div className="pointer-events-none fixed inset-0 -z-10 opacity-0" aria-hidden>
         <ExportCard ref={exportRef} label={label} verse={bodyText} verseRef={isVersePage ? content.verseRef : undefined} categoryKey={categoryKey} />
       </div>
     </div>
   )
 }
 
-export function VersePrayerScreen({ name }: { name: string }) {
-  const router = useRouter()
+export function ConferenceVersePrayerStep({
+  name,
+  onStepChange,
+}: {
+  name: string
+  onStepChange: (step: ConferenceStep) => void
+}) {
   const { selectedItemId } = useConferenceFlow()
   const [index, setIndex] = useState(0)
   const missingItem = !selectedItemId
@@ -72,15 +78,13 @@ export function VersePrayerScreen({ name }: { name: string }) {
   const draw = useMemo(() => versePrayerCategoryDraw(category?.key), [category?.key])
 
   useEffect(() => {
-    if (missingItem) {
-      router.replace("/opening/conference/heart-select")
-    }
-  }, [missingItem, router])
+    if (missingItem) onStepChange("heart-select")
+  }, [missingItem, onStepChange])
 
   if (missingItem) return null
 
   return (
-    <OpeningTransitionProvider>
+    <OpeningTransitionProvider onNavigate={(path) => onStepChange(conferenceStepFromPath(path))}>
       <ImmersiveScreen
         background={{ type: "canvas", draw }}
         enableTapZones={false}
@@ -89,9 +93,7 @@ export function VersePrayerScreen({ name }: { name: string }) {
         index={index}
         onIndexChange={setIndex}
         progress={{ mode: "manual", value: 0 }}
-        onBack={() =>
-          index === 0 ? router.push("/opening/conference/heart-select") : setIndex(index - 1)
-        }
+        onBack={() => (index === 0 ? onStepChange("heart-select") : setIndex(index - 1))}
       >
         <VersePrayerContent name={name} selectedItemId={selectedItemId as string} categoryKey={category?.key} />
       </ImmersiveScreen>

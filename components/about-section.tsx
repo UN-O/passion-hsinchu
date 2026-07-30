@@ -9,7 +9,7 @@ export function AboutSection() {
           當我們回望所踏的每一步路時，看見上帝親自顯明了對世代的心意，
           在我們還不理解祂的計劃時，祂已成就了一切。
         </p>
-        <p className="mt-4 text-lg font-medium sm:text-xl">
+        <p className="mt-10 text-lg font-medium sm:text-xl">
           2026，我們將持續回應祂的心意。
         </p>
       </div>

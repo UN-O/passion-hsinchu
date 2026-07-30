@@ -9,12 +9,13 @@ import { RelatedLinksSection } from "@/components/related-links-section"
 import { SiteFooter } from "@/components/site-footer"
 import { JsonLd } from "@/components/json-ld"
 import { camp, conference, siteConfig } from "@/lib/site-config"
+import { getSession } from "@/lib/fake-session"
 
 const eventsJsonLd = [camp, conference].map((program) => ({
   "@context": "https://schema.org",
   "@type": "Event",
   name: program.name,
-  description: `${program.audience}｜${program.timeLabel}`,
+  description: `${program.audience}｜${program.timeEntries.join("、")}`,
   eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
   eventStatus: "https://schema.org/EventScheduled",
   location: {
@@ -30,11 +31,13 @@ const eventsJsonLd = [camp, conference].map((program) => ({
   url: program.formUrl,
 }))
 
-export default function Home() {
+export default async function Home() {
+  const session = await getSession()
+
   return (
     <>
       <JsonLd data={{ "@context": "https://schema.org", "@graph": eventsJsonLd }} />
-      <SiteHeader />
+      <SiteHeader session={session} />
       <main>
         <HeroSection />
         <AboutSection />

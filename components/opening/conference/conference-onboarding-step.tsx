@@ -1,29 +1,29 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
 import { Button } from "@/components/ui/button"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
 import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
-import { campOnboardingZones } from "@/lib/opening-camp-content"
+import { conferenceWorkshops } from "@/lib/opening-conference-content"
 import { openingGradients } from "@/lib/opening-gradients"
 import { completeOpening } from "@/app/opening/actions"
+import { conferenceStepFromPath, type ConferenceStep } from "@/lib/opening-steps"
 
 function OnboardingContent() {
   const { index } = useImmersiveNav()
   const advance = useOpeningStepAdvance(null)
-  const zone = campOnboardingZones[index]
-  const isLast = index === campOnboardingZones.length - 1
+  const workshop = conferenceWorkshops[index]
+  const isLast = index === conferenceWorkshops.length - 1
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 px-6 text-center">
       <p className="text-sm tracking-[0.2em] text-white/60">
-        {index + 1} / {campOnboardingZones.length}
+        {index + 1} / {conferenceWorkshops.length}
       </p>
-      <h2 className="text-2xl font-bold sm:text-3xl">{zone.title}</h2>
-      <p className="max-w-sm text-white/80">{zone.body}</p>
+      <h2 className="text-2xl font-bold sm:text-3xl">{workshop.title}</h2>
+      <p className="max-w-sm text-white/80">{workshop.body}</p>
       {isLast ? (
         <form action={completeOpening}>
           <Button size="lg" type="submit">
@@ -39,21 +39,24 @@ function OnboardingContent() {
   )
 }
 
-export default function CampOnboardingPage() {
-  const router = useRouter()
+export function ConferenceOnboardingStep({
+  onStepChange,
+}: {
+  onStepChange: (step: ConferenceStep) => void
+}) {
   const [index, setIndex] = useState(0)
 
   return (
-    <OpeningTransitionProvider>
+    <OpeningTransitionProvider onNavigate={(path) => onStepChange(conferenceStepFromPath(path))}>
       <ImmersiveScreen
-        background={{ type: "shader", colors: openingGradients.campOnboarding }}
+        background={{ type: "shader", colors: openingGradients.conferenceOnboarding }}
         enableTapZones={false}
         enableSwipe={false}
-        totalSteps={campOnboardingZones.length}
+        totalSteps={conferenceWorkshops.length}
         index={index}
         onIndexChange={setIndex}
         progress={{ mode: "manual", value: 0 }}
-        onBack={() => (index === 0 ? router.push("/opening/camp/result") : setIndex(index - 1))}
+        onBack={() => (index === 0 ? onStepChange("verse-and-prayer") : setIndex(index - 1))}
       >
         <OnboardingContent />
       </ImmersiveScreen>
