@@ -5,5 +5,8 @@
 //
 // admin 與 staff 目前權限相同，先分開是為了之後要限制某些操作時不用改 schema。
 export const STAFF_EMAILS: { email: string; role: "staff" | "admin"; note?: string }[] = [
-  // { email: "someone@gmail.com", role: "admin", note: "總召" },
+  // [staff entry redacted from git history]
+  // [staff entry redacted from git history]
+  // [staff entry redacted from git history]
+  // [staff entry redacted from git history]
 ]
