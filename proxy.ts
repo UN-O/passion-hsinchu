@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { SESSION_COOKIE_NAME, parseSessionCookie } from "@/lib/fake-session"
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const session = parseSessionCookie(request.cookies.get(SESSION_COOKIE_NAME)?.value)
 
   if (!session) {
