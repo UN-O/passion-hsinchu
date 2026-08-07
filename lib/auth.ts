@@ -4,6 +4,7 @@ import { nextCookies } from "better-auth/next-js"
 
 import { db } from "@/db"
 import * as authSchema from "@/db/schema/auth"
+import { campIdentify } from "./auth-plugins/camp-identify"
 
 // 刻意「不」啟用 emailAndPassword：那會連帶開出 /sign-up/email、/forget-password
 // 等公開端點，而這個站沒有任何密碼登入。
@@ -48,5 +49,5 @@ export const auth = betterAuth({
   },
 
   // nextCookies() 一定要放在最後
-  plugins: [nextCookies()],
+  plugins: [campIdentify(), nextCookies()],
 })
