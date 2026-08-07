@@ -6,8 +6,9 @@ import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { LogoutDialog } from "@/components/opening/logout-dialog"
-import type { FakeSession } from "@/lib/fake-session"
-import { camp, conference } from "@/lib/site-config"
+
+// 只取 header 真正要用的欄位，不要把整個 session 傳進 client component
+export type HeaderSession = { name: string }
 
 const navItems = [
   { href: "#about", label: "關於 PASSION" },
@@ -18,7 +19,7 @@ const navItems = [
   { href: "#links", label: "相關連結" },
 ]
 
-export function SiteHeader({ session }: { session: FakeSession | null }) {
+export function SiteHeader({ session }: { session: HeaderSession | null }) {
   const [open, setOpen] = useState(false)
   const [logoutOpen, setLogoutOpen] = useState(false)
 
@@ -49,7 +50,7 @@ export function SiteHeader({ session }: { session: FakeSession | null }) {
         <div className="ml-auto flex items-center gap-2">
           {session ? (
             <Button variant="outline" size="sm" onClick={() => setLogoutOpen(true)}>
-              登出 {session.sessionType === "camp" ? camp.label : conference.label}
+              登出
             </Button>
           ) : (
             <Button asChild variant="outline" size="sm">

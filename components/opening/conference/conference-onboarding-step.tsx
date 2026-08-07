@@ -26,6 +26,7 @@ function OnboardingContent() {
       <p className="max-w-sm text-white/80">{workshop.body}</p>
       {isLast ? (
         <form action={completeOpening}>
+          <input type="hidden" name="flow" value="conference" />
           <Button size="lg" type="submit">
             完成
           </Button>

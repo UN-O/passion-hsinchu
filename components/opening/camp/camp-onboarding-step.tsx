@@ -26,6 +26,7 @@ function OnboardingContent() {
       <p className="max-w-sm text-white/80">{zone.body}</p>
       {isLast ? (
         <form action={completeOpening}>
+          <input type="hidden" name="flow" value="camp" />
           <Button size="lg" type="submit">
             完成
           </Button>

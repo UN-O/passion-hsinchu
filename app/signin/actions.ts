@@ -1,28 +1,42 @@
 "use server"
 
+import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { clearSession, setSessionCookie } from "@/lib/fake-session"
+import { APIError } from "better-auth/api"
 
-export type SigninState = {
-  error: string | null
-}
+import { auth } from "@/lib/auth"
+import { getAppSession, postSignInPath } from "@/lib/session"
 
-export async function signIn(_prevState: SigninState, formData: FormData): Promise<SigninState> {
-  const rawChurch = String(formData.get("church") ?? "").trim()
-  const otherChurch = String(formData.get("otherChurch") ?? "").trim()
-  const church = rawChurch === "其他" ? otherChurch : rawChurch
-  const sessionType = String(formData.get("sessionType") ?? "")
+export type SigninState = { error: string | null }
+
+export async function campSignIn(
+  _prevState: SigninState,
+  formData: FormData
+): Promise<SigninState> {
   const name = String(formData.get("name") ?? "").trim()
+  const church = String(formData.get("church") ?? "").trim()
 
-  if (!church || (sessionType !== "camp" && sessionType !== "conference") || !name) {
-    return { error: "請完整填寫教會、場次與姓名" }
+  if (!name || !church) {
+    return { error: "請填寫教會與姓名" }
   }
 
-  await setSessionCookie({ church, sessionType, name, hasCompletedOpening: false })
-  redirect(`/opening/${sessionType}/welcome`)
+  try {
+    await auth.api.campSignIn({
+      body: { name, church },
+      headers: await headers(),
+    })
+  } catch (error) {
+    if (error instanceof APIError) {
+      return { error: String(error.body?.message ?? "登入失敗，請再試一次") }
+    }
+    throw error
+  }
+
+  const session = await getAppSession()
+  redirect(session ? postSignInPath(session) : "/")
 }
 
 export async function logout() {
-  await clearSession()
+  await auth.api.signOut({ headers: await headers() })
   redirect("/signin")
 }

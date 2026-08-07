@@ -40,6 +40,16 @@ export async function listChurches(flow: "camp" | "conference"): Promise<string[
   return rows.map((r) => r.church)
 }
 
+// /claim 用：認領時還不知道對方報的是哪一場，所以列出全部教會
+export async function listAllChurches(): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ church: enrollment.church })
+    .from(enrollment)
+    .orderBy(asc(enrollment.church))
+
+  return rows.map((r) => r.church)
+}
+
 export async function searchEnrollments(query: string, limit = 50): Promise<Enrollment[]> {
   const trimmed = query.trim()
   if (!trimmed) {

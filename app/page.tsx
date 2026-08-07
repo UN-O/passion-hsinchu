@@ -9,7 +9,7 @@ import { RelatedLinksSection } from "@/components/related-links-section"
 import { SiteFooter } from "@/components/site-footer"
 import { JsonLd } from "@/components/json-ld"
 import { camp, conference, siteConfig } from "@/lib/site-config"
-import { getSession } from "@/lib/fake-session"
+import { getAppSession } from "@/lib/session"
 
 const eventsJsonLd = [camp, conference].map((program) => ({
   "@context": "https://schema.org",
@@ -32,12 +32,12 @@ const eventsJsonLd = [camp, conference].map((program) => ({
 }))
 
 export default async function Home() {
-  const session = await getSession()
+  const session = await getAppSession()
 
   return (
     <>
       <JsonLd data={{ "@context": "https://schema.org", "@graph": eventsJsonLd }} />
-      <SiteHeader session={session} />
+      <SiteHeader session={session ? { name: session.user.name } : null} />
       <main>
         <HeroSection />
         <AboutSection />

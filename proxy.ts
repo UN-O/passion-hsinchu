@@ -1,22 +1,19 @@
-import { NextRequest, NextResponse } from "next/server"
-import { SESSION_COOKIE_NAME, parseSessionCookie } from "@/lib/fake-session"
+import { NextResponse, type NextRequest } from "next/server"
+import { getSessionCookie } from "better-auth/cookies"
 
+// ⚠ 這裡是體驗優化，不是安全邊界。
+//
+// 只檢查 session cookie 存不存在，不驗證簽章、不查資料庫。真正的授權判斷
+// 全部在 layout / server component 裡（見 lib/session.ts 的 require* 函式）。
+//
+// 這樣切分有個實際好處：Next 16 對留在原地的舊 middleware.ts 是無聲忽略的，
+// 一旦有人手滑把這個檔案改壞或用舊習慣建了 middleware.ts，也只是少一次
+// 提前導向，不會造成未授權存取。
 export function proxy(request: NextRequest) {
-  const session = parseSessionCookie(request.cookies.get(SESSION_COOKIE_NAME)?.value)
+  const sessionCookie = getSessionCookie(request)
 
-  if (!session) {
+  if (!sessionCookie) {
     return NextResponse.redirect(new URL("/signin", request.url))
-  }
-
-  const { pathname } = request.nextUrl
-  const flow = pathname.startsWith("/opening/camp")
-    ? "camp"
-    : pathname.startsWith("/opening/conference")
-      ? "conference"
-      : null
-
-  if (flow && session.sessionType !== flow) {
-    return NextResponse.redirect(new URL(`/opening/${session.sessionType}/welcome`, request.url))
   }
 
   return NextResponse.next()

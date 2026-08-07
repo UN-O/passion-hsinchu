@@ -5,6 +5,7 @@ import { nextCookies } from "better-auth/next-js"
 import { db } from "@/db"
 import * as authSchema from "@/db/schema/auth"
 import { campIdentify } from "./auth-plugins/camp-identify"
+import { syncStaffRole } from "./staff"
 
 // 刻意「不」啟用 emailAndPassword：那會連帶開出 /sign-up/email、/forget-password
 // 等公開端點，而這個站沒有任何密碼登入。
@@ -40,6 +41,19 @@ export const auth = betterAuth({
   session: {
     // 90 天：涵蓋整個營會，讓小朋友只需要在報到時做一次
     expiresIn: 60 * 60 * 24 * 90,
+  },
+
+  databaseHooks: {
+    session: {
+      create: {
+        // 每次登入都把 role 對齊 staff_allowlist。掛在 session 而不是 user 建立，
+        // 這樣之後才被加進名單的人不用重新註冊，下次登入就生效。
+        before: async (session) => {
+          await syncStaffRole(session.userId)
+          return { data: session }
+        },
+      },
+    },
   },
 
   rateLimit: {
