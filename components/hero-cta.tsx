@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { camp, conference, heroSwitchDate } from "@/lib/site-config"
+import { heroSwitchDate } from "@/lib/site-config"
 
 export function HeroCta() {
   const [showSplitCta, setShowSplitCta] = useState(false)
@@ -13,18 +13,15 @@ export function HeroCta() {
   }, [])
 
   if (showSplitCta) {
+    // 未登入時兩顆都顯示（不知道對方報了哪一場）。/camp 與 /conference 會擋下
+    // 未登入的人並導去 /signin；登入後首頁改由 HeroSessionCta 依報名狀況顯示。
     return (
       <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-        {/* TODO: 營會期間應改連到參加者入口網站，目前先導向報名表單 */}
         <Button asChild size="xl" className="w-full sm:w-auto">
-          <Link href={camp.formUrl} target="_blank" rel="noopener noreferrer">
-            進入 CAMP
-          </Link>
+          <Link href="/camp">進入 CAMP</Link>
         </Button>
         <Button asChild size="xl" variant="secondary" className="w-full sm:w-auto">
-          <Link href={conference.formUrl} target="_blank" rel="noopener noreferrer">
-            進入 Conference
-          </Link>
+          <Link href="/conference">進入 Conference</Link>
         </Button>
       </div>
     )

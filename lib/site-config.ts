@@ -71,7 +71,6 @@ export const socialLinks = {
   linktree: "https://linktr.ee/passion.hsinchu",
 }
 
-// TODO: 請提供完整聯名教會名單並取代下方佔位資料（目前僅為暫時佔位文字，非真實教會名稱）
 export const galleryImages = [
   "00-1-1",
   "00-1-2",

@@ -39,7 +39,7 @@ export default async function Home() {
       <JsonLd data={{ "@context": "https://schema.org", "@graph": eventsJsonLd }} />
       <SiteHeader session={session ? { name: session.user.name } : null} />
       <main>
-        <HeroSection />
+        <HeroSection session={session} />
         <AboutSection />
         <ProgramSection />
         <VideoSection />

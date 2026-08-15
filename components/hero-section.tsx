@@ -1,9 +1,11 @@
 import Image from "next/image"
 import { HeroCta } from "@/components/hero-cta"
+import { HeroSessionCta } from "@/components/hero-session-cta"
 import SideRays from "@/components/side-rays"
+import type { AppSession } from "@/lib/session"
 import { siteConfig } from "@/lib/site-config"
 
-export function HeroSection() {
+export function HeroSection({ session }: { session: AppSession | null }) {
   return (
     <section
       id="top"
@@ -46,7 +48,7 @@ export function HeroSection() {
         </p>
 
         <div className="mt-10 w-full max-w-xs sm:max-w-none">
-          <HeroCta />
+          {session ? <HeroSessionCta session={session} /> : <HeroCta />}
         </div>
       </div>
     </section>

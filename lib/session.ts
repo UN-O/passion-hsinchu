@@ -101,6 +101,13 @@ export async function requireClaimedSession(): Promise<AppSession> {
 export async function requireFlowAccess(flow: Flow): Promise<AppSession> {
   const session = await requireClaimedSession()
 
+  // 工作人員兩邊都能看（首頁的「查看 CAMP／Conference 頁面」），不需要自己報名。
+  // 一樣要求 verified，否則 CAMP 那條無驗證的路就能繞進來。
+  if (session.user.role !== "attendee") {
+    if (!session.isVerified) redirect("/signin?need=google")
+    return session
+  }
+
   const enrolled = flow === "camp" ? session.enrollment?.camp : session.enrollment?.conference
   if (!enrolled) redirect("/")
 
