@@ -8,6 +8,11 @@ import { normalizeChurch, normalizeName } from "@/lib/normalize"
 // 生日、電話、緊急聯絡人、信仰問答等欄位一律不讀取、不落地——這個系統的
 // 名冊只需要姓名與教會，其他欄位是未成年人的個資，沒有理由經手。
 //
+// 這兩份試算表是「知道連結就能看」，匯出 CSV 網址本身等於一把不用密碼的鑰匙，
+// 千萬不能寫死在原始碼裡（之前就是這樣外洩過一次，整份原始表單回覆——含生日、
+// 電話、緊急聯絡人、信仰問答——任何人都能直接用那個網址下載）。網址只能放在
+// .env（不進版控），見 .env.example。
+//
 // 用法： pnpm db:sync-roster          先看預覽，不寫入
 //       pnpm db:sync-roster --apply  預覽後直接套用（新增/更新，絕不刪除）
 
@@ -20,18 +25,26 @@ type SheetSource = {
   churchPrefix: string
 }
 
+function requireSheetUrl(envVar: string): string {
+  const url = process.env[envVar]
+  if (!url) {
+    throw new Error(`缺少環境變數 ${envVar}，請參考 .env.example 設定試算表匯出網址`)
+  }
+  return url
+}
+
 const SOURCES: SheetSource[] = [
   {
     label: "CAMP",
     flow: "camp",
-    url: "https://docs.google.com/spreadsheets/d/REDACTED_CAMP_SHEET_ID/export?format=csv&gid=1101889416",
+    url: requireSheetUrl("CAMP_ROSTER_SHEET_URL"),
     namePrefix: "姓名",
     churchPrefix: "所屬教會",
   },
   {
     label: "CONFERENCE",
     flow: "conference",
-    url: "https://docs.google.com/spreadsheets/d/REDACTED_CONFERENCE_SHEET_ID/export?format=csv&gid=718985630",
+    url: requireSheetUrl("CONFERENCE_ROSTER_SHEET_URL"),
     namePrefix: "姓名",
     churchPrefix: "所屬教會",
   },
