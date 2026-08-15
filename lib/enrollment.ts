@@ -1,4 +1,4 @@
-import { and, asc, eq, ilike, or, sql } from "drizzle-orm"
+import { and, asc, count, eq, ilike, or, sql } from "drizzle-orm"
 
 import { db } from "@/db"
 import { enrollment } from "@/db/schema/app"
@@ -50,27 +50,37 @@ export async function listAllChurches(): Promise<string[]> {
   return rows.map((r) => r.church)
 }
 
+// ILIKE 的 % 和 _ 是萬用字元。使用者在搜尋框打這些字元時應該被當成字面值，
+// 否則搜 "_" 會把整份名冊都撈出來。
+function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`)
+}
+
+// 用正規化後的值做子字串比對，這樣後台搜尋跟登入比對的行為一致
+function searchCondition(trimmed: string) {
+  return or(
+    ilike(enrollment.nameNorm, `%${escapeLike(normalizeName(trimmed))}%`),
+    ilike(enrollment.churchNorm, `%${escapeLike(normalizeChurch(trimmed))}%`)
+  )
+}
+
 export async function searchEnrollments(query: string, limit = 50): Promise<Enrollment[]> {
   const trimmed = query.trim()
-  if (!trimmed) {
-    return db.select().from(enrollment).orderBy(asc(enrollment.church), asc(enrollment.name)).limit(limit)
-  }
+  const rows = db.select().from(enrollment)
 
-  // 用正規化後的值做前綴比對，這樣後台搜尋跟登入比對的行為一致
-  const nameNorm = normalizeName(trimmed)
-  const churchNorm = normalizeChurch(trimmed)
-
-  return db
-    .select()
-    .from(enrollment)
-    .where(
-      or(
-        ilike(enrollment.nameNorm, `%${nameNorm}%`),
-        ilike(enrollment.churchNorm, `%${churchNorm}%`)
-      )
-    )
+  return (trimmed ? rows.where(searchCondition(trimmed)) : rows)
     .orderBy(asc(enrollment.church), asc(enrollment.name))
     .limit(limit)
+}
+
+// 符合條件的總筆數。searchEnrollments 有 limit，所以後台不能拿回傳的長度當總數
+// —— 那會讓 278 人的名冊在畫面上顯示成 50 人，看起來像匯入掉了資料。
+export async function countEnrollments(query: string): Promise<number> {
+  const trimmed = query.trim()
+  const rows = db.select({ value: count() }).from(enrollment)
+  const [row] = await (trimmed ? rows.where(searchCondition(trimmed)) : rows)
+
+  return row?.value ?? 0
 }
 
 export async function getAllForDiff(): Promise<ExistingRow[]> {

@@ -1,14 +1,32 @@
-import { searchEnrollments } from "@/lib/enrollment"
+import Link from "next/link"
+
+import { countEnrollments, searchEnrollments } from "@/lib/enrollment"
+import { requireStaff } from "@/lib/session"
 import { CsvImport } from "./csv-import"
 import { EnrollmentRowForm } from "./enrollment-row-form"
+
+const DEFAULT_LIMIT = 50
+// 「顯示全部」仍然設上限：每一列都是一個 client component 表單，
+// 名冊將來變大時不要一次塞爆整頁。
+const MAX_LIMIT = 1000
 
 export default async function AdminEnrollmentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; all?: string }>
 }) {
-  const { q = "" } = await searchParams
-  const rows = await searchEnrollments(q)
+  // layout 也擋了一層，但這頁會吐出整份未成年人名冊，權限檢查就放在讀資料的地方，
+  // 不要只靠上層 layout。
+  await requireStaff()
+
+  const { q = "", all } = await searchParams
+  const showAll = all === "1"
+
+  const [rows, total] = await Promise.all([
+    searchEnrollments(q, showAll ? MAX_LIMIT : DEFAULT_LIMIT),
+    countEnrollments(q),
+  ])
+  const truncated = rows.length < total
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
@@ -33,7 +51,10 @@ export default async function AdminEnrollmentPage({
 
       <section className="mt-16">
         <h2 className="text-lg font-medium">
-          名冊 <span className="text-muted-foreground">（{rows.length}）</span>
+          名冊{" "}
+          <span className="text-muted-foreground">
+            （{truncated ? `顯示 ${rows.length} / 共 ${total}` : total}）
+          </span>
         </h2>
 
         <form method="get" className="mt-4 flex gap-2">
@@ -57,13 +78,28 @@ export default async function AdminEnrollmentPage({
             {q ? "找不到符合的資料。" : "名冊是空的，請先匯入。"}
           </p>
         ) : (
-          <ul className="mt-6 flex flex-col gap-8">
-            {rows.map((row) => (
-              <li key={row.id}>
-                <EnrollmentRowForm row={row} />
-              </li>
-            ))}
-          </ul>
+          <>
+            {truncated && (
+              <p className="mt-6 text-sm text-muted-foreground">
+                只顯示前 {rows.length} 筆。用上面的搜尋找人，或{" "}
+                <Link
+                  href={{ pathname: "/admin/enrollment", query: { ...(q ? { q } : {}), all: "1" } }}
+                  className="font-medium text-foreground underline underline-offset-4"
+                >
+                  顯示全部 {total} 筆
+                </Link>
+                。
+              </p>
+            )}
+
+            <ul className="mt-6 flex flex-col gap-8">
+              {rows.map((row) => (
+                <li key={row.id}>
+                  <EnrollmentRowForm row={row} />
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </section>
     </main>
