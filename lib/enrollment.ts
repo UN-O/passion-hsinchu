@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache"
 import { and, asc, count, eq, ilike, or, sql } from "drizzle-orm"
 
 import { db } from "@/db"
@@ -27,28 +28,42 @@ export async function getEnrollmentById(id: string): Promise<Enrollment | null> 
   return found ?? null
 }
 
+// 教會清單只有在匯入名冊時才會變，但 /signin/camp 是未登入就能開的公開頁面。
+// 不快取的話每一次造訪（包含爬蟲）都是一次查詢，對有額度限制的資料庫是白白消耗。
+// 匯入名冊後會 revalidateTag 讓它立刻更新，不必等 TTL 到期。
+export const CHURCH_LIST_TAG = "church-list"
+const CHURCH_LIST_TTL_SECONDS = 60 * 60
+
 // 簽到頁的教會下拉選單。只列出該場次真的有人報名的教會，
 // 所以名冊上沒有的教會不可能被選到。
-export async function listChurches(flow: "camp" | "conference"): Promise<string[]> {
-  const column = flow === "camp" ? enrollment.camp : enrollment.conference
-  const rows = await db
-    .selectDistinct({ church: enrollment.church })
-    .from(enrollment)
-    .where(eq(column, true))
-    .orderBy(asc(enrollment.church))
+export const listChurches = unstable_cache(
+  async (flow: "camp" | "conference"): Promise<string[]> => {
+    const column = flow === "camp" ? enrollment.camp : enrollment.conference
+    const rows = await db
+      .selectDistinct({ church: enrollment.church })
+      .from(enrollment)
+      .where(eq(column, true))
+      .orderBy(asc(enrollment.church))
 
-  return rows.map((r) => r.church)
-}
+    return rows.map((r) => r.church)
+  },
+  ["list-churches"],
+  { tags: [CHURCH_LIST_TAG], revalidate: CHURCH_LIST_TTL_SECONDS }
+)
 
 // /claim 用：認領時還不知道對方報的是哪一場，所以列出全部教會
-export async function listAllChurches(): Promise<string[]> {
-  const rows = await db
-    .selectDistinct({ church: enrollment.church })
-    .from(enrollment)
-    .orderBy(asc(enrollment.church))
+export const listAllChurches = unstable_cache(
+  async (): Promise<string[]> => {
+    const rows = await db
+      .selectDistinct({ church: enrollment.church })
+      .from(enrollment)
+      .orderBy(asc(enrollment.church))
 
-  return rows.map((r) => r.church)
-}
+    return rows.map((r) => r.church)
+  },
+  ["list-all-churches"],
+  { tags: [CHURCH_LIST_TAG], revalidate: CHURCH_LIST_TTL_SECONDS }
+)
 
 // ILIKE 的 % 和 _ 是萬用字元。使用者在搜尋框打這些字元時應該被當成字面值，
 // 否則搜 "_" 會把整份名冊都撈出來。
@@ -62,21 +77,6 @@ function searchCondition(trimmed: string) {
     ilike(enrollment.nameNorm, `%${escapeLike(normalizeName(trimmed))}%`),
     ilike(enrollment.churchNorm, `%${escapeLike(normalizeChurch(trimmed))}%`)
   )
-}
-
-// 首頁「聯名教會」用：名冊上實際有人報名的教會。
-//
-// 這裡用 church_norm 分組而不是直接 distinct church，否則「台北/臺北」這種
-// 同一間教會的寫法變體會在首頁重複出現兩次。listAllChurches 不能這樣做——
-// /claim 的下拉選單需要能對回名冊上的原始值。
-export async function listPartnerChurches(): Promise<string[]> {
-  const rows = await db
-    .select({ church: sql<string>`min(${enrollment.church})` })
-    .from(enrollment)
-    .groupBy(enrollment.churchNorm)
-    .orderBy(sql`min(${enrollment.church}) asc`)
-
-  return rows.map((row) => row.church)
 }
 
 export async function searchEnrollments(query: string, limit = 50): Promise<Enrollment[]> {

@@ -71,6 +71,20 @@ export const socialLinks = {
   linktree: "https://linktr.ee/passion.hsinchu",
 }
 
+// 首頁「聯名教會」跑馬燈。刻意寫死：首頁是公開頁面，這裡若去查資料庫，
+// 每一次造訪（含爬蟲）都會產生一次查詢，對有額度限制的資料庫是不必要的風險。
+//
+// TODO: 下面是佔位文字，不是真實教會名稱，請替換成正式名單。
+// 陣列留空的話整段跑馬燈不會顯示。
+export const partnerChurches: string[] = [
+  "新竹浸信會",
+  "長老教會 1",
+  "長老教會 2",
+  "長老教會 3",
+  "長老教會 4",
+  "長老教會 5",
+]
+
 export const galleryImages = [
   "00-1-1",
   "00-1-2",

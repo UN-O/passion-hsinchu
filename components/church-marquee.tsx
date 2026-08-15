@@ -1,10 +1,7 @@
-import { listPartnerChurches } from "@/lib/enrollment"
+import { partnerChurches } from "@/lib/site-config"
 
-export async function ChurchMarquee() {
-  // 名冊上真的有人報名的教會，不是寫死的清單
-  const partnerChurches = await listPartnerChurches()
-
-  // 名冊還沒匯入時整段不顯示，免得跑出一條空的跑馬燈
+// 寫死的清單，不查資料庫 —— 首頁是公開頁面，每次造訪都查一次是不必要的額度消耗。
+export function ChurchMarquee() {
   if (partnerChurches.length === 0) return null
 
   return (

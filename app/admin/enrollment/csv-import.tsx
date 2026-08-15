@@ -3,7 +3,8 @@
 import { useActionState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { confirmCsv, emptyPreview, previewCsv } from "./actions"
+import { confirmCsv, previewCsv } from "./actions"
+import { emptyPreview } from "./state"
 
 export function CsvImport() {
   const [preview, previewAction, previewPending] = useActionState(previewCsv, emptyPreview)

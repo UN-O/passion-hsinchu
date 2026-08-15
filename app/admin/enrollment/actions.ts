@@ -1,31 +1,19 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, updateTag } from "next/cache"
 
-import { diffEnrollments, parseEnrollmentCsv, type Diff, type RowError } from "@/lib/enrollment-csv"
+import { diffEnrollments, parseEnrollmentCsv } from "@/lib/enrollment-csv"
 import {
+  CHURCH_LIST_TAG,
   applyDiff,
   createEnrollment,
   getAllForDiff,
   updateEnrollment,
 } from "@/lib/enrollment"
 import { requireStaff } from "@/lib/session"
-
-export type PreviewState = {
-  csv: string
-  diff: Diff | null
-  errors: RowError[]
-  applied: { created: number; updated: number; unchanged: number } | null
-  message: string | null
-}
-
-export const emptyPreview: PreviewState = {
-  csv: "",
-  diff: null,
-  errors: [],
-  applied: null,
-  message: null,
-}
+// 只能匯入，不要從這裡再匯出：這個檔案是 "use server"，非函式的 export
+// 會被編譯成 server reference（見 state.ts 的說明）。
+import { emptyPreview, type PreviewState, type RowState } from "./state"
 
 // 第一階段：只解析與比對，不寫入任何東西
 export async function previewCsv(
@@ -70,6 +58,8 @@ export async function confirmCsv(
   const applied = await applyDiff(diff)
 
   revalidatePath("/admin/enrollment")
+  // updateTag 而不是 revalidateTag：這是 server action，匯入後要立刻讀到新資料
+  updateTag(CHURCH_LIST_TAG)
   return {
     csv: "",
     diff: null,
@@ -78,8 +68,6 @@ export async function confirmCsv(
     message: `已匯入：新增 ${applied.created} 筆、更新 ${applied.updated} 筆、未變更 ${applied.unchanged} 筆`,
   }
 }
-
-export type RowState = { error: string | null; message: string | null }
 
 // 現場救援：新增一筆（現場報名）或改掉打錯的名字。
 // 這是「比對不到就擋下來」政策底下唯一的救援路徑。
@@ -114,5 +102,7 @@ export async function saveEnrollment(
   }
 
   revalidatePath("/admin/enrollment")
+  // updateTag 而不是 revalidateTag：這是 server action，匯入後要立刻讀到新資料
+  updateTag(CHURCH_LIST_TAG)
   return { error: null, message: id ? "已更新" : "已新增" }
 }

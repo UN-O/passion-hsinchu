@@ -4,7 +4,8 @@ import { useActionState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { saveEnrollment, type RowState } from "./actions"
+import { saveEnrollment } from "./actions"
+import type { RowState } from "./state"
 
 const initial: RowState = { error: null, message: null }
 
