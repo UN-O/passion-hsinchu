@@ -1,3 +1,14 @@
+// metadataBase、canonical、sitemap、robots 和 JSON-LD 全都以這個網址為基準。
+// 這裡如果是錯的網域，分享連結時 OG 圖會從不存在的網址抓，預覽就是空的。
+//
+// 正式站與測試站網域不同，所以放環境變數。site-config 有被 client component
+// 匯入，必須用 NEXT_PUBLIC_ 前綴才會被打包進前端。
+function resolveSiteUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+  if (configured) return configured.replace(/\/+$/, "")
+  return "https://passion-hsinchu.com"
+}
+
 export const siteConfig = {
   name: "2026 Passion Camp",
   orgName: "PASSION® 新竹青年火熱",
@@ -7,7 +18,7 @@ export const siteConfig = {
   year: 2026,
   description:
     "五年，一場屬於新竹地區的營會。2026 PASSION 26《勇者世代》，8 月於新竹聖經書院／築聖館，火熱營會與火熱特會等你加入。",
-  url: "https://passion-hsinchu.example.com",
+  url: resolveSiteUrl(),
   venue: "新竹聖經書院／築聖館",
   venueAddress: "新竹市東區高峰路56號",
   contactPhone: "(03)-5236737#213",
@@ -61,15 +72,6 @@ export const socialLinks = {
 }
 
 // TODO: 請提供完整聯名教會名單並取代下方佔位資料（目前僅為暫時佔位文字，非真實教會名稱）
-export const partnerChurches = [
-  "新竹浸信會",
-  "長老教會 1",
-  "長老教會 2",
-  "長老教會 3",
-  "長老教會 4",
-  "長老教會 5",
-]
-
 export const galleryImages = [
   "00-1-1",
   "00-1-2",

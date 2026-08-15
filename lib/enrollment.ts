@@ -64,6 +64,21 @@ function searchCondition(trimmed: string) {
   )
 }
 
+// 首頁「聯名教會」用：名冊上實際有人報名的教會。
+//
+// 這裡用 church_norm 分組而不是直接 distinct church，否則「台北/臺北」這種
+// 同一間教會的寫法變體會在首頁重複出現兩次。listAllChurches 不能這樣做——
+// /claim 的下拉選單需要能對回名冊上的原始值。
+export async function listPartnerChurches(): Promise<string[]> {
+  const rows = await db
+    .select({ church: sql<string>`min(${enrollment.church})` })
+    .from(enrollment)
+    .groupBy(enrollment.churchNorm)
+    .orderBy(sql`min(${enrollment.church}) asc`)
+
+  return rows.map((row) => row.church)
+}
+
 export async function searchEnrollments(query: string, limit = 50): Promise<Enrollment[]> {
   const trimmed = query.trim()
   const rows = db.select().from(enrollment)
