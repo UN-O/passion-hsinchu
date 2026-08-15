@@ -11,7 +11,6 @@
     "db:generate": "node --env-file=.env node_modules/drizzle-kit/bin.cjs generate",
     "db:migrate": "node --env-file=.env node_modules/drizzle-kit/bin.cjs migrate",
     "db:studio": "node --env-file=.env node_modules/drizzle-kit/bin.cjs studio",
-    "db:seed-staff": "node --env-file=.env --import ./scripts/ts-hook.mjs ./scripts/seed-staff.ts",
     "db:sync-roster": "node --env-file=.env --import ./scripts/ts-hook.mjs ./scripts/sync-roster.ts",
     "db:sync-roster:apply": "node --env-file=.env --import ./scripts/ts-hook.mjs ./scripts/sync-roster.ts --apply"
   },

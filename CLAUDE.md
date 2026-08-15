@@ -20,8 +20,6 @@ UI 元件用 `pnpm dlx shadcn@latest add <component>` 安裝，加入後依 styl
 絕對不可以進版控：
 
 - 真實姓名、email、電話、生日、緊急聯絡人等個資
-  （工作人員名單放 `data/staff-emails.local.json`，已 gitignore；版控裡的
-  `data/staff-emails.ts` 只留空範本）
 - **任何「知道連結就能存取」的網址**——Google 試算表／表單回覆的匯出連結、
   Drive 分享連結、預簽章 URL。這種網址本身就是一把不用密碼的鑰匙，
   即使程式只解析其中兩個欄位，拿到網址的人能下載的是**整份原始資料**。
@@ -38,3 +36,31 @@ UI 元件用 `pnpm dlx shadcn@latest add <component>` 安裝，加入後依 styl
 外洩發生時，改 code 只能止血，**不等於撤銷**：外流的分享連結要去 Google
 改分享設定才會失效，外流的金鑰要重新產生。改 git 歷史也不會讓已經被
 clone 或已被 GitHub 快取的內容消失。
+
+## 工作人員名單
+
+名單只存在資料庫的 `staff_allowlist` 表，**不要**在 repo 裡放任何形式的名單檔
+（曾經有過 `data/staff-emails.ts`，那正是個資外洩的來源，已經移除）。
+
+`lib/staff.ts` 只用單一 email 去查角色，沒有任何端點會吐出整份名單。每次登入
+時 `auth.ts` 的 session hook 會比對這張表同步 `user.role`，所以加人之後對方
+**不需要重新註冊**，下次登入就生效；從表裡移除的人也會自動降回 `attendee`。
+
+增刪工作人員直接在 Neon 的 SQL editor 操作：
+
+```sql
+-- 加入／更新（email 一律小寫）
+insert into staff_allowlist (email, role, note)
+values ('someone@gmail.com', 'staff', '姓名備註')
+on conflict (email) do update
+  set role = excluded.role, note = excluded.note;
+
+-- 查看目前名單
+select email, role, note from staff_allowlist order by created_at;
+
+-- 移除
+delete from staff_allowlist where email = 'someone@gmail.com';
+```
+
+`role` 只能是 `staff` 或 `admin`（目前兩者權限相同，分開是為了之後要細分時
+不用改 schema）。

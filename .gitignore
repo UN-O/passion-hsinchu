@@ -20,9 +20,6 @@ yarn-error.log*
 .env*
 !.env.example
 
-# real staff roster (PII) — only the empty template in data/staff-emails.ts is tracked
-data/staff-emails.local.json
-
 # vercel
 .vercel
 
