@@ -71,7 +71,11 @@ export async function markFlowComplete(userId: string, flow: Flow) {
     })
 }
 
-// 登入成功後該去哪裡。兩場都報名的人要自己選，其餘直接進對應流程。
+// 登入成功後該去哪裡。
+//
+// opening 是一次性的開場，做完就不該再被丟回去（之前每次登入都會重跑）。
+// 已完成的人改送到他平常要用的地方：兩場都報名的人回首頁（首頁有兩個入口），
+// 只報一場的人直接進該場次的頁面。想重看開場仍然可以從那裡點進去。
 export function postSignInPath(session: AppSession): string {
   if (session.user.role !== "attendee") return "/admin/enrollment"
   if (!session.enrollment) return "/claim"
@@ -79,9 +83,16 @@ export function postSignInPath(session: AppSession): string {
   const { camp, conference } = session.enrollment
   // 只報 CONFERENCE 卻沒有 Google（不可能從正常路徑發生，但別讓他卡在迴圈）
   if (conference && !camp && !session.isVerified) return "/signin?need=google"
-  if (camp && conference) return "/opening"
-  if (conference) return "/opening/conference/welcome"
-  return "/opening/camp/welcome"
+
+  const done = session.completedFlows
+
+  if (camp && conference) {
+    // 兩場都走完才回首頁；只完成一場的人還要回選單去做另一場
+    return done.includes("camp") && done.includes("conference") ? "/" : "/opening"
+  }
+
+  if (conference) return done.includes("conference") ? "/conference" : "/opening/conference/welcome"
+  return done.includes("camp") ? "/camp" : "/opening/camp/welcome"
 }
 
 // 有 session、而且已經認領到名冊。未認領的 Google 使用者會被送去 /claim。

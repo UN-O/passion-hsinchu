@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+import { Button } from "@/components/ui/button"
 import { getAppSession, postSignInPath } from "@/lib/session"
 import { GoogleButton } from "./google-button"
 
@@ -49,6 +50,10 @@ export default async function SigninPage({
             用姓名進入 CAMP
           </Link>
         </div>
+
+        <Button asChild variant="outline" size="sm" className="mt-10">
+          <Link href="/">回首頁</Link>
+        </Button>
       </div>
     </main>
   )
