@@ -14,6 +14,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin/enrollment" className="text-sm font-medium">
             名冊管理
           </Link>
+          <Link href="/admin/points" className="text-sm font-medium">
+            CAMP 加分
+          </Link>
           <span className="ml-auto text-sm text-muted-foreground">
             {session.user.name}（{session.user.role}）
           </span>

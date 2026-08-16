@@ -1,6 +1,9 @@
 # CAMP 加分系統規格
 
-未實作。這份文件是動工前確認過的決策，實作完成後請把「待辦」段落刪掉。
+已實作。這份文件是動工前確認過的決策，保留下來當作規格說明。
+
+實作位置：`db/schema/app.ts` 的 `exp_record`、`lib/exp-regions.ts`（常數）、
+`lib/exp.ts`（查詢與快取）、`app/admin/points/`（後台）、`app/camp/points/`（學生端）。
 
 只給 CAMP，CONFERENCE 沒有這個部分。
 

@@ -1,6 +1,7 @@
 import {
   boolean,
   index,
+  integer,
   jsonb,
   pgTable,
   primaryKey,
@@ -61,4 +62,33 @@ export const flowProgress = pgTable(
     payload: jsonb("payload"),
   },
   (table) => [primaryKey({ columns: [table.userId, table.flow] })]
+)
+
+// CAMP 加分記錄。分數是「區」的總分，不追到個人。
+//
+// 各區總分一律用 sum(amount) 現算，不另外存一份冗餘的總分欄位——兩份數字
+// 遲早會對不起來，而且加分／修正／刪除三條路都要記得同步。
+// 多選分區時一區寫一列，這樣修正與刪除的單位跟畫面上看到的一列一致。
+//
+// 不會有扣分，所以修正與刪除都直接改這張表，不需要沖銷列。
+export const expRecord = pgTable(
+  "exp_record",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    region: text("region", { enum: ["bee", "clownfish", "groundhog"] }).notNull(),
+    amount: integer("amount").notNull(),
+    reason: text("reason"),
+    // 帳號被刪掉時記錄要留著（總分不能因此少一塊），所以是 set null 而不是 cascade。
+    createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+    // 加分當下的姓名快照。工作人員之後被移出名單、改名或刪帳號，
+    // 這筆記錄仍然看得出是誰加的。
+    createdByName: text("created_by_name").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    // 總分是 group by region 的聚合
+    index("exp_record_region_idx").on(table.region),
+    // 記錄列表一律照時間新到舊排
+    index("exp_record_created_at_idx").on(table.createdAt),
+  ]
 )

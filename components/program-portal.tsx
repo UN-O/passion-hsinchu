@@ -64,6 +64,12 @@ export function ProgramPortal({ flow, program, session }: ProgramPortalProps) {
             {completed ? "再看一次開場" : "開始開場"}
           </Link>
         </Button>
+        {/* 加分只有 CAMP 有，CONFERENCE 沒有這個部分 */}
+        {flow === "camp" && (
+          <Button asChild size="xl" variant="outline" className="w-full sm:w-auto">
+            <Link href="/camp/points">分區積分</Link>
+          </Button>
+        )}
         <Button asChild size="xl" variant="outline" className="w-full sm:w-auto">
           <Link href="/">回首頁</Link>
         </Button>
