@@ -77,16 +77,25 @@ export const socialLinks = {
 
 // 首頁「聯名教會」跑馬燈。刻意寫死：首頁是公開頁面，這裡若去查資料庫，
 // 每一次造訪（含爬蟲）都會產生一次查詢，對有額度限制的資料庫是不必要的風險。
-//
-// TODO: 下面是佔位文字，不是真實教會名稱，請替換成正式名單。
 // 陣列留空的話整段跑馬燈不會顯示。
+//
+// ⚠ 下面這份名單是從 scripts/rename-churches.ts 的正規名稱取出來的，那張表
+// 只涵蓋「有簡寫或錯字變體、需要被更名」的教會，**不是完整名單**——本來就
+// 拼寫正確的教會不會出現在那裡。請用下面這段 SQL 在 Neon console 撈出實際
+// 名冊上的完整清單，補齊後再把這段註記刪掉：
+//
+//   select min(church) as church
+//   from enrollment
+//   group by church_norm
+//   order by church;
 export const partnerChurches: string[] = [
+  "五尖長老教會",
+  "美崙長老教會",
+  "浸信會新人堂",
+  "新竹恩典教會",
   "新竹浸信會",
-  "長老教會 1",
-  "長老教會 2",
-  "長老教會 3",
-  "長老教會 4",
-  "長老教會 5",
+  "新竹雅歌靈糧堂",
+  "新豐磐石浸信會",
 ]
 
 export const galleryImages = [
