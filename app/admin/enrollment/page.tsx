@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { Button } from "@/components/ui/button"
 import { countEnrollments, searchEnrollments } from "@/lib/enrollment"
 import { requireStaff } from "@/lib/session"
 import { CsvImport } from "./csv-import"
@@ -30,6 +31,10 @@ export default async function AdminEnrollmentPage({
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+      <Button asChild variant="outline" size="sm" className="mb-8">
+        <Link href="/">回首頁</Link>
+      </Button>
+
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">名冊管理</h1>
       <p className="mt-3 text-sm text-muted-foreground">
         比對不到名冊的人無法進入，所以這裡是現場唯一的救援路徑。
