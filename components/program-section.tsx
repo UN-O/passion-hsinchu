@@ -60,9 +60,7 @@ function ProgramCard({ id, program }: { id: string; program: Program }) {
       </div>
 
       <Button asChild size="xl" className="w-full sm:w-auto">
-        <Link href={program.formUrl} target="_blank" rel="noopener noreferrer">
-          進入 {program.name.replace("PASSION ", "")}
-        </Link>
+        <Link href={program.signInPath}>登入 {program.name.replace("PASSION ", "")}</Link>
       </Button>
     </div>
   )

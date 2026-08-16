@@ -38,6 +38,8 @@ export type Program = {
   feeLabel: string
   feeNote: string
   formUrl: string
+  // 報名關閉後首頁改導向登入：CAMP 走姓名＋教會識別，CONFERENCE 需要 Google
+  signInPath: string
 }
 
 export const camp: Program = {
@@ -51,6 +53,7 @@ export const camp: Program = {
   feeNote: "費用包含住宿、膳食及紀念 T 恤",
   formUrl:
     "https://docs.google.com/forms/d/e/1FAIpQLSeymjgFHXkX1v94k8SzvVSaoa76vJ1dLavHsEMl2Q-Rwh33_w/viewform",
+  signInPath: "/signin/camp",
 }
 
 export const conference: Program = {
@@ -63,6 +66,7 @@ export const conference: Program = {
   feeNote: "報名費用以繳費時間為計算基準",
   formUrl:
     "https://docs.google.com/forms/d/e/1FAIpQLSeaykp8oCVFCfwvFKCs7vTPvfVxwaEUA7M-iKATPd-Yrt_oog/viewform",
+  signInPath: "/signin",
 }
 
 export const socialLinks = {

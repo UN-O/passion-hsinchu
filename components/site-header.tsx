@@ -53,14 +53,11 @@ export function SiteHeader({ session }: { session: HeaderSession | null }) {
               登出
             </Button>
           ) : (
-            <Button asChild variant="outline" size="sm">
-              <Link href="/signin">報到</Link>
+            // 報名已結束，只留一顆登入按鈕（原本的「報到」與「立即報名」是重複的入口）
+            <Button asChild size="sm">
+              <Link href="/signin">登入系統</Link>
             </Button>
           )}
-
-          <Button asChild size="sm">
-            <Link href="#camp">立即報名</Link>
-          </Button>
         </div>
       </div>
 

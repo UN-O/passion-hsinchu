@@ -27,9 +27,10 @@ export function HeroCta() {
     )
   }
 
+  // 報名已經結束，未登入的人要做的是登入而不是報名
   return (
     <Button asChild size="xl" className="w-full sm:w-auto">
-      <Link href="#register">立即報名</Link>
+      <Link href="/signin">登入系統</Link>
     </Button>
   )
 }

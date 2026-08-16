@@ -28,7 +28,8 @@ const eventsJsonLd = [camp, conference].map((program) => ({
     name: siteConfig.orgName,
     url: siteConfig.url,
   },
-  url: program.formUrl,
+  // 報名已結束，指向活動頁而不是已關閉的報名表單
+  url: siteConfig.url,
 }))
 
 export default async function Home() {
