@@ -1,7 +1,6 @@
 import Link from "next/link"
 
 import { ExpRegionChart } from "@/components/exp-region-chart"
-import { Button } from "@/components/ui/button"
 import { countExpRecords, getRegionStats, listExpRecords } from "@/lib/exp"
 import { requireStaff } from "@/lib/session"
 import { AwardFlow } from "./award-flow"
@@ -41,11 +40,7 @@ export default async function AdminPointsPage({
   const truncated = records.length < total
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <Button asChild variant="outline" size="sm" className="mb-8">
-        <Link href="/">回首頁</Link>
-      </Button>
-
+    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">CAMP 加分</h1>
       <p className="mt-3 text-sm text-muted-foreground">
         分數是區的總分，不記到個人。只有 CAMP 有加分，不會有扣分。
@@ -103,6 +98,6 @@ export default async function AdminPointsPage({
           </>
         )}
       </section>
-    </main>
+    </div>
   )
 }
