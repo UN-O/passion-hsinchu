@@ -105,9 +105,9 @@ export function AwardFlow() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
-      <div className="mx-auto flex min-h-svh max-w-xl flex-col px-4 py-6 sm:px-6 sm:py-10">
-        <div className="flex items-center gap-4">
+    <div className="fixed inset-0 z-50 h-svh overflow-hidden bg-background">
+      <div className="mx-auto flex h-full max-w-xl flex-col px-4 py-6 sm:px-6 sm:py-10">
+        <div className="flex shrink-0 items-center gap-4">
           <div className="flex flex-1 gap-1">
             {STEPS.map((value, index) => (
               <div key={value} className="h-1 flex-1 overflow-hidden rounded-full bg-white/15">
@@ -139,21 +139,23 @@ export function AwardFlow() {
             onClose={close}
           />
         ) : (
-          <form action={formAction} className="flex flex-1 flex-col">
+          <form action={formAction} className="flex flex-1 flex-col overflow-hidden">
             {regions.map((region) => (
               <input key={region} type="hidden" name="regions" value={region} />
             ))}
             <input type="hidden" name="amount" value={amount} />
             <input type="hidden" name="reason" value={reason} />
 
-            <h2 className="mt-12 text-2xl font-bold tracking-tight sm:text-3xl">
+            <h2 className="mt-6 shrink-0 text-2xl font-bold tracking-tight sm:mt-12 sm:text-3xl">
               {STEP_TITLES[step]}
               {step === "reason" && (
                 <span className="ml-3 text-sm font-normal text-muted-foreground">選填</span>
               )}
             </h2>
 
-            <div className="mt-10 flex-1">
+            {/* 這個區塊要能在極窄螢幕內部自己捲動，外層 overlay 才不用捲——
+                header 跟下面的按鈕永遠留在畫面上。 */}
+            <div className="mt-6 flex-1 overflow-y-auto sm:mt-10">
               {step === "region" && (
                 <RegionStep selected={regions} onToggle={toggleRegion} />
               )}
@@ -167,13 +169,13 @@ export function AwardFlow() {
                 />
               )}
               {step === "reason" && <ReasonStep reason={reason} onChange={setReason} />}
+
+              <Summary regions={regions} amount={amount} reason={reason} step={step} />
             </div>
 
-            <Summary regions={regions} amount={amount} reason={reason} step={step} />
+            {state.error && <p className="mt-4 shrink-0 text-sm text-destructive">{state.error}</p>}
 
-            {state.error && <p className="mt-4 text-sm text-destructive">{state.error}</p>}
-
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex shrink-0 gap-3">
               {stepIndex > 0 && (
                 <Button
                   type="button"
@@ -367,11 +369,38 @@ function Summary({
   const trimmed = reason.trim()
 
   return (
-    <p className="mt-10 border-t border-border pt-4 text-sm text-muted-foreground">
+    <p className="mt-6 border-t border-border pt-4 text-sm text-muted-foreground sm:mt-10">
       {labels.join("、")}
       {amount !== "" && ` 各 +${Number(amount).toLocaleString("en-US")} 分`}
       {trimmed && `／${trimmed}`}
     </p>
+  )
+}
+
+function DoneCheckmark() {
+  return (
+    <svg viewBox="0 0 52 52" className="size-14 text-primary" aria-hidden="true">
+      <circle
+        cx="26"
+        cy="26"
+        r="24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        pathLength={100}
+        className="animate-done-circle"
+      />
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M14 27l7 7 17-17"
+        pathLength={100}
+        className="animate-done-check"
+      />
+    </svg>
   )
 }
 
@@ -385,8 +414,11 @@ function DoneStep({
   onClose: () => void
 }) {
   return (
-    <div className="flex flex-1 flex-col">
-      <p className="mt-12 text-sm tracking-[0.2em] text-muted-foreground">已完成</p>
+    <div className="flex flex-1 flex-col overflow-y-auto">
+      <div className="mt-12">
+        <DoneCheckmark />
+      </div>
+      <p className="mt-6 text-sm tracking-[0.2em] text-muted-foreground">已完成</p>
       <p className="mt-6 text-5xl font-bold text-primary sm:text-6xl">
         +{awarded.amount.toLocaleString("en-US")}
       </p>

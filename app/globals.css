@@ -139,3 +139,34 @@
     transform: translateX(-50%);
   }
 }
+
+/* 加分完成的打勾回饋：圓圈跟勾勾各畫一次，勾勾接在圓圈畫完後才開始。
+   用 pathLength=100 讓兩個 path 都用 0–100 的 dash，不用管實際幾何長度。 */
+@keyframes done-draw {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-done-circle {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: done-draw 0.4s ease-out forwards;
+}
+
+.animate-done-check {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: done-draw 0.3s ease-out 0.35s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-done-circle,
+  .animate-done-check {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
