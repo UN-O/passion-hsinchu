@@ -60,6 +60,15 @@ export const auth = betterAuth({
     enabled: true,
     // 必須用 database：Vercel 是多實例，預設的 in-memory 完全擋不住
     storage: "database",
+    customRules: {
+      // better-auth 內建對所有 /sign-in* 路徑套用 3 次 / 10 秒（per IP）的
+      // 特殊規則，比 /camp/sign-in 自訂的還嚴一個數量級。營會現場一堆人
+      // 擠同一個 WiFi、同一個對外 IP，只要 10 秒內有 3 個人（不一定是同一人）
+      // 按到「用 Google 登入」，其他人就會被擋下來，看到的是「無法連線到
+      // Google」——其實是這裡的限流，不是 Google 真的連不上。放寬到跟
+      // /camp/sign-in 一致的量級。
+      "/sign-in/social": { window: 300, max: 20 },
+    },
   },
 
   // nextCookies() 一定要放在最後
