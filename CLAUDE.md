@@ -12,6 +12,16 @@ UI 元件用 `pnpm dlx shadcn@latest add <component>` 安裝，加入後依 styl
 
 **一律在 `2026` 分支上開發。** 不要另開 `claude/*` 分支。
 
+## 開發流程
+
+- **開始做新功能前先 `git fetch origin` 並同步 `origin/2026`**,避免在過期的
+  base 上開發、之後衝突一大片。
+- **push 之前先測過:** `pnpm lint`、`pnpm typecheck`,UI 變更要實際跑
+  `pnpm dev` 點過一次金流路徑(golden path）。全部過了才 push。
+- **push 之後產生一份給 codebase 管理者看的摘要**,內容用繁體中文、條列式,
+  讓 contributor 可以直接複製貼到 LINE 群組:改了什麼、為什麼改、有沒有需要
+  管理者額外處理的事(例如要手動跑 migration、要在 Neon 加白名單等)。
+
 ## 資安規則（這個 repo 是 public，且處理未成年人個資）
 
 這個專案的名冊來自 Google 表單，包含未成年人的姓名、教會、生日、電話、緊急聯絡人。

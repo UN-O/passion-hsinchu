@@ -6,21 +6,29 @@ import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
 import { Button } from "@/components/ui/button"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
 import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
-import { campOnboardingZones } from "@/lib/opening-camp-content"
+import { CampRulesRevealScreen } from "@/components/opening/camp/camp-rules-reveal"
+import { campOnboardingZones, campRuleScreens } from "@/lib/opening-camp-content"
 import { openingGradients } from "@/lib/opening-gradients"
 import { completeOpening } from "@/app/opening/actions"
 import { campStepFromPath, type CampStep } from "@/lib/opening-steps"
 
+const TOTAL_STEPS = campRuleScreens.length + campOnboardingZones.length
+
 function OnboardingContent() {
   const { index } = useImmersiveNav()
   const advance = useOpeningStepAdvance(null)
-  const zone = campOnboardingZones[index]
-  const isLast = index === campOnboardingZones.length - 1
+  const isLast = index === TOTAL_STEPS - 1
+
+  if (index < campRuleScreens.length) {
+    return <CampRulesRevealScreen screen={campRuleScreens[index]} screenIndex={index} onAdvance={advance} />
+  }
+
+  const zone = campOnboardingZones[index - campRuleScreens.length]
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 px-6 text-center">
       <p className="text-sm tracking-[0.2em] text-white/60">
-        {index + 1} / {campOnboardingZones.length}
+        {index + 1} / {TOTAL_STEPS}
       </p>
       <h2 className="text-2xl font-bold sm:text-3xl">{zone.title}</h2>
       <p className="max-w-sm text-white/80">{zone.body}</p>
@@ -49,7 +57,7 @@ export function CampOnboardingStep({ onStepChange }: { onStepChange: (step: Camp
         background={{ type: "shader", colors: openingGradients.campOnboarding }}
         enableTapZones={false}
         enableSwipe={false}
-        totalSteps={campOnboardingZones.length}
+        totalSteps={TOTAL_STEPS}
         index={index}
         onIndexChange={setIndex}
         progress={{ mode: "manual", value: 0 }}
