@@ -4,7 +4,7 @@ import "./globals.css"
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { JsonLd } from "@/components/json-ld";
-import { siteConfig } from "@/lib/site-config";
+import { siteConfig, socialLinks } from "@/lib/site-config";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -54,6 +54,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   viewportFit: "cover",
+  themeColor: "#F6ED8E",
 }
 
 const organizationJsonLd = {
@@ -68,6 +69,8 @@ const organizationJsonLd = {
     addressLocality: "新竹市",
     addressCountry: "TW",
   },
+  // 讓 Google 把這些社群帳號跟同一個 Organization 對起來（Knowledge Panel）。
+  sameAs: [socialLinks.instagram, socialLinks.youtube, socialLinks.linktree],
 }
 
 export default function RootLayout({

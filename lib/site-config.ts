@@ -34,6 +34,10 @@ export type Program = {
   audience: string
   dateLabel: string
   timeEntries: string[]
+  // 給 JSON-LD Event 用的機讀時間（ISO 8601，含時區）。Google 的
+  // 結構化資料驗證把 startDate 列為必填，缺了它 Event 完全不會有 rich result 資格。
+  startDateISO: string
+  endDateISO: string
   durationLabel?: string
   feeLabel: string
   feeNote: string
@@ -48,6 +52,8 @@ export const camp: Program = {
   audience: "國中至大學學生",
   dateLabel: "8.25 - 8.27（二）-（四）",
   timeEntries: ["8/25（二）13:00", "8/27（四）17:00"],
+  startDateISO: "2026-08-25T13:00:00+08:00",
+  endDateISO: "2026-08-27T17:00:00+08:00",
   durationLabel: "三天兩夜",
   feeLabel: "早鳥 3,300 元（4/25-5/31）／火熱報名 3,500 元（6/1-8/16）",
   feeNote: "費用包含住宿、膳食及紀念 T 恤",
@@ -62,6 +68,8 @@ export const conference: Program = {
   audience: "20 歲以上社青",
   dateLabel: "8.28 - 8.29（五）-（六）",
   timeEntries: ["8/28（五）19:00-21:00", "8/29（六）14:00-21:00"],
+  startDateISO: "2026-08-28T19:00:00+08:00",
+  endDateISO: "2026-08-29T21:00:00+08:00",
   feeLabel: "早鳥 1,200 元（4/25-5/31）／火熱報名 1,500 元（6/1-8/16）",
   feeNote: "報名費用以繳費時間為計算基準",
   formUrl:

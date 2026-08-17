@@ -16,13 +16,23 @@ const eventsJsonLd = [camp, conference].map((program) => ({
   "@type": "Event",
   name: program.name,
   description: `${program.audience}｜${program.timeEntries.join("、")}`,
+  // Google 的結構化資料驗證把 startDate 列為必填，之前沒填會讓 Event
+  // 完全不具備 rich result 資格。
+  startDate: program.startDateISO,
+  endDate: program.endDateISO,
   eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
   eventStatus: "https://schema.org/EventScheduled",
   location: {
     "@type": "Place",
     name: siteConfig.venue,
-    address: siteConfig.venueAddress,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: siteConfig.venueAddress,
+      addressLocality: "新竹市",
+      addressCountry: "TW",
+    },
   },
+  image: [`${siteConfig.url}/og-image.jpg`],
   organizer: {
     "@type": "Organization",
     name: siteConfig.orgName,
