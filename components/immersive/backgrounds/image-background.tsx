@@ -10,12 +10,13 @@ export type ImageBackgroundProps = {
 export function ImageBackground({ src, alt = "", priority, objectPosition }: ImageBackgroundProps) {
   return (
     <Image
+      key={src}
       src={src}
       alt={alt}
       fill
       priority={priority}
       sizes="100vw"
-      className="object-cover"
+      className="object-cover animate-in fade-in-0 duration-500"
       style={objectPosition ? { objectPosition } : undefined}
     />
   )

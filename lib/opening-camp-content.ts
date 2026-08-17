@@ -110,26 +110,12 @@ export const campOnboardingZones: { title: string; body: string }[] = [
   { title: "集合廣場", body: "每天的大堂聚會與宣布事項，都會在這裡進行。" },
 ]
 
-export type CampRuleScreen =
-  | { kind: "title"; title: string; subtitle: string }
-  | { kind: "rule"; label: string; lines: string[] }
-
-// 營會守則：onboarding 的開場段落，一頁一條守則，配合燈光聚焦動畫呈現
-export const campRuleScreens: CampRuleScreen[] = [
-  { kind: "title", title: "營會守則", subtitle: "THE 101 RULES" },
-  {
-    kind: "rule",
-    label: "守則一",
-    lines: ["我愛我的小隊長，", "我愛我的小隊員！", "我絕對不會棄他們不顧，", "置他們於水火！"],
-  },
-  {
-    kind: "rule",
-    label: "守則二",
-    lines: ["我會用盡全心全力！", "不放過一分一秒，", "充滿熱情投入在 PASSION CAMP 裡面！"],
-  },
-  {
-    kind: "rule",
-    label: "守則三",
-    lines: ["雖然身邊夥伴超可愛，", "但我會專心聚會！", "真的啦！我今年真的有在努力啦！"],
-  },
+// 營會守則：onboarding 的開場段落，一頁一張設計好的圖（標題頁 + 守則一～五）
+export const campRuleImages = [
+  "/images/營會守則0.jpg",
+  "/images/營會守則1.jpg",
+  "/images/營會守則2.jpg",
+  "/images/營會守則3.jpg",
+  "/images/營會守則4.jpg",
+  "/images/營會守則5.jpg",
 ]

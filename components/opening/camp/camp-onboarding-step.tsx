@@ -7,23 +7,23 @@ import { Button } from "@/components/ui/button"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
 import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
 import { CampRulesRevealScreen } from "@/components/opening/camp/camp-rules-reveal"
-import { campOnboardingZones, campRuleScreens } from "@/lib/opening-camp-content"
+import { campOnboardingZones, campRuleImages } from "@/lib/opening-camp-content"
 import { openingGradients } from "@/lib/opening-gradients"
 import { completeOpening } from "@/app/opening/actions"
 import { campStepFromPath, type CampStep } from "@/lib/opening-steps"
 
-const TOTAL_STEPS = campRuleScreens.length + campOnboardingZones.length
+const TOTAL_STEPS = campRuleImages.length + campOnboardingZones.length
 
 function OnboardingContent() {
   const { index } = useImmersiveNav()
   const advance = useOpeningStepAdvance(null)
   const isLast = index === TOTAL_STEPS - 1
 
-  if (index < campRuleScreens.length) {
-    return <CampRulesRevealScreen screen={campRuleScreens[index]} screenIndex={index} onAdvance={advance} />
+  if (index < campRuleImages.length) {
+    return <CampRulesRevealScreen onAdvance={advance} />
   }
 
-  const zone = campOnboardingZones[index - campRuleScreens.length]
+  const zone = campOnboardingZones[index - campRuleImages.length]
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 px-6 text-center">
@@ -54,7 +54,12 @@ export function CampOnboardingStep({ onStepChange }: { onStepChange: (step: Camp
   return (
     <OpeningTransitionProvider onNavigate={(path) => onStepChange(campStepFromPath(path))}>
       <ImmersiveScreen
-        background={{ type: "shader", colors: openingGradients.campOnboarding }}
+        background={
+          index < campRuleImages.length
+            ? { type: "image", src: campRuleImages[index], priority: index === 0 }
+            : { type: "shader", colors: openingGradients.campOnboarding }
+        }
+        scrim={index < campRuleImages.length ? false : true}
         enableTapZones={false}
         enableSwipe={false}
         totalSteps={TOTAL_STEPS}
