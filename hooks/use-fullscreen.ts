@@ -1,15 +1,25 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react"
+
+function subscribeNever() {
+  return () => {}
+}
+
+function getFullscreenSupported() {
+  return typeof document !== "undefined" && document.fullscreenEnabled === true
+}
+
+function getFullscreenSupportedServer() {
+  return false
+}
 
 export function useFullscreen<T extends HTMLElement>() {
   const ref = useRef<T>(null)
-  const [isSupported, setIsSupported] = useState(false)
+  const detectedSupport = useSyncExternalStore(subscribeNever, getFullscreenSupported, getFullscreenSupportedServer)
+  const [unsupported, setUnsupported] = useState(false)
+  const isSupported = detectedSupport && !unsupported
   const [isFullscreen, setIsFullscreen] = useState(false)
-
-  useEffect(() => {
-    setIsSupported(typeof document !== "undefined" && document.fullscreenEnabled === true)
-  }, [])
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(document.fullscreenElement === ref.current)
@@ -26,7 +36,7 @@ export function useFullscreen<T extends HTMLElement>() {
         await ref.current.requestFullscreen()
       }
     } catch {
-      setIsSupported(false)
+      setUnsupported(true)
     }
   }, [])
 

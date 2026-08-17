@@ -8,7 +8,7 @@ const PRELOAD_TIMEOUT_MS = 4000
 
 export function FlowPreloadGate({ images, children }: { images: string[]; children: React.ReactNode }) {
   const [loadedCount, setLoadedCount] = useState(0)
-  const [ready, setReady] = useState(images.length === 0)
+  const ready = images.length === 0 || loadedCount >= images.length
 
   useEffect(() => {
     if (images.length === 0) return
@@ -25,8 +25,9 @@ export function FlowPreloadGate({ images, children }: { images: string[]; childr
       img.src = src
     })
 
+    // 逾時就視為「已載入」放行，避免圖片卡住整個 preload 卡關
     const timeoutId = setTimeout(() => {
-      if (!cancelled) setReady(true)
+      if (!cancelled) setLoadedCount(images.length)
     }, PRELOAD_TIMEOUT_MS)
 
     return () => {
@@ -34,10 +35,6 @@ export function FlowPreloadGate({ images, children }: { images: string[]; childr
       clearTimeout(timeoutId)
     }
   }, [images])
-
-  useEffect(() => {
-    if (images.length > 0 && loadedCount >= images.length) setReady(true)
-  }, [images, loadedCount])
 
   if (!ready) {
     return (

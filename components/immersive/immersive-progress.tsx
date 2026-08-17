@@ -24,9 +24,18 @@ export function ImmersiveProgress({
   const startRef = useRef<number | null>(null)
   const elapsedBeforePauseRef = useRef(0)
 
+  // 換頁／換時長時要讓進度條立刻歸零而不是等下一個動畫影格，所以在 render
+  // 期間直接調整 state（React 官方建議的 "adjusting state when a prop
+  // changes" 寫法），計時用的 ref 則留在下面的 effect 裡重置。
+  const resetSignal = mode === "auto" ? `${index}-${durationMs}` : null
+  const [prevResetSignal, setPrevResetSignal] = useState(resetSignal)
+  if (resetSignal !== null && resetSignal !== prevResetSignal) {
+    setPrevResetSignal(resetSignal)
+    setAutoFill(0)
+  }
+
   useEffect(() => {
     if (mode !== "auto") return
-    setAutoFill(0)
     startRef.current = null
     elapsedBeforePauseRef.current = 0
   }, [mode, index, durationMs])

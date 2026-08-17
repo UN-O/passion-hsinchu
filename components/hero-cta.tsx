@@ -1,16 +1,26 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { heroSwitchDate } from "@/lib/site-config"
 
-export function HeroCta() {
-  const [showSplitCta, setShowSplitCta] = useState(false)
+function subscribeNever() {
+  return () => {}
+}
 
-  useEffect(() => {
-    setShowSplitCta(new Date() >= new Date(heroSwitchDate))
-  }, [])
+// 直接在 render 算會被靜態產生的頁面凍結在建置當下的時間，所以要等
+// client 端 mount 後才用真正的當下時間判斷；SSR 一律回傳 false 避免 hydration 對不上。
+function getShowSplitCta() {
+  return new Date() >= new Date(heroSwitchDate)
+}
+
+function getShowSplitCtaServer() {
+  return false
+}
+
+export function HeroCta() {
+  const showSplitCta = useSyncExternalStore(subscribeNever, getShowSplitCta, getShowSplitCtaServer)
 
   if (showSplitCta) {
     // 未登入時兩顆都顯示（不知道對方報了哪一場）。/camp 與 /conference 會擋下
