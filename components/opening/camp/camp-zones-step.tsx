@@ -25,7 +25,7 @@ export function CampZonesStep({ onStepChange }: { onStepChange: (step: CampStep)
           <form action={completeOpening}>
             <input type="hidden" name="flow" value="camp" />
             <Button size="lg" type="submit">
-              完成
+              開始冒險
             </Button>
           </form>
         </div>

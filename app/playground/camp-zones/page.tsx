@@ -11,7 +11,7 @@ export default function CampZonesPlaygroundPage() {
     <ImmersiveScreen background={{ type: "shader", colors: openingGradients.campOnboarding }}>
       <div className="flex h-full flex-col items-center justify-start gap-8 px-6 py-12 text-center">
         <CampZonesGrid zones={campZoneScreens} />
-        <Button size="lg">完成</Button>
+        <Button size="lg">開始冒險</Button>
       </div>
     </ImmersiveScreen>
   )
