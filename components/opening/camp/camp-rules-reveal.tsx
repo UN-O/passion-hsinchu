@@ -28,13 +28,46 @@ function PassionLogo() {
   )
 }
 
+// 「THE COURAGE GENERATIONS! 勇者世代」標語圖，設計稿裡本來就是深灰色，
+// 黃色背景上不用另外調色。
+function CourageGenerationsTagline({ className = "" }: { className?: string }) {
+  return (
+    <Image
+      src="/images/courage-generations-tagline.png"
+      alt="THE COURAGE GENERATIONS! 勇者世代"
+      width={1200}
+      height={187}
+      className={`h-auto ${className}`}
+    />
+  )
+}
+
+// 「WORSHIP —— RELATION —— EXPERIENCE」底線，從原始設計稿（PASSION資產 1）
+// 裁出來的那一小條，只用在標題頁、標題下方。
+function WorshipRelationExperienceDivider({ className = "" }: { className?: string }) {
+  return (
+    <Image
+      src="/images/worship-relation-experience.png"
+      alt="WORSHIP RELATION EXPERIENCE"
+      width={1000}
+      height={19}
+      className={`h-auto ${className}`}
+    />
+  )
+}
+
 export function CampRulesTitleScreen({ onAdvance }: { onAdvance: () => void }) {
   return (
     <div className="relative flex h-full flex-col items-center gap-8 px-6 pt-[30vh] text-center">
       <PassionLogo />
-      <h1 className={`${mantouSans.className} text-xl sm:text-9xl`} style={HEADING_STROKE_STYLE}>
+      <CourageGenerationsTagline className="w-56 sm:w-64" />
+      <h1
+        className={`${mantouSans.className} text-[clamp(2rem,9vw,4.5rem)]`}
+        style={HEADING_STROKE_STYLE}
+      >
         {campRulesTitle}
       </h1>
+      <WorshipRelationExperienceDivider className="w-64 sm:w-72" />
       <Button size="lg" variant="outline" onClick={onAdvance}>
         下一步
       </Button>
@@ -52,20 +85,24 @@ export function CampRuleContentScreen({
   return (
     <div className="relative flex h-full flex-col items-center gap-6 px-6 pt-[24vh] text-center">
       <PassionLogo />
-      <h2 className={`${mantouSans.className} text-3xl sm:text-5xl`} style={HEADING_STROKE_STYLE}>
+      <h2
+        className={`${mantouSans.className} text-[clamp(1.75rem,7vw,3rem)]`}
+        style={HEADING_STROKE_STYLE}
+      >
         {screen.label}
       </h2>
       <div
-        className={`${genRyuMin.className} w-[74%] self-center text-left ml-[500px]`}
+        className={`${genRyuMin.className} w-[min(74%,28rem)] self-center text-left`}
         style={{ color: BODY_TEXT_COLOR, transform: "skewX(-5deg)" }}
       >
         {screen.lines.map((line) => (
-          <p key={line} className="text-lg sm:text-3xl">
+          <p key={line} className="text-[clamp(1rem,4.5vw,1.5rem)]">
             {line}
           </p>
         ))}
       </div>
       {children}
+      <CourageGenerationsTagline className="mt-auto w-40 pt-6 sm:w-48" />
     </div>
   )
 }

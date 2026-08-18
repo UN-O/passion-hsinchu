@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 // 心得筆記跟分享目前都還沒有後端可以存，先做成畫面上可以打字、
 // 「分享」呼叫瀏覽器原生分享（沒有就退回複製到剪貼簿），
 // 「傳送給官方 IG」還沒有真正的目的地，先停用。
+// camp、conference 的聚會內容頁共用這個元件。
 export function MeetingNotes() {
   const [note, setNote] = useState("")
   const [copied, setCopied] = useState(false)

@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
-import { MeetingNotes } from "@/app/camp/meeting/meeting-notes"
+import { MeetingNotes } from "@/components/meeting-notes"
 
 export default function CampMeetingPlaygroundPage() {
   return (

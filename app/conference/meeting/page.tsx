@@ -17,15 +17,15 @@ export const metadata: Metadata = {
 const PLACEHOLDER_SESSION_TITLE = "場次名稱尚未公布"
 const PLACEHOLDER_OUTLINE = "這裡先放佔位文字，等聚會大綱與 PPT 連結確定後補上。"
 
-export default async function CampMeetingPage() {
-  await requireFlowAccess("camp")
+export default async function ConferenceMeetingPage() {
+  await requireFlowAccess("conference")
 
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
       <PassionLogoHeader />
 
       <Button asChild size="icon" variant="outline" aria-label="返回" className="mt-10 rounded-full">
-        <Link href="/camp">
+        <Link href="/conference">
           <ArrowLeft />
         </Link>
       </Button>
