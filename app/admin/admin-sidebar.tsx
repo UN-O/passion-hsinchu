@@ -9,6 +9,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -19,6 +20,13 @@ import { cn } from "@/lib/utils"
 const NAV_ITEMS = [
   { href: "/admin/enrollment", label: "名冊管理" },
   { href: "/admin/points", label: "CAMP 加分" },
+] as const
+
+// 使用者完成開場後，/camp、/conference 會直接換成任務主頁，
+// 拿不到原本的「再看一次開場」入口，工作人員要改東西時留這個後門進去。
+const OPENING_PREVIEW_ITEMS = [
+  { href: "/opening/camp/welcome", label: "查看 CAMP 開場" },
+  { href: "/opening/conference/welcome", label: "查看 CONF 開場" },
 ] as const
 
 export function AdminSidebar({
@@ -63,6 +71,21 @@ export function AdminSidebar({
                   </SidebarMenuItem>
                 )
               })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>開場預覽</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {OPENING_PREVIEW_ITEMS.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild>
+                    <Link href={item.href}>{item.label}</Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
