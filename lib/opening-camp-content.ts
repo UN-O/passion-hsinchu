@@ -110,9 +110,11 @@ export const campOnboardingZones: { title: string; body: string }[] = [
   { title: "集合廣場", body: "每天的大堂聚會與宣布事項，都會在這裡進行。" },
 ]
 
-// 營會守則：onboarding 的開場段落，一頁一張設計好的圖（標題頁 + 守則一～五）
+// 營會守則：onboarding 的開場段落。標題頁改回文字排版（測試自訂字體用），
+// 守則一～五維持用設計好的圖。
+export const campRulesTitle = "營會守則"
+
 export const campRuleImages = [
-  "/images/營會守則0.jpg",
   "/images/營會守則1.jpg",
   "/images/營會守則2.jpg",
   "/images/營會守則3.jpg",

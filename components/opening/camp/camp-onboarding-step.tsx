@@ -6,24 +6,29 @@ import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
 import { Button } from "@/components/ui/button"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
 import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
-import { CampRulesRevealScreen } from "@/components/opening/camp/camp-rules-reveal"
+import { CampRulesRevealScreen, CampRulesTitleScreen } from "@/components/opening/camp/camp-rules-reveal"
 import { campOnboardingZones, campRuleImages } from "@/lib/opening-camp-content"
 import { openingGradients } from "@/lib/opening-gradients"
 import { completeOpening } from "@/app/opening/actions"
 import { campStepFromPath, type CampStep } from "@/lib/opening-steps"
 
-const TOTAL_STEPS = campRuleImages.length + campOnboardingZones.length
+const RULE_SCREENS_COUNT = 1 + campRuleImages.length // 標題頁（文字）+ 守則一～五（圖片）
+const TOTAL_STEPS = RULE_SCREENS_COUNT + campOnboardingZones.length
 
 function OnboardingContent() {
   const { index } = useImmersiveNav()
   const advance = useOpeningStepAdvance(null)
   const isLast = index === TOTAL_STEPS - 1
 
-  if (index < campRuleImages.length) {
+  if (index === 0) {
+    return <CampRulesTitleScreen onAdvance={advance} />
+  }
+
+  if (index < RULE_SCREENS_COUNT) {
     return <CampRulesRevealScreen onAdvance={advance} />
   }
 
-  const zone = campOnboardingZones[index - campRuleImages.length]
+  const zone = campOnboardingZones[index - RULE_SCREENS_COUNT]
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 px-6 text-center">
@@ -55,11 +60,11 @@ export function CampOnboardingStep({ onStepChange }: { onStepChange: (step: Camp
     <OpeningTransitionProvider onNavigate={(path) => onStepChange(campStepFromPath(path))}>
       <ImmersiveScreen
         background={
-          index < campRuleImages.length
-            ? { type: "image", src: campRuleImages[index], priority: index === 0 }
+          index > 0 && index < RULE_SCREENS_COUNT
+            ? { type: "image", src: campRuleImages[index - 1] }
             : { type: "shader", colors: openingGradients.campOnboarding }
         }
-        scrim={index < campRuleImages.length ? false : true}
+        scrim={index > 0 && index < RULE_SCREENS_COUNT ? false : true}
         enableTapZones={false}
         enableSwipe={false}
         totalSteps={TOTAL_STEPS}

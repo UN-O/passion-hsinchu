@@ -2,25 +2,36 @@
 
 import { useState } from "react"
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
-import { CampRulesRevealScreen } from "@/components/opening/camp/camp-rules-reveal"
+import { CampRulesRevealScreen, CampRulesTitleScreen } from "@/components/opening/camp/camp-rules-reveal"
 import { campRuleImages } from "@/lib/opening-camp-content"
+import { openingGradients } from "@/lib/opening-gradients"
+
+const TOTAL_STEPS = 1 + campRuleImages.length
 
 export default function CampRulesPlaygroundPage() {
   const [index, setIndex] = useState(0)
 
   return (
     <ImmersiveScreen
-      background={{ type: "image", src: campRuleImages[index], priority: index === 0 }}
-      scrim={false}
+      background={
+        index > 0
+          ? { type: "image", src: campRuleImages[index - 1] }
+          : { type: "shader", colors: openingGradients.campOnboarding }
+      }
+      scrim={index === 0}
       enableTapZones={false}
       enableSwipe={false}
-      totalSteps={campRuleImages.length}
+      totalSteps={TOTAL_STEPS}
       index={index}
       onIndexChange={setIndex}
       progress={{ mode: "manual", value: 0 }}
       onBack={() => setIndex(Math.max(index - 1, 0))}
     >
-      <CampRulesRevealScreen onAdvance={() => setIndex(Math.min(index + 1, campRuleImages.length - 1))} />
+      {index === 0 ? (
+        <CampRulesTitleScreen onAdvance={() => setIndex(1)} />
+      ) : (
+        <CampRulesRevealScreen onAdvance={() => setIndex(Math.min(index + 1, TOTAL_STEPS - 1))} />
+      )}
     </ImmersiveScreen>
   )
 }
