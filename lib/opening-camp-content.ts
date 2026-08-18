@@ -104,20 +104,45 @@ export function getCampProfileResult(aCount: number): CampProfileResult {
   return match ?? campProfileResults[2]
 }
 
-// TODO: 使用者尚未提供這兩個分區的實際內容，先放合理佔位文案
-export const campOnboardingZones: { title: string; body: string }[] = [
-  { title: "補給站", body: "報到、住宿、餐飲等生活資訊都在這裡説明。" },
-  { title: "集合廣場", body: "每天的大堂聚會與宣布事項，都會在這裡進行。" },
-]
-
-// 營會守則：onboarding 的開場段落。標題頁改回文字排版（測試自訂字體用），
-// 守則一～五維持用設計好的圖。
+// 營會守則：onboarding 的開場段落，標題頁 + 守則一～五，共 6 頁文字排版
+// （標題／標籤用饅頭黑體，內文用源流明體）。
 export const campRulesTitle = "營會守則"
 
-export const campRuleImages = [
-  "/images/營會守則1.jpg",
-  "/images/營會守則2.jpg",
-  "/images/營會守則3.jpg",
-  "/images/營會守則4.jpg",
-  "/images/營會守則5.jpg",
+export type CampRuleScreen = {
+  label: string
+  lines: string[]
+}
+
+export const campRuleScreens: CampRuleScreen[] = [
+  {
+    label: "守則一",
+    lines: ["我愛我的小隊長，", "我愛我的小隊員！", "我絕對不會棄他們不顧，", "置他們於水火！"],
+  },
+  {
+    label: "守則二",
+    lines: ["我會用盡全心全力！", "不放過一分一秒，", "充滿熱情投入在", "PASSION CAMP裡面！"],
+  },
+  {
+    label: "守則三",
+    lines: ["雖然身邊夥伴超可愛，", "但我會專心聚會！", "真的啦！", "我今年有在努力啦！"],
+  },
+  {
+    label: "守則四",
+    lines: ["我會用心愛護", "上帝所創造的地球，", "吃完飯做好垃圾分類！", "不亂吐痰打嗝！"],
+  },
+  {
+    label: "守則五",
+    lines: ["如果營會中", "我有任何的身體不適，", "我會即時回報給小隊長，", "安全第一！"],
+  },
+]
+
+// 營會守則之後的「介紹 3 區」段落：一頁放三格資訊，先放佔位文字＋預設視覺
+// （跟營會守則那 6 頁是不同視覺風格，使用者說之後會另外給設計），
+// icon 已經是使用者提供的吉祥物圖。
+export type CampZoneScreen = { title: string; body: string; icon: string }
+
+export const campZoneScreens: CampZoneScreen[] = [
+  { title: "土撥鼠區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-1.png" },
+  { title: "小丑魚區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-2.png" },
+  { title: "雄蜂區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-3.png" },
 ]

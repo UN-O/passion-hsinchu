@@ -9,6 +9,7 @@ type ImmersiveProgressProps = {
   durationMs?: number
   value?: number
   onSegmentComplete?: () => void
+  fillClassName?: string
 }
 
 export function ImmersiveProgress({
@@ -17,6 +18,7 @@ export function ImmersiveProgress({
   durationMs = 5000,
   value = 1,
   onSegmentComplete,
+  fillClassName = "bg-primary",
 }: ImmersiveProgressProps) {
   const { index, paused, next } = useImmersiveNav()
   const [autoFill, setAutoFill] = useState(0)
@@ -76,7 +78,7 @@ export function ImmersiveProgress({
       {Array.from({ length: segments }).map((_, i) => (
         <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/30">
           <div
-            className="h-full bg-primary"
+            className={`h-full ${fillClassName}`}
             style={{ width: `${i < index ? 100 : i === index ? activeFill * 100 : 0}%` }}
           />
         </div>

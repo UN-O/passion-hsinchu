@@ -14,6 +14,7 @@ type ImmersiveProgressConfig = {
   durationMs?: number
   value?: number
   onSegmentComplete?: () => void
+  fillClassName?: string
 }
 
 type ImmersiveScreenProps = {
@@ -113,6 +114,7 @@ export function ImmersiveScreen({
                 durationMs={progress.durationMs}
                 value={progress.value}
                 onSegmentComplete={progress.onSegmentComplete}
+                fillClassName={progress.fillClassName}
               />
             ) : (
               <div className="flex-1" />

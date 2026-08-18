@@ -6,9 +6,10 @@ import { CampWelcomeStep } from "./camp-welcome-step"
 import { CampQuizStep, quizImages } from "./camp-quiz-step"
 import { CampResultStep, resultImages } from "./camp-result-step"
 import { CampOnboardingStep } from "./camp-onboarding-step"
+import { CampZonesStep, zoneImages } from "./camp-zones-step"
 import type { CampStep } from "@/lib/opening-steps"
 
-const CAMP_PRELOAD_IMAGES = Array.from(new Set([...quizImages, ...resultImages]))
+const CAMP_PRELOAD_IMAGES = Array.from(new Set([...quizImages, ...resultImages, ...zoneImages]))
 
 export function CampFlowScreens({ initialStep }: { initialStep: CampStep }) {
   const [step, setStep] = useState<CampStep>(initialStep)
@@ -24,6 +25,7 @@ export function CampFlowScreens({ initialStep }: { initialStep: CampStep }) {
       {step === "quiz" && <CampQuizStep onStepChange={onStepChange} />}
       {step === "result" && <CampResultStep onStepChange={onStepChange} />}
       {step === "onboarding" && <CampOnboardingStep onStepChange={onStepChange} />}
+      {step === "zones" && <CampZonesStep onStepChange={onStepChange} />}
     </FlowPreloadGate>
   )
 }

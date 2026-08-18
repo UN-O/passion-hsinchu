@@ -1,4 +1,4 @@
-export const CAMP_STEPS = ["welcome", "quiz", "result", "onboarding"] as const
+export const CAMP_STEPS = ["welcome", "quiz", "result", "onboarding", "zones"] as const
 export type CampStep = (typeof CAMP_STEPS)[number]
 
 export function resolveCampStep(slug: string[] | undefined): CampStep | null {

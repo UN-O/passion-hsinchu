@@ -29,6 +29,7 @@ next-env.d.ts
 
 # macOS AppleDouble files (external volumes)
 ._*
+.DS_Store
 
 # Claude Code local tooling
 .claude/

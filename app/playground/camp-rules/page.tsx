@@ -1,36 +1,45 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
-import { CampRulesRevealScreen, CampRulesTitleScreen } from "@/components/opening/camp/camp-rules-reveal"
-import { campRuleImages } from "@/lib/opening-camp-content"
-import { openingGradients } from "@/lib/opening-gradients"
+import { Button } from "@/components/ui/button"
+import { CampRuleContentScreen, CampRulesTitleScreen } from "@/components/opening/camp/camp-rules-reveal"
+import { campRuleScreens } from "@/lib/opening-camp-content"
 
-const TOTAL_STEPS = 1 + campRuleImages.length
+const TOTAL_STEPS = 1 + campRuleScreens.length
 
 export default function CampRulesPlaygroundPage() {
+  const router = useRouter()
   const [index, setIndex] = useState(0)
+  const advance = () => {
+    if (index === TOTAL_STEPS - 1) {
+      router.push("/playground/camp-zones")
+      return
+    }
+    setIndex((i) => Math.min(i + 1, TOTAL_STEPS - 1))
+  }
 
   return (
     <ImmersiveScreen
-      background={
-        index > 0
-          ? { type: "image", src: campRuleImages[index - 1] }
-          : { type: "shader", colors: openingGradients.campOnboarding }
-      }
-      scrim={index === 0}
+      background={{ type: "color", color: "#feed74" }}
+      scrim={false}
       enableTapZones={false}
       enableSwipe={false}
       totalSteps={TOTAL_STEPS}
       index={index}
       onIndexChange={setIndex}
-      progress={{ mode: "manual", value: 0 }}
-      onBack={() => setIndex(Math.max(index - 1, 0))}
+      progress={{ mode: "manual", value: 0, fillClassName: "bg-[#2f2a22]" }}
+      onBack={() => setIndex((i) => Math.max(i - 1, 0))}
     >
       {index === 0 ? (
-        <CampRulesTitleScreen onAdvance={() => setIndex(1)} />
+        <CampRulesTitleScreen onAdvance={advance} />
       ) : (
-        <CampRulesRevealScreen onAdvance={() => setIndex(Math.min(index + 1, TOTAL_STEPS - 1))} />
+        <CampRuleContentScreen screen={campRuleScreens[index - 1]}>
+          <Button size="lg" variant="outline" onClick={advance}>
+            {index === TOTAL_STEPS - 1 ? "完成" : "下一步"}
+          </Button>
+        </CampRuleContentScreen>
       )}
     </ImmersiveScreen>
   )
