@@ -144,5 +144,5 @@ export type CampZoneScreen = { title: string; body: string; icon: string }
 export const campZoneScreens: CampZoneScreen[] = [
   { title: "土撥鼠區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-1.png" },
   { title: "小丑魚區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-2.png" },
-  { title: "雄蜂區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-3.png" },
+  { title: "熊蜂區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-3.png" },
 ]
