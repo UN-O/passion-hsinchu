@@ -9,13 +9,12 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 
-// 聚會流程表、住房資料還沒有真的內容，先用同一張佔位圖片彈窗顯示，
-// 等資料確定後換成真的圖片／內容。
+// 住房資料還沒有真的內容，先用佔位圖片頂著，等資料確定後換成真的圖片。
 const PLACEHOLDER_IMAGE_SRC = "/images/camp-info-placeholder.jpg"
 
 const IMAGE_MENU_ITEMS = [
-  { key: "schedule", label: "聚會流程表" },
-  { key: "lodging", label: "住房資料" },
+  { key: "schedule", label: "聚會流程表", imageSrc: "/images/camp-schedule.jpg" },
+  { key: "lodging", label: "住房資料", imageSrc: PLACEHOLDER_IMAGE_SRC },
 ] as const
 
 type ImageMenuKey = (typeof IMAGE_MENU_ITEMS)[number]["key"]
@@ -24,7 +23,7 @@ export function CampSidebar() {
   const [open, setOpen] = useState(false)
   const [activeImage, setActiveImage] = useState<ImageMenuKey | null>(null)
 
-  const activeLabel = IMAGE_MENU_ITEMS.find((item) => item.key === activeImage)?.label ?? ""
+  const activeItem = IMAGE_MENU_ITEMS.find((item) => item.key === activeImage)
 
   return (
     <>
@@ -80,24 +79,29 @@ export function CampSidebar() {
         </SheetContent>
       </Sheet>
 
-      {/* 聚會流程表／住房資料：不跳頁，彈出圖片視窗，右上角用跟側邊欄一樣的 X 按鈕關閉。 */}
+      {/* 聚會流程表／住房資料：不跳頁，彈出圖片視窗，右上角用跟側邊欄一樣的 X 按鈕關閉。
+          流程表圖片很長，加 max-h + overflow-y-auto，矮螢幕也看得到完整內容。 */}
       <Dialog open={activeImage !== null} onOpenChange={(next) => !next && setActiveImage(null)}>
         <DialogContent
           showCloseButton={false}
-          className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl border-none bg-transparent p-0 sm:max-w-sm"
+          className="max-h-[85vh] max-w-[calc(100%-2rem)] gap-0 overflow-y-auto rounded-3xl border-none bg-transparent p-0 sm:max-w-sm"
         >
-          <DialogTitle className="sr-only">{activeLabel}</DialogTitle>
-          <DialogClose className="absolute top-4 right-4 z-10 text-foreground/80 hover:text-foreground">
-            <X className="size-5" />
-            <span className="sr-only">關閉</span>
-          </DialogClose>
-          <Image
-            src={PLACEHOLDER_IMAGE_SRC}
-            alt={activeLabel}
-            width={735}
-            height={1150}
-            className="h-auto w-full"
-          />
+          <DialogTitle className="sr-only">{activeItem?.label ?? ""}</DialogTitle>
+          <div className="sticky top-0 z-10 flex justify-end p-2">
+            <DialogClose className="rounded-full bg-black/50 p-1 text-white/90 backdrop-blur-sm hover:text-white">
+              <X className="size-5" />
+              <span className="sr-only">關閉</span>
+            </DialogClose>
+          </div>
+          {activeItem && (
+            <Image
+              src={activeItem.imageSrc}
+              alt={activeItem.label}
+              width={600}
+              height={1472}
+              className="h-auto w-full"
+            />
+          )}
         </DialogContent>
       </Dialog>
     </>
