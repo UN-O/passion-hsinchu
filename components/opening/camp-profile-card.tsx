@@ -1,21 +1,15 @@
 "use client"
 
-import Image from "next/image"
+import ProfileCard from "@/components/ProfileCard.jsx"
 import type { CampProfileResult } from "@/lib/opening-camp-content"
+import { HERO_CARD_IMAGE, heroAvatarDataUri, heroGrainUri, heroIconPatternUri } from "@/lib/hero-card-visuals"
 import "./camp-profile-card.css"
 
 // 五張勇者卡是設計好的完整成品（標題、勇者名稱文字都已經畫在圖裡），
-// 不再用 ProfileCard.jsx 那套全息卡片元件疊程式產生的姓名／引言／紋理——
-// 疊上去文字會跟圖片裡本來就有的「OO勇者」重複。卡面本身乾淨、不疊任何東西，
-// 玩家自己的勇者 ID 改放卡片下方，不是疊在卡面上。
-const HERO_CARD_IMAGE: Record<number, string> = {
-  0: "/images/hero-card-0-guardian.webp",
-  1: "/images/hero-card-1-strategy.webp",
-  2: "/images/hero-card-2-wisdom.webp",
-  3: "/images/hero-card-3-faith.webp",
-  4: "/images/hero-card-4-charge.webp",
-}
-
+// 所以 name／title 這兩個文字欄位傳空字串（圖片裡已經有了，不用 ProfileCard.jsx
+// 再疊一次姓名／引言文字）。全息特效（傾斜、光暈、顆粒、閃光紋理）保留。
+// vendor 內建的 @勇者ID 提示列（showUserInfo）固定關掉，改在卡片下方另外
+// 放一行文字——不疊在卡面上。
 type CampProfileCardProps = {
   heroName: string
   result: CampProfileResult
@@ -27,16 +21,34 @@ export function CampProfileCard({ heroName, result, showUserInfo = true }: CampP
 
   return (
     <div className="camp-profile-card-stage">
-      <div className="camp-profile-card-draw">
-        <div className="mx-auto flex w-full max-w-[320px] flex-col items-center gap-3">
-          <Image src={src} alt={result.name} width={800} height={1200} priority className="h-auto w-full rounded-3xl" />
-          {showUserInfo && (
-            <p className="text-sm font-bold text-white">
-              @{heroName}
-              <span className="ml-2 font-normal text-white/60">已取得勇者屬性</span>
-            </p>
-          )}
+      <div className="camp-profile-card-draw flex flex-col items-center gap-3">
+        <div className="relative w-full">
+          <ProfileCard
+            className="camp-profile-card"
+            name=""
+            title=""
+            handle={heroName}
+            status="已取得勇者屬性"
+            avatarUrl={src}
+            miniAvatarUrl={heroAvatarDataUri(heroName)}
+            iconUrl={heroIconPatternUri(result.aCount)}
+            grainUrl={heroGrainUri()}
+            showUserInfo={false}
+            innerGradient="linear-gradient(160deg, rgba(255, 233, 168, 0.44) 0%, rgba(39, 32, 22, 0.92) 100%)"
+            behindGlowEnabled
+            behindGlowColor="rgba(238, 233, 175, 1)"
+            behindGlowSize="80%"
+            enableTilt
+            enableMobileTilt
+            mobileTiltSensitivity={5}
+          />
         </div>
+        {showUserInfo && (
+          <p className="text-sm font-bold text-white">
+            @{heroName}
+            <span className="ml-2 font-normal text-white/60">已取得勇者屬性</span>
+          </p>
+        )}
       </div>
     </div>
   )

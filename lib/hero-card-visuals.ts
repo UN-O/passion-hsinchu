@@ -102,6 +102,16 @@ export function heroGrainUri(config: GrainConfig = DEFAULT_GRAIN) {
 // 大頭照 placeholder：public/images/placeholder.png
 export const HERO_AVATAR_PLACEHOLDER_URI = "/images/placeholder.png"
 
+// 五種勇者結果的正式完稿卡片圖，依 aCount（0~4）對應。camp-profile-card.tsx（卡面）
+// 跟 camp-hero-details.tsx（卡片背面的介紹）共用同一組圖。
+export const HERO_CARD_IMAGE: Record<number, string> = {
+    0: "/images/hero-card-0-guardian.webp",
+    1: "/images/hero-card-1-strategy.webp",
+    2: "/images/hero-card-2-wisdom.webp",
+    3: "/images/hero-card-3-faith.webp",
+    4: "/images/hero-card-4-charge.webp",
+}
+
 // #rrggbb + 0~1 透明度 -> "rgba(r, g, b, a)"，playground 的 color input 只能給 hex，
 // 但 innerGradient / behindGlowColor 都需要可調透明度的顏色字串。
 export function campHexToRgba(hex: string, alpha: number) {

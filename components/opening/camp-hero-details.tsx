@@ -1,19 +1,21 @@
 import Image from "next/image"
 
 import type { CampProfileResult } from "@/lib/opening-camp-content"
-import { HERO_AVATAR_PLACEHOLDER_URI } from "@/lib/hero-card-visuals"
+import { HERO_CARD_IMAGE } from "@/lib/hero-card-visuals"
 
 // 勇者卡片背後的詳細資訊（勇者測驗結果頁「了解更多」跟個人資料頁的卡片翻面共用）。
 export function CampHeroDetails({ result }: { result: CampProfileResult }) {
+  const src = HERO_CARD_IMAGE[result.aCount] ?? HERO_CARD_IMAGE[2]
+
   return (
     <div className="flex flex-col items-center gap-4 text-center text-white/90">
       <Image
-        src={HERO_AVATAR_PLACEHOLDER_URI}
-        alt="Place holder png"
-        width={160}
-        height={160}
+        src={src}
+        alt={result.name}
+        width={800}
+        height={1200}
         draggable={false}
-        className="aspect-square w-full max-w-40 self-center rounded-2xl border border-white/30 object-cover"
+        className="w-full max-w-40 self-center rounded-2xl"
       />
       <p>{result.description}</p>
       <div>

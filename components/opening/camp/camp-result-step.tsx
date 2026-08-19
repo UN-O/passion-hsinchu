@@ -11,10 +11,11 @@ import { CampProfileCard } from "@/components/opening/camp-profile-card"
 import { CampHeroDetails } from "@/components/opening/camp-hero-details"
 import { campQuizQuestions, getCampProfileResult } from "@/lib/opening-camp-content"
 import { openingGradients, staticDarkCanvasDraw } from "@/lib/opening-gradients"
-import { HERO_AVATAR_PLACEHOLDER_URI } from "@/lib/hero-card-visuals"
+import { HERO_CARD_IMAGE } from "@/lib/hero-card-visuals"
 import { campStepFromPath, type CampStep } from "@/lib/opening-steps"
 
-export const resultImages = ["/images/passion-logo.png", HERO_AVATAR_PLACEHOLDER_URI]
+// 測驗完成前不知道會抽到哪一張，5 張都先預載，避免結果頁跳出來時卡片圖還在載入。
+export const resultImages = ["/images/passion-logo.png", ...Object.values(HERO_CARD_IMAGE)]
 
 function ResultContent({ heroName, aCount }: { heroName: string; aCount: number }) {
   const { index } = useImmersiveNav()

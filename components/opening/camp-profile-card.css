@@ -18,6 +18,13 @@
   --sunpillar-clr-6: var(--sunpillar-6);
 }
 
+/* vendor 預設對 avatar 圖層用 mix-blend-mode: luminosity，是設計給「一般照片」融進卡片
+   漸層背景用的效果——套在勇者卡這種本身色彩豐富的完稿插畫上，會整張被去色、變得灰濛濛。
+   蓋掉這條規則，讓插畫維持原本的顏色，其他全息效果（傾斜、光暈、顆粒、閃光）不受影響。 */
+.camp-profile-card .pc-avatar-content {
+  mix-blend-mode: normal;
+}
+
 /* vendor 的 .pc-card 用 aspect-ratio 從 height 反推 width，寬螢幕/高視窗下會超出
    .camp-profile-card 的 320px 而造成手機版跑版，這裡直接鎖住 shell/card 的寬度上限。 */
 .camp-profile-card .pc-card-shell,
