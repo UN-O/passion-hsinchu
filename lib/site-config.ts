@@ -20,6 +20,7 @@ export const siteConfig = {
     "五年，一場屬於新竹地區的營會。2026 PASSION 26《勇者世代》，8 月於新竹聖經書院／築聖館，火熱營會與火熱特會等你加入。",
   url: resolveSiteUrl(),
   venue: "新竹聖經書院／築聖館",
+  venueShortName: "築聖館",
   venueAddress: "新竹市東區高峰路56號",
   contactPhone: "(03)-5236737#213",
   contactAddress: "新竹市北大路202號",

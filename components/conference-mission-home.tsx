@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Check, X } from "lucide-react"
+import { Check, MapPin, X } from "lucide-react"
 
 import { ConferenceCountdown } from "@/components/conference-countdown"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
@@ -14,6 +14,7 @@ import {
   getNextConferenceSession,
   isWorkshopRegistered,
 } from "@/lib/opening-conference-content"
+import { siteConfig } from "@/lib/site-config"
 
 export function ConferenceMissionHome({
   meetingHref = "/conference/meeting",
@@ -165,9 +166,11 @@ export function ConferenceMissionHome({
           <div className="aspect-video w-full bg-[#3B82F6]" />
 
           <div className="flex flex-col gap-2 p-6">
-            <p className="text-sm text-muted-foreground">工作坊介紹</p>
-            <div className="flex items-center gap-2">
-              <p className="text-xl font-bold">{activeWorkshop?.title}</p>
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium">
+                <MapPin className="size-4" />
+                {siteConfig.venueShortName}
+              </span>
               {activeWorkshop && isWorkshopRegistered(activeWorkshop.id) && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-medium text-green-400">
                   <Check className="size-3.5 rounded-full bg-green-400 p-0.5 text-card" strokeWidth={3} />
@@ -175,6 +178,7 @@ export function ConferenceMissionHome({
                 </span>
               )}
             </div>
+            <p className="text-xl font-bold">{activeWorkshop?.title}</p>
             <p className="text-base">{activeWorkshop?.body}</p>
           </div>
         </DialogContent>
@@ -205,7 +209,10 @@ export function ConferenceMissionHome({
 
           {/* 圖片下面放聚會資訊，跟工作坊彈窗同樣的排版方式 */}
           <div className="flex flex-col gap-2 p-6">
-            <p className="text-sm text-muted-foreground">聚會資訊</p>
+            <span className="inline-flex w-fit items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium">
+              <MapPin className="size-4" />
+              {siteConfig.venueShortName}
+            </span>
             <p className="text-xl font-bold">{nextSession.typeLabel}</p>
             <p className="text-base">
               {nextSession.dateLabel}・{nextSession.sessionLabel}

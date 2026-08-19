@@ -1,12 +1,13 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, MapPin } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { MeetingNotes } from "@/components/meeting-notes"
 import { getNextConferenceSession } from "@/lib/opening-conference-content"
 import { requireFlowAccess } from "@/lib/session"
+import { siteConfig } from "@/lib/site-config"
 
 export const metadata: Metadata = {
   title: "聚會內容",
@@ -33,8 +34,11 @@ export default async function ConferenceMeetingPage() {
 
       <div className="mt-10 flex flex-col gap-10">
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">聚會場次、名稱</p>
-          <p className="text-2xl font-bold">
+          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium">
+            <MapPin className="size-4" />
+            {siteConfig.venueShortName}
+          </span>
+          <p className="mt-1 text-2xl font-bold">
             {nextSession.dateLabel}・{nextSession.sessionLabel}・{nextSession.typeLabel}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
