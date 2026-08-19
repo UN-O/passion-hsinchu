@@ -22,6 +22,7 @@ export function ConferenceMissionHome({
 } = {}) {
   const [activeWorkshopId, setActiveWorkshopId] = useState<string | null>(null)
   const activeWorkshop = activeWorkshopId ? getConferenceWorkshop(activeWorkshopId) : undefined
+  const [nextMeetingVisualOpen, setNextMeetingVisualOpen] = useState(false)
 
   return (
     <main className="min-h-svh bg-[#feed74] pb-16">
@@ -80,6 +81,15 @@ export function ConferenceMissionHome({
 
           <div className="mt-6 rounded-3xl bg-slate-300 p-6">
             <p className="text-sm font-medium text-black/70">下場聚會倒數</p>
+
+            {/* 下場聚會視覺尚未提供圖片，先用色塊佔位。點下去彈出 16:9 大圖預覽。 */}
+            <button
+              type="button"
+              onClick={() => setNextMeetingVisualOpen(true)}
+              aria-label="下場聚會視覺預覽"
+              className="mt-3 aspect-video w-full rounded-2xl bg-white/70"
+            />
+
             <ConferenceCountdown targetISO={conference.startDateISO} />
           </div>
 
@@ -114,6 +124,22 @@ export function ConferenceMissionHome({
             <p className="text-xl font-bold">{activeWorkshop?.title}</p>
             <p className="text-base">{activeWorkshop?.body}</p>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={nextMeetingVisualOpen} onOpenChange={setNextMeetingVisualOpen}>
+        <DialogContent
+          showCloseButton={false}
+          className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl border-none bg-card p-0 sm:max-w-md"
+        >
+          <DialogTitle className="sr-only">下場聚會視覺</DialogTitle>
+          <DialogClose className="absolute top-4 right-4 z-10 text-white/80 hover:text-white">
+            <X className="size-5" />
+            <span className="sr-only">關閉</span>
+          </DialogClose>
+
+          {/* 下場聚會視覺尚未提供圖片，先用色塊佔位 */}
+          <div className="aspect-video w-full bg-[#3B82F6]" />
         </DialogContent>
       </Dialog>
     </main>
