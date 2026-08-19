@@ -15,6 +15,11 @@ import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
 const PLACEHOLDER_SQUAD_NAME = "六眼肥魚"
 const PLACEHOLDER_SQUAD_COURAGE_POINTS = 1280
 
+// 聚會內容目前沒有 CMS，先放佔位文字，等聚會排程資料表定案後改成真的「下一場聚會」資訊。
+// 跟 conference-mission-home.tsx 的聚會內容卡同一個格式（大方框、置底文字）。
+const PLACEHOLDER_MEETING_DAY_LABEL = "聚會內容"
+const PLACEHOLDER_MEETING_TITLE = "查看這場聚會的大綱與筆記"
+
 // 對應 lib/exp-regions.ts 的 region key，但圖示／名稱沿用 onboarding 那邊
 // 已經定案的三區吉祥物（土撥鼠區／小丑魚區／熊蜂區），維持前後一致。
 // color 用 dataviz skill 的分類色票，在深色底下跑過六項檢查（validate_palette.js
@@ -81,11 +86,12 @@ export async function CampMissionHome({
         <ZoneScoreChart zones={zoneScores} />
       </SectionCard>
 
-      <Link href={meetingHref} className="mt-6 block">
-        <SectionCard className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">聚會內容</p>
-          <p className="text-xl font-bold">查看這場聚會的大綱與筆記</p>
-        </SectionCard>
+      <Link
+        href={meetingHref}
+        className="mt-6 flex aspect-[5/4] w-full flex-col justify-end rounded-3xl bg-[#DC2626] p-6"
+      >
+        <p className="text-sm text-white/80">{PLACEHOLDER_MEETING_DAY_LABEL}</p>
+        <p className="mt-2 text-2xl font-bold text-white">{PLACEHOLDER_MEETING_TITLE}</p>
       </Link>
 
       <SectionCard className="mt-6 flex flex-col gap-1">
