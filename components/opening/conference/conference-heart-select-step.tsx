@@ -26,9 +26,9 @@ function HeartSelectContent() {
     <div className="flex h-full flex-col gap-6 px-6 py-8 text-center">
       <h2 className="text-2xl font-bold sm:text-3xl">什麼事情，是你最需要勇氣去面對的？</h2>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1">
         {!category ? (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid h-full grid-cols-2 grid-rows-2 gap-3 sm:gap-4">
             {conferenceCategories.map((cat) => (
               <button
                 key={cat.key}
@@ -37,7 +37,7 @@ function HeartSelectContent() {
                   setSelectedCategoryKey(cat.key)
                   setPendingItemId(null)
                 }}
-                className="flex aspect-[3/2] flex-col items-center justify-center gap-2 rounded-2xl border p-4 text-lg leading-snug font-semibold"
+                className="flex min-h-0 flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-base leading-snug font-semibold sm:p-4 sm:text-lg"
                 style={{
                   borderColor: conferenceCategoryColors[cat.key],
                   color: conferenceCategoryColors[cat.key],
