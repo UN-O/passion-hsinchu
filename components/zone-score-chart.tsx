@@ -68,7 +68,7 @@ function ZoneBar({ zone, max }: { zone: ZoneScore; max: number }) {
         <span className="text-sm font-bold tabular-nums">{displayValue.toLocaleString("en-US")}</span>
       )}
       <div
-        className="w-6 rounded-t-[4px] sm:w-7"
+        className="w-10 rounded-t-[4px] sm:w-12"
         style={{
           height: `${Math.max((displayValue / max) * 100, displayValue > 0 ? 1 : 0)}%`,
           backgroundColor: zone.color,
@@ -85,7 +85,12 @@ export function ZoneScoreChart({ zones }: { zones: ZoneScore[] }) {
     return <p className="text-base text-muted-foreground">還沒有開始計分。</p>
   }
 
-  const max = niceMax(rawMax)
+  // 量尺上限以「三區平均」抓一個好看的整數，而不是直接看最高分那區——
+  // 三區分數如果都差不多高（例如都在 1000 上下），量尺就會跟著拉低，
+  // 長條看起來才會飽滿，不會因為湊到下一個整數量級（1000 → 2000）
+  // 就整批看起來只有一半高。用 Math.max 保底，確保最高分那區不會超出圖表頂端。
+  const average = zones.reduce((sum, zone) => sum + zone.total, 0) / zones.length
+  const max = Math.max(niceMax(average), rawMax)
 
   return (
     <div className="pt-2">
@@ -98,7 +103,7 @@ export function ZoneScoreChart({ zones }: { zones: ZoneScore[] }) {
       <div className="mt-3 flex justify-center gap-x-8 sm:gap-x-12">
         {zones.map((zone) => (
           <div key={zone.key} className="flex w-16 flex-col items-center gap-1.5">
-            <Image src={zone.icon} alt="" width={48} height={48} className="size-6 rounded-full" />
+            <Image src={zone.icon} alt="" width={48} height={48} className="size-10 rounded-full" />
             <span className="text-xs whitespace-nowrap text-muted-foreground">{zone.title}</span>
           </div>
         ))}
