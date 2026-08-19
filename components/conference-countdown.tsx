@@ -7,8 +7,8 @@ function getRemaining(targetISO: string) {
   const totalSeconds = Math.floor(Math.max(diffMs, 0) / 1000)
 
   return {
-    days: Math.floor(totalSeconds / 86400),
-    hours: Math.floor((totalSeconds % 86400) / 3600),
+    // 不顯示「天」這個單位，超過 24 小時就讓小時數往上累加（例如 220 小時）。
+    hours: Math.floor(totalSeconds / 3600),
     minutes: Math.floor((totalSeconds % 3600) / 60),
     seconds: totalSeconds % 60,
     done: diffMs <= 0,
@@ -34,7 +34,6 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
   }
 
   const segments = [
-    { label: "天", value: remaining.days },
     { label: "時", value: remaining.hours },
     { label: "分", value: remaining.minutes },
     { label: "秒", value: remaining.seconds },
