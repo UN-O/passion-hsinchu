@@ -3,9 +3,10 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Check, MapPin, X } from "lucide-react"
+import { Check, X } from "lucide-react"
 
 import { ConferenceCountdown } from "@/components/conference-countdown"
+import { LocationPinIcon } from "@/components/location-pin-icon"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useDialogBackClose } from "@/hooks/use-dialog-back-close"
 import {
@@ -168,7 +169,7 @@ export function ConferenceMissionHome({
           <div className="flex flex-col gap-2 p-6">
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium">
-                <MapPin className="size-4" />
+                <LocationPinIcon className="size-4" />
                 {activeWorkshop?.location}
               </span>
               {activeWorkshop && isWorkshopRegistered(activeWorkshop.id) && (
@@ -210,7 +211,7 @@ export function ConferenceMissionHome({
           {/* 圖片下面放聚會資訊，跟工作坊彈窗同樣的排版方式 */}
           <div className="flex flex-col gap-2 p-6">
             <span className="inline-flex w-fit items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium">
-              <MapPin className="size-4" />
+              <LocationPinIcon className="size-4" />
               {siteConfig.venueShortName}
             </span>
             <p className="text-xl font-bold">{nextSession.typeLabel}</p>
