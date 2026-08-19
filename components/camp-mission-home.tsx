@@ -14,6 +14,7 @@ import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
 // 六眼肥魚是小丑魚區的小隊。
 const PLACEHOLDER_SQUAD_NAME = "六眼肥魚"
 const PLACEHOLDER_SQUAD_COURAGE_POINTS = 1280
+const PLACEHOLDER_USER_ZONE_KEY = "clownfish"
 
 // 聚會內容目前沒有 CMS，先放佔位文字，等聚會排程資料表定案後改成真的「下一場聚會」資訊。
 // 跟 conference-mission-home.tsx 的聚會內容卡同一個格式（大方框、置底文字）。
@@ -36,6 +37,15 @@ function SectionCard({ children, className = "" }: { children: React.ReactNode; 
   )
 }
 
+// 使用者自己那區排在正中間，另外兩區維持原本的相對順序分列兩側。
+function withUserZoneInMiddle<T extends { key: string }>(zones: T[], userZoneKey: string): T[] {
+  const mine = zones.find((zone) => zone.key === userZoneKey)
+  const others = zones.filter((zone) => zone.key !== userZoneKey)
+  if (!mine || others.length !== zones.length - 1) return zones
+  const middle = Math.floor(others.length / 2)
+  return [...others.slice(0, middle), mine, ...others.slice(middle)]
+}
+
 export async function CampMissionHome({
   profileHref = "/camp/profile",
   meetingHref = "/camp/meeting",
@@ -46,7 +56,10 @@ export async function CampMissionHome({
   heroName?: string
 } = {}) {
   const totals = await getRegionTotals()
-  const zoneScores = ZONE_META.map((zone) => ({ ...zone, total: totals[zone.key] }))
+  const zoneScores = withUserZoneInMiddle(
+    ZONE_META.map((zone) => ({ ...zone, total: totals[zone.key] })),
+    PLACEHOLDER_USER_ZONE_KEY
+  )
 
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
