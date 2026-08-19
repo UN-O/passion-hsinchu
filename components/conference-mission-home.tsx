@@ -170,6 +170,18 @@ export function ConferenceMissionHome({
 
           {/* 下場聚會視覺尚未提供圖片，先用色塊佔位 */}
           <div className="aspect-video w-full bg-[#3B82F6]" />
+
+          {/* 圖片下面放聚會資訊，跟工作坊彈窗同樣的排版方式 */}
+          <div className="flex flex-col gap-2 p-6">
+            <p className="text-sm text-muted-foreground">聚會資訊</p>
+            <p className="text-xl font-bold">{nextSession.typeLabel}</p>
+            <p className="text-base">
+              {nextSession.dateLabel}・{nextSession.sessionLabel}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {nextSession.doorsOpenTime} 開放入場・{nextSession.startTime} 聚會開始
+            </p>
+          </div>
         </DialogContent>
       </Dialog>
     </main>
