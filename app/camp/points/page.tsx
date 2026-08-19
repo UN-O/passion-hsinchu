@@ -31,7 +31,7 @@ export default async function CampPointsPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
       <p className="text-sm tracking-[0.2em] text-muted-foreground">CAMP</p>
-      <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">分區積分</h1>
+      <h1 className="font-heading mt-3 text-3xl font-bold tracking-tight sm:text-4xl">分區積分</h1>
 
       {max === 0 ? (
         <p className="mt-10 text-base text-muted-foreground">還沒有開始計分。</p>
@@ -45,7 +45,7 @@ export default async function CampPointsPage() {
                   {region.total.toLocaleString("en-US")}
                 </span>
               </div>
-              <div className="h-2 rounded-r-[4px] bg-white/5">
+              <div className="h-2 rounded-r-[4px] bg-foreground/5">
                 {/* 0 分不要畫出一小截棒子，那看起來像已經有分了 */}
                 <div
                   className={`h-full rounded-r-[4px] bg-chart-1 ${

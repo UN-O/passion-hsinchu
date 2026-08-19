@@ -15,7 +15,7 @@ export default async function CampSigninPage() {
   return (
     <main className="flex min-h-svh flex-col items-center justify-center px-4 py-16 sm:px-6">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">CAMP 報到</h1>
+        <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">CAMP 報到</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           選擇你的教會，並填寫報名表單上的完整姓名。
         </p>

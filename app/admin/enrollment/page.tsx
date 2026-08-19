@@ -30,13 +30,13 @@ export default async function AdminEnrollmentPage({
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">名冊管理</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">名冊管理</h1>
       <p className="mt-3 text-sm text-muted-foreground">
         比對不到名冊的人無法進入，所以這裡是現場唯一的救援路徑。
       </p>
 
       <section className="mt-12">
-        <h2 className="text-lg font-medium">批次匯入</h2>
+        <h2 className="font-heading text-lg font-bold">批次匯入</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           欄位需包含 姓名、教會、CAMP、CONFERENCE。匯入只會新增與更新，不會刪除任何既有資料。
         </p>
@@ -44,13 +44,13 @@ export default async function AdminEnrollmentPage({
       </section>
 
       <section className="mt-16">
-        <h2 className="text-lg font-medium">新增一筆</h2>
+        <h2 className="font-heading text-lg font-bold">新增一筆</h2>
         <p className="mt-2 text-sm text-muted-foreground">現場報名或漏掉的人用這個。</p>
         <EnrollmentRowForm />
       </section>
 
       <section className="mt-16">
-        <h2 className="text-lg font-medium">
+        <h2 className="font-heading text-lg font-bold">
           名冊{" "}
           <span className="text-muted-foreground">
             （{truncated ? `顯示 ${rows.length} / 共 ${total}` : total}）

@@ -13,7 +13,7 @@ function ProgramCard({ id, program }: { id: string; program: Program }) {
           {program.label}
         </span>
 
-        <h3 className="text-2xl font-bold text-balance sm:text-3xl">{program.name}</h3>
+        <h3 className="font-heading text-2xl font-bold text-balance sm:text-3xl">{program.name}</h3>
         <p className="text-sm text-muted-foreground sm:text-base">{program.audience}</p>
 
         <dl className="mt-2 grid gap-3 text-sm sm:text-base">

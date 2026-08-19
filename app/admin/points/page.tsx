@@ -41,23 +41,23 @@ export default async function AdminPointsPage({
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">CAMP 加分</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">CAMP 加分</h1>
       <p className="mt-3 text-sm text-muted-foreground">
         分數是區的總分，不記到個人。只有 CAMP 有加分，不會有扣分。
       </p>
 
       <section className="mt-12">
-        <h2 className="text-lg font-medium">加分</h2>
+        <h2 className="font-heading text-lg font-bold">加分</h2>
         <AwardFlow />
       </section>
 
       <section className="mt-16">
-        <h2 className="text-lg font-medium">三區總分</h2>
+        <h2 className="font-heading text-lg font-bold">三區總分</h2>
         <ExpRegionChart rows={stats} />
       </section>
 
       <section className="mt-16">
-        <h2 className="text-lg font-medium">
+        <h2 className="font-heading text-lg font-bold">
           加分記錄{" "}
           <span className="text-muted-foreground">
             （{truncated ? `顯示 ${records.length} / 共 ${total}` : total}）

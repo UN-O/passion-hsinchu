@@ -41,7 +41,7 @@ export function CampSidebar() {
         <SheetContent
           side="left"
           showCloseButton={false}
-          className="data-[side=left]:w-4/5 data-[side=left]:sm:max-w-none border-none bg-background/40 backdrop-blur-2xl"
+          className="camp-theme data-[side=left]:w-4/5 data-[side=left]:sm:max-w-none border-none bg-background/40 backdrop-blur-2xl"
         >
           <SheetHeader className="flex-row items-center justify-end">
             {/* 螢幕閱讀器仍需要標題，只是不顯示文字 */}
@@ -82,7 +82,7 @@ export function CampSidebar() {
       <Dialog open={activePanel !== null} onOpenChange={(next) => !next && setActivePanel(null)}>
         <DialogContent
           showCloseButton={false}
-          className="max-h-[85vh] max-w-[calc(100%-2rem)] gap-0 overflow-y-auto rounded-3xl border-none bg-transparent p-0 sm:max-w-sm"
+          className="camp-theme max-h-[85vh] max-w-[calc(100%-2rem)] gap-0 overflow-y-auto rounded-3xl border-none bg-transparent p-0 sm:max-w-sm"
         >
           <DialogTitle className="sr-only">{activeItem?.label ?? ""}</DialogTitle>
           <div className="sticky top-0 z-10 flex justify-end p-2">

@@ -89,7 +89,7 @@ export function ZoneScoreChart({ zones }: { zones: ZoneScore[] }) {
 
   return (
     <div className="pt-2">
-      <div className="flex h-48 items-end justify-center gap-x-8 border-b border-white/10 sm:h-56 sm:gap-x-12">
+      <div className="flex h-48 items-end justify-center gap-x-8 border-b border-foreground/10 sm:h-56 sm:gap-x-12">
         {zones.map((zone) => (
           <ZoneBar key={zone.key} zone={zone} max={max} />
         ))}

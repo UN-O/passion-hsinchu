@@ -49,7 +49,7 @@ export default async function ConferenceWorkshopDetailPage({
 
         <div className="flex flex-col gap-1">
           <p className="text-sm text-muted-foreground">工作坊介紹</p>
-          <h1 className="text-2xl font-bold">{workshop.title}</h1>
+          <h1 className="font-heading text-2xl font-bold">{workshop.title}</h1>
           <p className="mt-2 text-base">{workshop.body}</p>
         </div>
       </div>

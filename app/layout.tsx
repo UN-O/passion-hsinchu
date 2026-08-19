@@ -7,7 +7,10 @@ import { JsonLd } from "@/components/json-ld";
 import { siteConfig, socialLinks } from "@/lib/site-config";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
-const notoSansJP = Noto_Sans_JP({ subsets: ["latin"], weight: ["700"], variable: "--font-noto-jp" });
+// 標題字體（--font-heading）。CJK 字符不是靠 subsets 參數挑的——Google Fonts
+// 對這類大字集字型一律回傳整組 unicode-range 分片，瀏覽器只會按頁面實際用到
+// 的字去抓對應分片，所以這裡的 subsets 只影響拉丁字，中文字照樣涵蓋。
+const notoSansJP = Noto_Sans_JP({ subsets: ["latin"], weight: ["700"], variable: "--font-noto-jp", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),

@@ -146,7 +146,7 @@ export function AwardFlow() {
             <input type="hidden" name="amount" value={amount} />
             <input type="hidden" name="reason" value={reason} />
 
-            <h2 className="mt-6 shrink-0 text-2xl font-bold tracking-tight sm:mt-12 sm:text-3xl">
+            <h2 className="font-heading mt-6 shrink-0 text-2xl font-bold tracking-tight sm:mt-12 sm:text-3xl">
               {STEP_TITLES[step]}
               {step === "reason" && (
                 <span className="ml-3 text-sm font-normal text-muted-foreground">選填</span>

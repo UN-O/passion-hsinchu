@@ -36,7 +36,7 @@ export function HeroSection({ session }: { session: AppSession | null }) {
           className="h-10 w-auto brightness-0 invert sm:h-14"
         />
 
-        <h1 className="mt-8 text-3xl font-bold tracking-tight sm:text-5xl">
+        <h1 className="font-heading mt-8 text-3xl font-bold tracking-tight sm:text-5xl">
           《{siteConfig.themeZh}》
         </h1>
         <p className="mt-2 text-sm tracking-[0.2em] text-muted-foreground sm:text-base">

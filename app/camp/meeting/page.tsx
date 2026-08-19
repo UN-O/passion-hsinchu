@@ -22,7 +22,7 @@ export default async function CampMeetingPage() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
-      <PassionLogoHeader />
+      <PassionLogoHeader logoTone="dark" />
 
       <Button asChild size="icon" variant="outline" aria-label="返回" className="mt-10 rounded-full">
         <Link href="/camp">

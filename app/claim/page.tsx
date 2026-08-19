@@ -18,7 +18,7 @@ export default async function ClaimPage() {
   return (
     <main className="flex min-h-svh flex-col items-center justify-center px-4 py-16 sm:px-6">
       <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">確認你的報名資料</h1>
+        <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">確認你的報名資料</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           報名表單沒有收 email，所以需要你告訴我們你是哪一位。
         </p>

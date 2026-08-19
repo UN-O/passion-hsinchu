@@ -16,7 +16,7 @@ function WelcomeContent() {
     <div className="flex h-full flex-col items-center justify-center gap-8 px-6 text-center">
       <div>
         <p className="text-sm tracking-[0.2em] text-white/60">旅程的開始</p>
-        <h1 className="mt-3 text-3xl font-bold sm:text-4xl">歡迎來到 PASSION 系統</h1>
+        <h1 className="font-heading mt-3 text-3xl font-bold sm:text-4xl">歡迎來到 PASSION 系統</h1>
       </div>
       <Button size="lg" onClick={advance}>
         下一步

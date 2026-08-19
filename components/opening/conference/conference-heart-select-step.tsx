@@ -24,7 +24,7 @@ function HeartSelectContent() {
 
   return (
     <div className="flex h-full flex-col gap-6 px-6 py-8 text-center">
-      <h2 className="text-2xl font-bold sm:text-3xl">什麼事情，是你最需要勇氣去面對的？</h2>
+      <h2 className="font-heading text-2xl font-bold sm:text-3xl">什麼事情，是你最需要勇氣去面對的？</h2>
 
       <div className="min-h-0 flex-1">
         {!category ? (

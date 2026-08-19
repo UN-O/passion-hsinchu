@@ -64,6 +64,7 @@ export async function CampMissionHome({
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
       <PassionLogoHeader
+        logoTone="dark"
         leftSlot={<CampSidebar />}
         rightSlot={
           <Link

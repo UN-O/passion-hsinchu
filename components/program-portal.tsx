@@ -26,7 +26,7 @@ export function ProgramPortal({ flow, program, session }: ProgramPortalProps) {
       )}
 
       <p className="text-sm tracking-[0.2em] text-muted-foreground">{program.name}</p>
-      <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{program.label}</h1>
+      <h1 className="font-heading mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{program.label}</h1>
       <p className="mt-4 text-base text-muted-foreground">{program.audience}</p>
 
       <dl className="mt-12 flex flex-col gap-6">

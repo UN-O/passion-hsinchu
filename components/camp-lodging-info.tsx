@@ -4,7 +4,7 @@ const PLACEHOLDER_LODGING_NOTES = "這裡先放佔位文字，等住房須知與
 
 export function CampLodgingInfo() {
   return (
-    <div className="flex flex-col gap-6 rounded-3xl bg-muted/20 p-6 text-left">
+    <div className="flex flex-col gap-6 rounded-3xl bg-muted p-6 text-left">
       <div className="flex flex-col gap-1">
         <p className="text-sm text-muted-foreground">房號</p>
         <p className="text-6xl font-bold text-primary">{PLACEHOLDER_ROOM_NUMBER}</p>

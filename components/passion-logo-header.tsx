@@ -6,7 +6,14 @@ import Image from "next/image"
 export function PassionLogoHeader({
   leftSlot,
   rightSlot,
-}: { leftSlot?: React.ReactNode; rightSlot?: React.ReactNode } = {}) {
+  logoTone = "light",
+}: {
+  leftSlot?: React.ReactNode
+  rightSlot?: React.ReactNode
+  // 深色頁面 logo 要是白的（brightness-0 invert）；camp 系列的淺黃底頁面
+  // 要是黑的（brightness-0，不 invert）。
+  logoTone?: "light" | "dark"
+} = {}) {
   return (
     <div className="pt-6">
       <div className="relative flex justify-center">
@@ -15,7 +22,7 @@ export function PassionLogoHeader({
           alt="PASSION®"
           width={979}
           height={178}
-          className="h-6 w-auto brightness-0 invert"
+          className={`h-6 w-auto brightness-0 ${logoTone === "light" ? "invert" : ""}`}
         />
         {leftSlot && <div className="absolute top-1/2 left-0 -translate-y-1/2">{leftSlot}</div>}
         {rightSlot && <div className="absolute top-1/2 right-0 -translate-y-1/2">{rightSlot}</div>}
