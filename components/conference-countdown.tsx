@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 
 function getRemaining(targetISO: string) {
   const diffMs = new Date(targetISO).getTime() - Date.now()
@@ -59,9 +59,13 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
     // cqw 尺寸都寫在 globals.css 的 .conf-countdown-* class 裡，帶了舊瀏覽器
     // 看不懂 container query 時的固定尺寸備援（避免退回瀏覽器預設字級跑版）。
     <div className="@container mt-3 w-full">
-      <div className="conf-countdown-row flex items-center">
+      {/* 三個數字框直接各自 flex-1 佔同一列的等分寬度，冒號是獨立的兄弟元素、
+          不佔彈性空間，這樣不管有沒有冒號夾在旁邊，三個框框的寬度都會一致
+          （之前冒號跟框框綁在同一個 flex-1 容器裡，最後一組沒有冒號分走空間，
+          框框會比前兩組寬）。 */}
+      <div className="conf-countdown-row flex items-stretch">
         {segments.map((segment, index) => (
-          <div key={segment.label} className="conf-countdown-row flex flex-1 items-center">
+          <Fragment key={segment.label}>
             <div className="conf-countdown-box flex flex-1 flex-col items-center rounded-xl bg-white/70">
               <span className="conf-countdown-digit leading-none font-bold tabular-nums text-black">
                 {pad(segment.value)}
@@ -69,9 +73,9 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
               <span className="conf-countdown-label text-black/60">{segment.label}</span>
             </div>
             {index < segments.length - 1 && (
-              <span className="conf-countdown-colon font-bold text-black/30">:</span>
+              <span className="conf-countdown-colon flex items-center font-bold text-black/30">:</span>
             )}
-          </div>
+          </Fragment>
         ))}
       </div>
     </div>
