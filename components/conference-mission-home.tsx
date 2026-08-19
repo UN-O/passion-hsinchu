@@ -44,7 +44,7 @@ export function ConferenceMissionHome({
               key={workshop.id}
               href={`${workshopsHref}/${workshop.id}`}
               aria-label={workshop.title}
-              className="flex aspect-square w-28 shrink-0 items-end rounded-3xl bg-[#3B82F6] p-3 sm:w-36 sm:p-4"
+              className="flex aspect-[4/5] w-28 shrink-0 items-end rounded-3xl bg-[#3B82F6] p-3 sm:w-36 sm:p-4"
               style={{ scrollSnapAlign: "start" }}
             >
               <span className="text-xs font-semibold text-white/70">
