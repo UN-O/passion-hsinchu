@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { MeetingNotes } from "@/components/meeting-notes"
+import { getNextConferenceSession } from "@/lib/opening-conference-content"
 import { requireFlowAccess } from "@/lib/session"
 
 export const metadata: Metadata = {
@@ -12,13 +13,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-// 聚會場次、大綱、PPT 目前沒有 CMS 可以管理，先放佔位內容，
-// 等聚會排程資料表定案再接上真正的內容。
-const PLACEHOLDER_SESSION_TITLE = "場次名稱尚未公布"
+// 大綱、PPT 目前沒有 CMS 可以管理，先放佔位內容，等資料確定再接上真正的內容。
+// 聚會場次、名稱本身已經接上 lib/opening-conference-content.ts 的真實場次資料。
 const PLACEHOLDER_OUTLINE = "這裡先放佔位文字，等聚會大綱與 PPT 連結確定後補上。"
 
 export default async function ConferenceMeetingPage() {
   await requireFlowAccess("conference")
+  const nextSession = getNextConferenceSession()
 
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
@@ -33,7 +34,12 @@ export default async function ConferenceMeetingPage() {
       <div className="mt-10 flex flex-col gap-10">
         <div className="flex flex-col gap-1">
           <p className="text-sm text-muted-foreground">聚會場次、名稱</p>
-          <p className="text-2xl font-bold">{PLACEHOLDER_SESSION_TITLE}</p>
+          <p className="text-2xl font-bold">
+            {nextSession.dateLabel}・{nextSession.sessionLabel}・{nextSession.typeLabel}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {nextSession.doorsOpenTime} 開放入場・{nextSession.startTime} 聚會開始
+          </p>
         </div>
 
         <div className="flex flex-col gap-1">

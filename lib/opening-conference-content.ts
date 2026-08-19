@@ -185,3 +185,52 @@ const MOCK_REGISTERED_WORKSHOP_IDS: string[] = ["workshop-1", "workshop-2"]
 export function isWorkshopRegistered(id: string): boolean {
   return MOCK_REGISTERED_WORKSHOP_IDS.includes(id)
 }
+
+// 三場正式聚會的場次資料。第三場使用者口頭給的是「SESSION2」，但跟主視覺流程表
+// 圖片（8/29 晚場那場印的是 SESSION 3）對不上，這裡按流程表圖片校正為 SESSION 3。
+export type ConferenceSession = {
+  id: string
+  sessionLabel: string
+  typeLabel: string
+  dateLabel: string
+  doorsOpenTime: string
+  startTime: string
+  startISO: string
+}
+
+export const conferenceSessions: ConferenceSession[] = [
+  {
+    id: "session-1",
+    sessionLabel: "SESSION 1",
+    typeLabel: "晚場聚會",
+    dateLabel: "8/28（五）",
+    doorsOpenTime: "18:50",
+    startTime: "19:00",
+    startISO: "2026-08-28T19:00:00+08:00",
+  },
+  {
+    id: "session-2",
+    sessionLabel: "SESSION 2",
+    typeLabel: "午場聚會",
+    dateLabel: "8/29（六）",
+    doorsOpenTime: "13:50",
+    startTime: "14:00",
+    startISO: "2026-08-29T14:00:00+08:00",
+  },
+  {
+    id: "session-3",
+    sessionLabel: "SESSION 3",
+    typeLabel: "晚場聚會",
+    dateLabel: "8/29（六）",
+    doorsOpenTime: "18:50",
+    startTime: "19:00",
+    startISO: "2026-08-29T19:00:00+08:00",
+  },
+]
+
+// 回傳「下一場還沒開始的聚會」；全部都已經開始的話回傳最後一場。
+export function getNextConferenceSession(now: Date = new Date()): ConferenceSession {
+  const nowMs = now.getTime()
+  const upcoming = conferenceSessions.find((session) => new Date(session.startISO).getTime() > nowMs)
+  return upcoming ?? conferenceSessions[conferenceSessions.length - 1]
+}

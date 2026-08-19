@@ -8,13 +8,12 @@ import { Check, X } from "lucide-react"
 import { ConferenceCountdown } from "@/components/conference-countdown"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useDialogBackClose } from "@/hooks/use-dialog-back-close"
-import { conferenceWorkshops, getConferenceWorkshop, isWorkshopRegistered } from "@/lib/opening-conference-content"
-import { conference } from "@/lib/site-config"
-
-// 聚會場次的詳細內容目前沒有 CMS 可以管理，先用整場特會第一天的時間佔位，
-// 等聚會排程資料表定案後改成真的「下一場聚會」資訊。
-const PLACEHOLDER_MEETING_DAY_LABEL = "DAY1 聚會"
-const PLACEHOLDER_MEETING_TITLE = "聚會標題"
+import {
+  conferenceWorkshops,
+  getConferenceWorkshop,
+  getNextConferenceSession,
+  isWorkshopRegistered,
+} from "@/lib/opening-conference-content"
 
 export function ConferenceMissionHome({
   meetingHref = "/conference/meeting",
@@ -24,6 +23,10 @@ export function ConferenceMissionHome({
   const [activeWorkshopId, setActiveWorkshopId] = useState<string | null>(null)
   const activeWorkshop = activeWorkshopId ? getConferenceWorkshop(activeWorkshopId) : undefined
   const [nextMeetingVisualOpen, setNextMeetingVisualOpen] = useState(false)
+  // 下一場還沒開始的聚會。場次資料是小時等級的固定時間表，不像倒數計時每秒都變，
+  // 伺服器算出來的跟瀏覽器 hydrate 那一刻幾乎不會跨到下一場，直接算不用另外處理
+  // hydration mismatch。
+  const nextSession = getNextConferenceSession()
 
   // App 化之後，讓系統返回鍵／手勢可以先關掉彈窗，而不是直接離開頁面
   useDialogBackClose(activeWorkshop !== undefined, () => setActiveWorkshopId(null))
@@ -81,14 +84,16 @@ export function ConferenceMissionHome({
             ))}
           </div>
 
-          {/* 聚會內容目前沒有 CMS，先放佔位文字，之後接上真正的聚會資料。
+          {/* 下一場還沒開始的聚會（同一個 session 也是聚會流程表印的三場）。
               左右邊跟工作坊那排卡片切齊（同一層 px 內距），不是貼齊螢幕邊緣。 */}
           <Link
             href={meetingHref}
             className="mt-6 flex aspect-[5/4] w-full flex-col justify-end rounded-3xl bg-[#DC2626] p-6"
           >
-            <p className="text-sm text-white/80">{PLACEHOLDER_MEETING_DAY_LABEL}</p>
-            <p className="mt-2 text-2xl font-bold text-white">{PLACEHOLDER_MEETING_TITLE}</p>
+            <p className="text-sm text-white/80">
+              {nextSession.dateLabel}・{nextSession.sessionLabel}
+            </p>
+            <p className="mt-2 text-2xl font-bold text-white">{nextSession.typeLabel}</p>
           </Link>
 
           <div className="mt-6 rounded-3xl bg-slate-300 p-6">
@@ -102,7 +107,7 @@ export function ConferenceMissionHome({
               className="mt-3 aspect-video w-full rounded-2xl bg-white/70"
             />
 
-            <ConferenceCountdown targetISO={conference.startDateISO} />
+            <ConferenceCountdown targetISO={nextSession.startISO} />
           </div>
         </div>
       </div>

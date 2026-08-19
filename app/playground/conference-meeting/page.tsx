@@ -4,8 +4,11 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { MeetingNotes } from "@/components/meeting-notes"
+import { getNextConferenceSession } from "@/lib/opening-conference-content"
 
 export default function ConferenceMeetingPlaygroundPage() {
+  const nextSession = getNextConferenceSession()
+
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
       <PassionLogoHeader />
@@ -19,7 +22,12 @@ export default function ConferenceMeetingPlaygroundPage() {
       <div className="mt-10 flex flex-col gap-10">
         <div className="flex flex-col gap-1">
           <p className="text-sm text-muted-foreground">聚會場次、名稱</p>
-          <p className="text-2xl font-bold">場次名稱尚未公布</p>
+          <p className="text-2xl font-bold">
+            {nextSession.dateLabel}・{nextSession.sessionLabel}・{nextSession.typeLabel}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {nextSession.doorsOpenTime} 開放入場・{nextSession.startTime} 聚會開始
+          </p>
         </div>
 
         <div className="flex flex-col gap-1">
