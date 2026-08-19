@@ -18,7 +18,7 @@ export function ConferenceMissionHome({
   meetingHref?: string
 } = {}) {
   return (
-    <main className="min-h-svh bg-[#feed74] pb-16">
+    <main className="mx-auto min-h-svh max-w-2xl bg-[#feed74] pb-16">
       {/* TODO: 頂部主視覺圖片尚未提供，之後補上後改成 sticky top-0 吸頂固定 */}
 
       <div className="px-4 pt-6 sm:px-6">
