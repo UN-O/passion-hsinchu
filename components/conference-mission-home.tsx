@@ -20,7 +20,8 @@ export function ConferenceMissionHome({
   return (
     <main className="min-h-svh bg-[#feed74] pb-16">
       <div className="mx-auto max-w-2xl">
-        <div className="sticky top-0 z-10 bg-[#feed74] pt-4">
+        {/* 主視覺四邊留空間，跟下面工作坊／聚會場次同一層 px 內距，不貼齊螢幕邊緣 */}
+        <div className="sticky top-0 z-10 bg-[#feed74] px-4 py-4 sm:px-6">
           <Image
             src="/images/conference-hero-wordmark.png"
             alt="THE COURAGE GENERATIONS 勇者世代"
@@ -37,7 +38,7 @@ export function ConferenceMissionHome({
             alt="我們相信，每個人都會在這裡遇見神。WE BELIEVE EVERYONE WILL EXPERIENCE GOD'S PRESENCE HERE."
             width={1200}
             height={126}
-            className="h-auto w-full"
+            className="h-auto w-[70%]"
           />
 
           {/* 工作坊主視覺尚未提供圖片，先用純色塊佔位，往右滑可看到其他工作坊 */}

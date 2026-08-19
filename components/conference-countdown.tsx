@@ -22,12 +22,26 @@ function pad(value: number) {
 // 目前只有整場特會的起訖時間，還沒有逐場聚會的排程資料，先倒數到特會開始。
 // 等聚會排程資料表定案後，改成倒數到「下一場還沒開始的聚會」。
 export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
-  const [remaining, setRemaining] = useState(() => getRemaining(targetISO))
+  // 初始值故意留 null（不要在第一次 render 就用 Date.now() 算）：伺服器算出來的
+  // 秒數跟瀏覽器 hydrate 那一刻的秒數幾乎一定不同，會被 React 判定成 hydration
+  // mismatch。改成掛載後才在 client 算第一次，SSR 那次只吐一個固定的空殼。
+  const [remaining, setRemaining] = useState<ReturnType<typeof getRemaining> | null>(null)
 
   useEffect(() => {
-    const id = setInterval(() => setRemaining(getRemaining(targetISO)), 1000)
-    return () => clearInterval(id)
+    const tick = () => setRemaining(getRemaining(targetISO))
+    // 用 setTimeout(tick, 0) 讓第一次更新延到下一個事件循環，避免在 effect
+    // 主體內直接同步呼叫 setState（react-hooks/set-state-in-effect）。
+    const timeoutId = setTimeout(tick, 0)
+    const intervalId = setInterval(tick, 1000)
+    return () => {
+      clearTimeout(timeoutId)
+      clearInterval(intervalId)
+    }
   }, [targetISO])
+
+  if (!remaining) {
+    return <div className="mt-3 h-[52px] sm:h-[60px]" aria-hidden />
+  }
 
   if (remaining.done) {
     return <p className="mt-3 text-xl font-bold text-black">聚會進行中</p>
