@@ -10,6 +10,20 @@ import { getEnrollmentById, type Enrollment } from "./enrollment"
 
 export type Flow = "camp" | "conference"
 
+// 開場勇者測驗的結果，寫在 flow_progress.payload（flow = "camp"）。
+export type CampQuizResult = {
+  aCount: number
+  heroName: string
+}
+
+function parseCampQuizResult(payload: unknown): CampQuizResult | null {
+  if (!payload || typeof payload !== "object") return null
+  const aCount = (payload as Record<string, unknown>).aCount
+  const heroName = (payload as Record<string, unknown>).heroName
+  if (typeof aCount !== "number" || aCount < 0 || aCount > 4) return null
+  return { aCount, heroName: typeof heroName === "string" ? heroName : "" }
+}
+
 export type AppSession = {
   user: {
     id: string
@@ -26,6 +40,7 @@ export type AppSession = {
   // 就能繞進去，Google 驗證形同虛設。
   isVerified: boolean
   completedFlows: Flow[]
+  campQuizResult: CampQuizResult | null
 }
 
 export async function getAppSession(): Promise<AppSession | null> {
@@ -42,10 +57,12 @@ export async function getAppSession(): Promise<AppSession | null> {
       .where(and(eq(account.userId, user.id), eq(account.providerId, "google")))
       .limit(1),
     db
-      .select({ flow: flowProgress.flow, completedAt: flowProgress.completedAt })
+      .select({ flow: flowProgress.flow, completedAt: flowProgress.completedAt, payload: flowProgress.payload })
       .from(flowProgress)
       .where(eq(flowProgress.userId, user.id)),
   ])
+
+  const campRow = progress.find((p) => p.flow === "camp")
 
   return {
     user: {
@@ -58,16 +75,18 @@ export async function getAppSession(): Promise<AppSession | null> {
     enrollment,
     isVerified: googleAccounts.length > 0,
     completedFlows: progress.filter((p) => p.completedAt !== null).map((p) => p.flow),
+    campQuizResult: campRow ? parseCampQuizResult(campRow.payload) : null,
   }
 }
 
-export async function markFlowComplete(userId: string, flow: Flow) {
+export async function markFlowComplete(userId: string, flow: Flow, payload?: unknown) {
+  const completedAt = new Date()
   await db
     .insert(flowProgress)
-    .values({ userId, flow, completedAt: new Date() })
+    .values({ userId, flow, completedAt, payload: payload ?? null })
     .onConflictDoUpdate({
       target: [flowProgress.userId, flowProgress.flow],
-      set: { completedAt: new Date() },
+      set: payload !== undefined ? { completedAt, payload } : { completedAt },
     })
 }
 

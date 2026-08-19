@@ -9,9 +9,10 @@ import "./camp-profile-card.css"
 type CampProfileCardProps = {
   heroName: string
   result: CampProfileResult
+  showUserInfo?: boolean
 }
 
-export function CampProfileCard({ heroName, result }: CampProfileCardProps) {
+export function CampProfileCard({ heroName, result, showUserInfo = true }: CampProfileCardProps) {
   return (
     <div className="camp-profile-card-stage">
       <div className="camp-profile-card-draw">
@@ -33,6 +34,7 @@ export function CampProfileCard({ heroName, result }: CampProfileCardProps) {
             miniAvatarUrl={heroAvatarDataUri(heroName)}
             iconUrl={heroIconPatternUri(result.aCount)}
             grainUrl={heroGrainUri()}
+            showUserInfo={showUserInfo}
             innerGradient="linear-gradient(160deg, rgba(255, 233, 168, 0.44) 0%, rgba(39, 32, 22, 0.92) 100%)"
             behindGlowEnabled
             behindGlowColor="rgba(238, 233, 175, 1)"

@@ -16,7 +16,7 @@ export default async function CampPage() {
   // 做完開場（點過「開始冒險」）之後，/camp 換成任務主頁；
   // 還沒做完的人繼續看原本的活動資訊頁，引導去開場。
   if (session.completedFlows.includes("camp")) {
-    return <CampMissionHome />
+    return <CampMissionHome heroName={session.campQuizResult?.heroName || session.user.name} />
   }
 
   return <ProgramPortal flow="camp" program={camp} session={session} />

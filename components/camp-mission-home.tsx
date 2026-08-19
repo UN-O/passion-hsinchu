@@ -4,7 +4,7 @@ import Link from "next/link"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { getRegionTotals } from "@/lib/exp"
-import { HERO_AVATAR_PLACEHOLDER_URI } from "@/lib/hero-card-visuals"
+import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
 
 // 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
 // 先放佔位內容做畫面，之後接上真正的小隊資料庫再換掉（之後會把全部名單分隊做進後台）。
@@ -32,9 +32,11 @@ function SectionCard({ children, className = "" }: { children: React.ReactNode; 
 export async function CampMissionHome({
   profileHref = "/camp/profile",
   meetingHref = "/camp/meeting",
+  heroName = "",
 }: {
   profileHref?: string
   meetingHref?: string
+  heroName?: string
 } = {}) {
   const totals = await getRegionTotals()
   const zoneScores = ZONE_META.map((zone) => ({ ...zone, total: totals[zone.key] }))
@@ -48,7 +50,8 @@ export async function CampMissionHome({
             aria-label="個人資料"
             className="flex size-10 items-center justify-center overflow-hidden rounded-full border border-border bg-background"
           >
-            <Image src={HERO_AVATAR_PLACEHOLDER_URI} alt="個人資料" width={40} height={40} className="size-full object-cover" />
+            {/* eslint-disable-next-line @next/next/no-img-element -- data URI 頭像，next/image 優化不到 */}
+            <img src={heroAvatarDataUri(heroName)} alt="個人資料" className="size-full object-cover" />
           </Link>
         }
       />

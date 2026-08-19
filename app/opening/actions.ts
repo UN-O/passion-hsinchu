@@ -11,6 +11,16 @@ export async function completeOpening(formData: FormData) {
   const flow = String(formData.get("flow") ?? "")
   if (flow !== "camp" && flow !== "conference") redirect("/")
 
-  await markFlowComplete(session.user.id, flow as Flow)
+  const rawPayload = formData.get("payload")
+  let payload: unknown
+  if (typeof rawPayload === "string" && rawPayload.length > 0) {
+    try {
+      payload = JSON.parse(rawPayload)
+    } catch {
+      payload = undefined
+    }
+  }
+
+  await markFlowComplete(session.user.id, flow as Flow, payload)
   redirect("/")
 }

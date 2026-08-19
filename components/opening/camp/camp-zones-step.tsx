@@ -3,6 +3,7 @@
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { Button } from "@/components/ui/button"
 import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
+import { useCampFlow } from "@/components/opening/camp-flow-context"
 import { CampZonesGrid } from "@/components/opening/camp/camp-zones-reveal"
 import { campZoneScreens } from "@/lib/opening-camp-content"
 import { openingGradients } from "@/lib/opening-gradients"
@@ -12,6 +13,8 @@ import { campStepFromPath, type CampStep } from "@/lib/opening-steps"
 export const zoneImages = campZoneScreens.map((zone) => zone.icon)
 
 export function CampZonesStep({ onStepChange }: { onStepChange: (step: CampStep) => void }) {
+  const { aCount, heroName } = useCampFlow()
+
   return (
     <OpeningTransitionProvider onNavigate={(path) => onStepChange(campStepFromPath(path))}>
       <ImmersiveScreen
@@ -24,6 +27,7 @@ export function CampZonesStep({ onStepChange }: { onStepChange: (step: CampStep)
           <CampZonesGrid zones={campZoneScreens} />
           <form action={completeOpening}>
             <input type="hidden" name="flow" value="camp" />
+            <input type="hidden" name="payload" value={JSON.stringify({ aCount, heroName })} />
             <Button size="lg" type="submit">
               開始冒險
             </Button>
