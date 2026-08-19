@@ -25,7 +25,7 @@ export function ConferenceMissionHome({
   const [nextMeetingVisualOpen, setNextMeetingVisualOpen] = useState(false)
 
   return (
-    <main className="min-h-svh bg-[#feed74] pb-16">
+    <main className="min-h-svh bg-[#feed74]">
       <div className="mx-auto max-w-2xl">
         {/* 主視覺四邊留空間，跟下面工作坊／聚會場次同一層 px 內距，不貼齊螢幕邊緣 */}
         <div className="sticky top-0 z-10 bg-[#feed74] px-4 py-4 sm:px-6">
@@ -93,15 +93,15 @@ export function ConferenceMissionHome({
             <ConferenceCountdown targetISO={conference.startDateISO} />
           </div>
 
-          <div className="mt-10 flex justify-center">
-            <Image
-              src="/images/passion-logo.png"
-              alt="PASSION®"
-              width={979}
-              height={178}
-              className="h-6 w-auto brightness-0"
-            />
-          </div>
+          {/* 聚會流程表整張圖直接放到頁面最底部，跟上面倒數計時卡片之間留 mt-6 的空隙，
+              沒有圓角、下面不留白，圖片底部就是頁面底部。 */}
+          <Image
+            src="/images/conference-schedule.jpg"
+            alt="PASSION CONFERENCE 特會流程表"
+            width={480}
+            height={1000}
+            className="mt-6 h-auto w-full"
+          />
         </div>
       </div>
 
