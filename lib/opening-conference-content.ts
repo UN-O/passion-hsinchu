@@ -171,7 +171,6 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
   { id: "workshop-2", title: "工作坊二", body: "工作坊詳細內容尚待補充。" },
   { id: "workshop-3", title: "工作坊三", body: "工作坊詳細內容尚待補充。" },
   { id: "workshop-4", title: "工作坊四", body: "工作坊詳細內容尚待補充。" },
-  { id: "workshop-5", title: "工作坊五", body: "工作坊詳細內容尚待補充。" },
 ]
 
 export function getConferenceWorkshop(id: string): ConferenceWorkshop | undefined {
