@@ -38,7 +38,12 @@ export function SquadCourageCard({ squadName, total }: { squadName: string; tota
       </div>
       <div className="mt-1 flex items-end justify-between gap-4">
         <p className="text-6xl font-bold text-primary">{total.toLocaleString("en-US")}</p>
-        <p className={`${mantouSans.className} shrink-0 text-3xl tracking-wide`}>{squadName}</p>
+        <p
+          className={`${mantouSans.className} shrink-0 text-3xl tracking-wide`}
+          style={{ color: "#ffffff", WebkitTextStroke: "1px #000000" }}
+        >
+          {squadName}
+        </p>
       </div>
     </>
   )

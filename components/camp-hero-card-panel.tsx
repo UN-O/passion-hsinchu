@@ -85,7 +85,7 @@ export function CampHeroCardPanel({ heroName, result }: { heroName: string; resu
         }
         style={{ transform: `translateX(${detailsX}px)`, transition }}
       >
-        <CampHeroDetails result={result} />
+        <CampHeroDetails result={result} tone="light" />
       </div>
 
       <div

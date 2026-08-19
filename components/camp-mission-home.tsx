@@ -6,12 +6,9 @@ import { CampSidebar } from "@/components/camp-sidebar"
 import { SquadCourageCard } from "@/components/squad-courage-card"
 import { IgStoriesSection } from "@/components/ig-stories-section"
 import { ZoneScoreChart } from "@/components/zone-score-chart"
-// 倒數計時卡片跟 CONF 共用同一個元件（純看 targetISO，沒有 conference 專屬邏輯），
-// 跟 meeting-notes.tsx 共用的道理一樣。
-import { ConferenceCountdown } from "@/components/conference-countdown"
+import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { getRegionTotals } from "@/lib/exp"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
-import { camp } from "@/lib/site-config"
 
 // 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
 // 先放佔位內容做畫面，之後接上真正的小隊資料庫再換掉（之後會把全部名單分隊做進後台）。
@@ -112,22 +109,7 @@ export async function CampMissionHome({
         <p className="mt-2 text-2xl font-bold text-white">{PLACEHOLDER_MEETING_TITLE}</p>
       </Link>
 
-      {/* 跟 CONF 那邊「下場聚會倒數」卡片同樣的樣式（bg-slate-300 卡片、Noto Sans JP
-          標籤、照片下緣疊霧化玻璃倒數數字）。CAMP 目前沒有逐場聚會的時間表，只有
-          整個營會的起訖時間，倒數目標先用 camp.startDateISO；也還沒有真的聚會
-          視覺照片可以放，先用色塊佔位，等有照片再比照 CONF 加上可點開的大圖預覽。 */}
-      <div className="mt-6 rounded-3xl bg-slate-300 p-6">
-        <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-black/70">
-          距離營會開始還剩...
-        </p>
-
-        <div className="relative mt-3 aspect-video w-full overflow-hidden rounded-2xl bg-slate-400">
-          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/50 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
-            <ConferenceCountdown targetISO={camp.startDateISO} />
-          </div>
-        </div>
-      </div>
+      <CampCountdownCard />
 
       <SectionCard className="mt-6 flex flex-col gap-2">
         <p className="text-sm text-muted-foreground">官方 IG 限時動態</p>
