@@ -54,16 +54,24 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
   ]
 
   return (
-    <div className="mt-3 flex items-center gap-1.5 sm:gap-2">
-      {segments.map((segment, index) => (
-        <div key={segment.label} className="flex items-center gap-1.5 sm:gap-2">
-          <div className="flex flex-col items-center gap-0.5 rounded-xl bg-white/70 px-2.5 py-1.5 sm:px-3 sm:py-2">
-            <span className="text-lg font-bold tabular-nums text-black sm:text-2xl">{pad(segment.value)}</span>
-            <span className="text-[10px] text-black/60">{segment.label}</span>
+    // @container：讓數字用 cqw（容器寬度百分比）等比例縮放，縮放基準是這張卡片
+    // 本身的寬度，不是整個視窗寬度，這樣卡片多寬，數字就跟著等比例放多大。
+    <div className="@container mt-3 w-full">
+      <div className="flex items-center gap-[2cqw]">
+        {segments.map((segment, index) => (
+          <div key={segment.label} className="flex flex-1 items-center gap-[2cqw]">
+            <div className="flex flex-1 flex-col items-center gap-[0.5cqw] rounded-xl bg-white/70 py-[3cqw]">
+              <span className="text-[11cqw] leading-none font-bold tabular-nums text-black">
+                {pad(segment.value)}
+              </span>
+              <span className="text-[2.5cqw] text-black/60">{segment.label}</span>
+            </div>
+            {index < segments.length - 1 && (
+              <span className="text-[7cqw] font-bold text-black/30">:</span>
+            )}
           </div>
-          {index < segments.length - 1 && <span className="text-lg font-bold text-black/30">:</span>}
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
