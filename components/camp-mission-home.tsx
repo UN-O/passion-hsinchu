@@ -4,6 +4,7 @@ import Link from "next/link"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampSidebar } from "@/components/camp-sidebar"
 import { SquadCourageCard } from "@/components/squad-courage-card"
+import { IgStoriesSection } from "@/components/ig-stories-section"
 import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { getRegionTotals } from "@/lib/exp"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
@@ -90,6 +91,11 @@ export async function CampMissionHome({
       <SectionCard className="mt-6 flex flex-col gap-1">
         <p className="text-sm text-muted-foreground">下場聚會倒數</p>
         <p className="text-xl font-bold">時間尚未公布</p>
+      </SectionCard>
+
+      <SectionCard className="mt-6 flex flex-col gap-2">
+        <p className="text-sm text-muted-foreground">官方 IG 限時動態</p>
+        <IgStoriesSection />
       </SectionCard>
     </main>
   )
