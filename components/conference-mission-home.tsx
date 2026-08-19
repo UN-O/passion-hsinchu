@@ -33,13 +33,13 @@ export function ConferenceMissionHome({
   useDialogBackClose(nextMeetingVisualOpen, () => setNextMeetingVisualOpen(false))
 
   return (
-    <main className="min-h-svh bg-[#feed74]">
+    <main className="min-h-svh bg-[#0458e2]">
       <div className="mx-auto max-w-2xl">
         {/* 主視覺四邊留空間，跟下面工作坊／聚會場次同一層 px 內距，不貼齊螢幕邊緣。
             上方額外加 env(safe-area-inset-top)：App 化後全螢幕沒有網址列，
             iPhone 瀏海／動態島或 Android 狀態列不然會直接疊在主視覺上面。 */}
         <div
-          className="sticky top-0 z-10 bg-[#feed74] px-4 pb-4 sm:px-6"
+          className="sticky top-0 z-10 bg-[#0458e2] px-4 pb-4 sm:px-6"
           style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
         >
           <Image
@@ -117,7 +117,7 @@ export function ConferenceMissionHome({
           圖片正上方疊一條短短的黃色→透明漸層，讓背景黃色跟圖片的藍色之間有個過渡，
           高度故意抓短，只蓋到圖片最上緣還沒有文字內容的地方，不會擋到流程表內容。 */}
       <div className="relative mt-12">
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-[linear-gradient(to_bottom,#feed74,transparent)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-[linear-gradient(to_bottom,#0458e2,transparent)]" />
         <Image
           src="/images/conference-schedule.jpg"
           alt="PASSION CONFERENCE 特會流程表"
