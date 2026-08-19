@@ -108,7 +108,9 @@ export function ConferenceMissionHome({
           </Link>
 
           <div className="mt-6 rounded-3xl bg-slate-300 p-6">
-            <p className="text-sm font-medium text-black/70">下場聚會倒數</p>
+            <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-black/70">
+              距離下場聚會還剩
+            </p>
 
             {/* 下場聚會視覺先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換。
                 點下去彈出 16:9 大圖預覽。倒數計時疊在照片下緣，底下加一層黑色

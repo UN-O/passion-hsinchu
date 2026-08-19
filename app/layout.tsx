@@ -1,12 +1,13 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
 import "./globals.css"
-import { Inter } from "next/font/google";
+import { Inter, Noto_Sans_JP } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { JsonLd } from "@/components/json-ld";
 import { siteConfig, socialLinks } from "@/lib/site-config";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const notoSansJP = Noto_Sans_JP({ subsets: ["latin"], weight: ["700"], variable: "--font-noto-jp" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -79,7 +80,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="zh-TW" className={cn("font-sans", inter.variable)}>
+    <html lang="zh-TW" className={cn("font-sans", inter.variable, notoSansJP.variable)}>
       <body className="antialiased">
         <JsonLd data={organizationJsonLd} />
         {children}
