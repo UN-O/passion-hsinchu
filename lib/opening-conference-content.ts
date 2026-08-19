@@ -160,8 +160,18 @@ export function getCategoryForItem(itemId: string): ConferenceCategory | undefin
 }
 
 // TODO: 使用者尚未提供實際工作坊清單，先放合理佔位文案
-export const conferenceWorkshops: { title: string; body: string }[] = [
-  { title: "工作坊一", body: "工作坊詳細內容尚待補充。" },
-  { title: "工作坊二", body: "工作坊詳細內容尚待補充。" },
-  { title: "工作坊三", body: "工作坊詳細內容尚待補充。" },
+export type ConferenceWorkshop = {
+  id: string
+  title: string
+  body: string
+}
+
+export const conferenceWorkshops: ConferenceWorkshop[] = [
+  { id: "workshop-1", title: "工作坊一", body: "工作坊詳細內容尚待補充。" },
+  { id: "workshop-2", title: "工作坊二", body: "工作坊詳細內容尚待補充。" },
+  { id: "workshop-3", title: "工作坊三", body: "工作坊詳細內容尚待補充。" },
 ]
+
+export function getConferenceWorkshop(id: string): ConferenceWorkshop | undefined {
+  return conferenceWorkshops.find((workshop) => workshop.id === id)
+}

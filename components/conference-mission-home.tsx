@@ -1,12 +1,14 @@
+import Image from "next/image"
 import Link from "next/link"
 
-import { PassionLogoHeader } from "@/components/passion-logo-header"
+import { ConferenceCountdown } from "@/components/conference-countdown"
+import { conferenceWorkshops } from "@/lib/opening-conference-content"
+import { conference } from "@/lib/site-config"
 
-function SectionCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`rounded-3xl border border-border bg-muted/20 p-6 ${className}`}>{children}</div>
-  )
-}
+// 聚會場次的詳細內容目前沒有 CMS 可以管理，先用整場特會第一天的時間佔位，
+// 等聚會排程資料表定案後改成真的「下一場聚會」資訊。
+const PLACEHOLDER_MEETING_DAY_LABEL = "DAY1 聚會"
+const PLACEHOLDER_MEETING_TITLE = "聚會標題"
 
 export function ConferenceMissionHome({
   workshopsHref = "/conference/workshops",
@@ -16,35 +18,63 @@ export function ConferenceMissionHome({
   meetingHref?: string
 } = {}) {
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
-      <PassionLogoHeader />
+    <main className="min-h-svh bg-[#feed74] pb-16">
+      <div className="sticky top-0 z-10 h-44 w-full sm:h-56">
+        <div className="relative size-full">
+          <Image
+            src="/og-image.jpg"
+            alt="PASSION® THE COURAGE GENERATIONS 勇者世代"
+            fill
+            priority
+            className="object-cover"
+          />
+        </div>
+      </div>
 
-      <Link href={workshopsHref} className="mt-10 block">
-        <SectionCard className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">工作坊</p>
-          <p className="text-xl font-bold">查看工作坊介紹</p>
-        </SectionCard>
-      </Link>
+      <div className="px-4 pt-6 sm:px-6">
+        <p className="text-lg font-bold text-black sm:text-xl">歡迎來到 PASSION</p>
 
-      {/* 工作坊報名目前還沒有後端可以存選擇結果，先連到同一個介紹頁。 */}
-      <Link href={workshopsHref} className="mt-6 block">
-        <SectionCard className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">工作坊</p>
-          <p className="text-xl font-bold">工作坊報名</p>
-        </SectionCard>
-      </Link>
+        {/* 工作坊主視覺尚未提供圖片，先用純色塊佔位，往右滑可看到其他工作坊 */}
+        <div
+          className="mt-6 flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ scrollSnapType: "x mandatory" }}
+        >
+          {conferenceWorkshops.map((workshop, index) => (
+            <Link
+              key={workshop.id}
+              href={`${workshopsHref}/${workshop.id}`}
+              aria-label={workshop.title}
+              className="flex aspect-square w-28 shrink-0 items-end rounded-3xl bg-[#3B82F6] p-3 sm:w-36 sm:p-4"
+              style={{ scrollSnapAlign: "start" }}
+            >
+              <span className="text-xs font-semibold text-white/70">
+                {(index + 1).toString().padStart(2, "0")}
+              </span>
+            </Link>
+          ))}
+        </div>
 
-      <Link href={meetingHref} className="mt-6 block">
-        <SectionCard className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">聚會內容</p>
-          <p className="text-xl font-bold">查看這場聚會的大綱與筆記</p>
-        </SectionCard>
-      </Link>
+        {/* 聚會內容目前沒有 CMS，先放佔位文字，之後接上真正的聚會資料 */}
+        <Link href={meetingHref} className="mt-6 block rounded-3xl bg-[#DC2626] p-6">
+          <p className="text-sm text-white/80">{PLACEHOLDER_MEETING_DAY_LABEL}</p>
+          <p className="mt-2 text-2xl font-bold text-white">{PLACEHOLDER_MEETING_TITLE}</p>
+        </Link>
 
-      <SectionCard className="mt-6 flex flex-col gap-1">
-        <p className="text-sm text-muted-foreground">下場聚會倒數</p>
-        <p className="text-xl font-bold">時間尚未公布</p>
-      </SectionCard>
+        <div className="mt-6 rounded-3xl bg-slate-300 p-6">
+          <p className="text-sm font-medium text-black/70">下場聚會倒數</p>
+          <ConferenceCountdown targetISO={conference.startDateISO} />
+        </div>
+
+        <div className="mt-10 flex justify-center">
+          <Image
+            src="/images/passion-logo.png"
+            alt="PASSION®"
+            width={979}
+            height={178}
+            className="h-6 w-auto brightness-0"
+          />
+        </div>
+      </div>
     </main>
   )
 }
