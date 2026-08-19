@@ -12,6 +12,7 @@ export function CampHeroDetails({ result }: { result: CampProfileResult }) {
         alt="Place holder png"
         width={160}
         height={160}
+        draggable={false}
         className="aspect-square w-full max-w-40 self-center rounded-2xl border border-white/30 object-cover"
       />
       <p>{result.description}</p>

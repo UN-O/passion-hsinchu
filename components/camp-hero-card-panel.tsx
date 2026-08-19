@@ -14,8 +14,10 @@ const SETTLE_TRANSITION = "transform 250ms ease-out"
 // 所以拖曳中用即時 pointermove 追蹤位移；放開後再決定要滑過門檻（換頁，往拖曳方向滑出去，
 // 另一頁跟著從同一側滑入）還是彈回原位。換頁完成的瞬間要關掉 transition 直接重置位移，
 // 否則新內容會從剛剛滑出去的位置「彈回」中間，看起來像抖一下。
-// width 存成 state 而不是 ref：incomingOffset 會在 render 裡用到它，讀 ref.current
-// 算 render 期間讀 ref，React 會警告（refs 只該在 event handler／effect 裡讀）。
+//
+// 卡片跟介紹兩個區塊「一直都掛在 DOM 上」，只是用 transform 移進移出可視範圍——
+// 不能依 current 條件式地決定要 render 哪一個再互相替換，那樣換頁時卡片會被整個
+// 卸載又重新掛載，CampProfileCard 內建的抽卡入場動畫（camp-card-draw）就會重播。
 export function CampHeroCardPanel({ heroName, result }: { heroName: string; result: CampProfileResult }) {
   const [current, setCurrent] = useState<0 | 1>(1)
   const [dragX, setDragX] = useState(0)
@@ -23,17 +25,10 @@ export function CampHeroCardPanel({ heroName, result }: { heroName: string; resu
   const [width, setWidth] = useState(320)
   const containerRef = useRef<HTMLDivElement>(null)
   const startXRef = useRef<number | null>(null)
-
-  const renderPage = (page: 0 | 1) =>
-    page === 0 ? (
-      <div className="flex w-full flex-col items-center justify-center overflow-y-auto px-1">
-        <CampHeroDetails result={result} />
-      </div>
-    ) : (
-      <div className="w-full px-1">
-        <CampProfileCard heroName={heroName} result={result} showUserInfo={false} />
-      </div>
-    )
+  // 卡片跟介紹兩塊在換頁時會「同時」各自跑一次 transform transition（一個滑出去、
+  // 一個滑進來），onTransitionEnd 掛在外層容器上會收到兩邊各自冒泡上來的事件——
+  // 不擋住的話 setCurrent 的 toggle 會被觸發兩次，等於直接切回原本那頁，等於沒切。
+  const settledRef = useRef(true)
 
   const handlePointerDown = (event: React.PointerEvent) => {
     startXRef.current = event.clientX
@@ -51,42 +46,54 @@ export function CampHeroCardPanel({ heroName, result }: { heroName: string; resu
     if (startXRef.current === null) return
     startXRef.current = null
     setInstant(false)
+    settledRef.current = false
     setDragX((value) => (Math.abs(value) > SWIPE_THRESHOLD_PX ? (value < 0 ? -width : width) : 0))
   }
 
-  const handleTransitionEnd = () => {
+  const handleTransitionEnd = (event: React.TransitionEvent) => {
+    if (event.propertyName !== "transform") return
+    if (settledRef.current) return
     if (Math.abs(dragX) < width) return
+    settledRef.current = true
     setInstant(true)
     setCurrent((prev) => (prev === 0 ? 1 : 0))
     setDragX(0)
   }
 
-  const incomingOffset = dragX === 0 ? null : dragX < 0 ? width : -width
+  // 非目前頁的位移：跟著目前的拖曳方向從對應那一側進場，靜止時隨便放哪一側都好
+  // （反正在可視範圍外，overflow-hidden 會裁掉）。
+  const otherOffset = dragX <= 0 ? width : -width
+  const detailsX = current === 0 ? dragX : dragX + otherOffset
+  const cardX = current === 1 ? dragX : dragX + otherOffset
+  const transition = instant ? "none" : SETTLE_TRANSITION
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-[320px] touch-pan-y overflow-hidden">
+    <div
+      ref={containerRef}
+      className="relative w-full max-w-[320px] touch-pan-y overflow-hidden select-none"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onTransitionEnd={handleTransitionEnd}
+    >
       <div
-        style={{ transform: `translateX(${dragX}px)`, transition: instant ? "none" : SETTLE_TRANSITION }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        onTransitionEnd={handleTransitionEnd}
+        className={
+          current === 0
+            ? "flex w-full flex-col items-center justify-center overflow-y-auto px-1"
+            : "absolute inset-0 flex flex-col items-center justify-center overflow-y-auto px-1"
+        }
+        style={{ transform: `translateX(${detailsX}px)`, transition }}
       >
-        {renderPage(current)}
+        <CampHeroDetails result={result} />
       </div>
 
-      {incomingOffset !== null && (
-        <div
-          className="absolute inset-0"
-          style={{
-            transform: `translateX(${dragX + incomingOffset}px)`,
-            transition: instant ? "none" : SETTLE_TRANSITION,
-          }}
-        >
-          {renderPage(current === 0 ? 1 : 0)}
-        </div>
-      )}
+      <div
+        className={current === 1 ? "w-full px-1" : "absolute inset-0 px-1"}
+        style={{ transform: `translateX(${cardX}px)`, transition }}
+      >
+        <CampProfileCard heroName={heroName} result={result} showUserInfo={false} />
+      </div>
     </div>
   )
 }

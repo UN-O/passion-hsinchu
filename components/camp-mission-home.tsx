@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { PassionLogoHeader } from "@/components/passion-logo-header"
+import { CampSidebar } from "@/components/camp-sidebar"
 import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { getRegionTotals } from "@/lib/exp"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
@@ -44,6 +45,7 @@ export async function CampMissionHome({
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
       <PassionLogoHeader
+        leftSlot={<CampSidebar />}
         rightSlot={
           <Link
             href={profileHref}
