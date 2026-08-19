@@ -104,22 +104,22 @@ export function ConferenceMissionHome({
 
             <ConferenceCountdown targetISO={conference.startDateISO} />
           </div>
-
-          {/* 聚會流程表整張圖直接放到頁面最底部，跟上面倒數計時卡片之間留 mt-12 的空隙，
-              沒有圓角、下面不留白，圖片底部就是頁面底部。
-              圖片正上方疊一條短短的黃色→透明漸層，讓背景黃色跟圖片的藍色之間有個過渡，
-              高度故意抓短，只蓋到圖片最上緣還沒有文字內容的地方，不會擋到流程表內容。 */}
-          <div className="relative mt-12">
-            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-[linear-gradient(to_bottom,#feed74,transparent)]" />
-            <Image
-              src="/images/conference-schedule.jpg"
-              alt="PASSION CONFERENCE 特會流程表"
-              width={480}
-              height={1000}
-              className="h-auto w-full"
-            />
-          </div>
         </div>
+      </div>
+
+      {/* 聚會流程表整張圖脫離上面 max-w-2xl 置中容器，左右直接貼齊螢幕邊緣佔滿版面，
+          跟倒數計時卡片之間留 mt-12 的空隙，沒有圓角、下面不留白，圖片底部就是頁面底部。
+          圖片正上方疊一條短短的黃色→透明漸層，讓背景黃色跟圖片的藍色之間有個過渡，
+          高度故意抓短，只蓋到圖片最上緣還沒有文字內容的地方，不會擋到流程表內容。 */}
+      <div className="relative mt-12">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-10 bg-[linear-gradient(to_bottom,#feed74,transparent)]" />
+        <Image
+          src="/images/conference-schedule.jpg"
+          alt="PASSION CONFERENCE 特會流程表"
+          width={480}
+          height={1000}
+          className="h-auto w-full"
+        />
       </div>
 
       <Dialog open={activeWorkshop !== undefined} onOpenChange={(next) => !next && setActiveWorkshopId(null)}>
