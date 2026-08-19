@@ -130,7 +130,7 @@ export function ConferenceMissionHome({
       <Dialog open={activeWorkshop !== undefined} onOpenChange={(next) => !next && setActiveWorkshopId(null)}>
         <DialogContent
           showCloseButton={false}
-          className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl border-none bg-card p-0 sm:max-w-sm"
+          className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl border-none bg-card p-0 sm:max-w-md"
         >
           <DialogTitle className="sr-only">{activeWorkshop?.title}</DialogTitle>
           <DialogClose className="absolute top-4 right-4 z-10 text-white/80 hover:text-white">
