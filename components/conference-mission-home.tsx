@@ -169,7 +169,7 @@ export function ConferenceMissionHome({
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium">
                 <MapPin className="size-4" />
-                {siteConfig.venueShortName}
+                {activeWorkshop?.location}
               </span>
               {activeWorkshop && isWorkshopRegistered(activeWorkshop.id) && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-medium text-green-400">

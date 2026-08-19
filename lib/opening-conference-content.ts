@@ -160,17 +160,20 @@ export function getCategoryForItem(itemId: string): ConferenceCategory | undefin
 }
 
 // TODO: 使用者尚未提供實際工作坊清單，先放合理佔位文案
+// 工作坊地點跟聚會不同棟，不能直接套用 siteConfig.venueShortName（築聖館），
+// 使用者說之後會另外提供每個工作坊各自的地點，先放「地點待公布」佔位。
 export type ConferenceWorkshop = {
   id: string
   title: string
   body: string
+  location: string
 }
 
 export const conferenceWorkshops: ConferenceWorkshop[] = [
-  { id: "workshop-1", title: "工作坊一", body: "工作坊詳細內容尚待補充。" },
-  { id: "workshop-2", title: "工作坊二", body: "工作坊詳細內容尚待補充。" },
-  { id: "workshop-3", title: "工作坊三", body: "工作坊詳細內容尚待補充。" },
-  { id: "workshop-4", title: "工作坊四", body: "工作坊詳細內容尚待補充。" },
+  { id: "workshop-1", title: "工作坊一", body: "工作坊詳細內容尚待補充。", location: "地點待公布" },
+  { id: "workshop-2", title: "工作坊二", body: "工作坊詳細內容尚待補充。", location: "地點待公布" },
+  { id: "workshop-3", title: "工作坊三", body: "工作坊詳細內容尚待補充。", location: "地點待公布" },
+  { id: "workshop-4", title: "工作坊四", body: "工作坊詳細內容尚待補充。", location: "地點待公布" },
 ]
 
 export function getConferenceWorkshop(id: string): ConferenceWorkshop | undefined {
