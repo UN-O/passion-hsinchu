@@ -56,18 +56,20 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
   return (
     // @container：讓數字用 cqw（容器寬度百分比）等比例縮放，縮放基準是這張卡片
     // 本身的寬度，不是整個視窗寬度，這樣卡片多寬，數字就跟著等比例放多大。
+    // cqw 尺寸都寫在 globals.css 的 .conf-countdown-* class 裡，帶了舊瀏覽器
+    // 看不懂 container query 時的固定尺寸備援（避免退回瀏覽器預設字級跑版）。
     <div className="@container mt-3 w-full">
-      <div className="flex items-center gap-[2cqw]">
+      <div className="conf-countdown-row flex items-center">
         {segments.map((segment, index) => (
-          <div key={segment.label} className="flex flex-1 items-center gap-[2cqw]">
-            <div className="flex flex-1 flex-col items-center gap-[0.5cqw] rounded-xl bg-white/70 py-[3cqw]">
-              <span className="text-[11cqw] leading-none font-bold tabular-nums text-black">
+          <div key={segment.label} className="conf-countdown-row flex flex-1 items-center">
+            <div className="conf-countdown-box flex flex-1 flex-col items-center rounded-xl bg-white/70">
+              <span className="conf-countdown-digit leading-none font-bold tabular-nums text-black">
                 {pad(segment.value)}
               </span>
-              <span className="text-[2.5cqw] text-black/60">{segment.label}</span>
+              <span className="conf-countdown-label text-black/60">{segment.label}</span>
             </div>
             {index < segments.length - 1 && (
-              <span className="text-[7cqw] font-bold text-black/30">:</span>
+              <span className="conf-countdown-colon font-bold text-black/30">:</span>
             )}
           </div>
         ))}

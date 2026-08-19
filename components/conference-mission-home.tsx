@@ -7,6 +7,7 @@ import { X } from "lucide-react"
 
 import { ConferenceCountdown } from "@/components/conference-countdown"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { useDialogBackClose } from "@/hooks/use-dialog-back-close"
 import { conferenceWorkshops, getConferenceWorkshop } from "@/lib/opening-conference-content"
 import { conference } from "@/lib/site-config"
 
@@ -24,11 +25,20 @@ export function ConferenceMissionHome({
   const activeWorkshop = activeWorkshopId ? getConferenceWorkshop(activeWorkshopId) : undefined
   const [nextMeetingVisualOpen, setNextMeetingVisualOpen] = useState(false)
 
+  // App 化之後，讓系統返回鍵／手勢可以先關掉彈窗，而不是直接離開頁面
+  useDialogBackClose(activeWorkshop !== undefined, () => setActiveWorkshopId(null))
+  useDialogBackClose(nextMeetingVisualOpen, () => setNextMeetingVisualOpen(false))
+
   return (
     <main className="min-h-svh bg-[#feed74]">
       <div className="mx-auto max-w-2xl">
-        {/* 主視覺四邊留空間，跟下面工作坊／聚會場次同一層 px 內距，不貼齊螢幕邊緣 */}
-        <div className="sticky top-0 z-10 bg-[#feed74] px-4 py-4 sm:px-6">
+        {/* 主視覺四邊留空間，跟下面工作坊／聚會場次同一層 px 內距，不貼齊螢幕邊緣。
+            上方額外加 env(safe-area-inset-top)：App 化後全螢幕沒有網址列，
+            iPhone 瀏海／動態島或 Android 狀態列不然會直接疊在主視覺上面。 */}
+        <div
+          className="sticky top-0 z-10 bg-[#feed74] px-4 pb-4 sm:px-6"
+          style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
+        >
           <Image
             src="/images/conference-hero-wordmark.png"
             alt="THE COURAGE GENERATIONS 勇者世代"
@@ -48,9 +58,11 @@ export function ConferenceMissionHome({
             className="h-auto w-[70%]"
           />
 
-          {/* 工作坊主視覺尚未提供圖片，先用純色塊佔位。點卡片彈出視窗顯示介紹，不跳頁。 */}
+          {/* 工作坊主視覺尚未提供圖片，先用純色塊佔位。點卡片彈出視窗顯示介紹，不跳頁。
+              overscroll-x-contain：滑到這排的頭尾邊界時，捲動不會「溢出」去觸發
+              App 外層的返回手勢（iOS／Android 邊緣滑動＝返回），滑動效果留在這排裡面。 */}
           <div
-            className="mt-6 flex gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="mt-6 flex gap-4 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{ scrollSnapType: "x mandatory" }}
           >
             {conferenceWorkshops.map((workshop, index) => (

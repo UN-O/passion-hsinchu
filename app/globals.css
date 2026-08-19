@@ -170,3 +170,33 @@
     stroke-dashoffset: 0;
   }
 }
+
+/* conference-countdown.tsx 用的 container query 尺寸。同一個屬性寫兩次是故意的：
+   舊瀏覽器（不支援 cqw／container query）會直接忽略看不懂的那一行，
+   保留前一行的固定尺寸當備援；有支援的瀏覽器則是後面那行覆蓋前面，正常等比例縮放。 */
+.conf-countdown-row {
+  gap: 0.5rem;
+  gap: 2cqw;
+}
+
+.conf-countdown-box {
+  gap: 0.125rem;
+  gap: 0.5cqw;
+  padding-block: 0.5rem;
+  padding-block: 3cqw;
+}
+
+.conf-countdown-digit {
+  font-size: 2.5rem;
+  font-size: 11cqw;
+}
+
+.conf-countdown-label {
+  font-size: 0.75rem;
+  font-size: 2.5cqw;
+}
+
+.conf-countdown-colon {
+  font-size: 1.75rem;
+  font-size: 7cqw;
+}
