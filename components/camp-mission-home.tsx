@@ -3,6 +3,7 @@ import Link from "next/link"
 
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampSidebar } from "@/components/camp-sidebar"
+import { SquadCourageCard } from "@/components/squad-courage-card"
 import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { getRegionTotals } from "@/lib/exp"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
@@ -10,7 +11,6 @@ import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
 // 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
 // 先放佔位內容做畫面，之後接上真正的小隊資料庫再換掉（之後會把全部名單分隊做進後台）。
 // 六眼肥魚是小丑魚區的小隊。
-const PLACEHOLDER_SQUAD_ZONE = "小丑魚區"
 const PLACEHOLDER_SQUAD_NAME = "六眼肥魚"
 const PLACEHOLDER_SQUAD_COURAGE_POINTS = 1280
 
@@ -71,13 +71,8 @@ export async function CampMissionHome({
         ))}
       </SectionCard>
 
-      <SectionCard className="mt-6 flex flex-col gap-1">
-        <p className="text-sm text-muted-foreground">{PLACEHOLDER_SQUAD_ZONE}</p>
-        <p className="text-xl font-bold">{PLACEHOLDER_SQUAD_NAME}</p>
-        <p className="text-3xl font-bold text-primary">
-          {PLACEHOLDER_SQUAD_COURAGE_POINTS.toLocaleString("en-US")}
-          <span className="ml-1 text-base font-normal text-muted-foreground">勇氣值</span>
-        </p>
+      <SectionCard className="mt-6">
+        <SquadCourageCard squadName={PLACEHOLDER_SQUAD_NAME} total={PLACEHOLDER_SQUAD_COURAGE_POINTS} />
       </SectionCard>
 
       <SectionCard className="mt-6 flex flex-col gap-2">
