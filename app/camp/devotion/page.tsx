@@ -4,15 +4,13 @@ import { ArrowLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
+import { CampDevotionContent } from "@/components/camp-devotion-content"
 import { requireFlowAccess } from "@/lib/session"
 
 export const metadata: Metadata = {
   title: "靈修內容",
   robots: { index: false, follow: false },
 }
-
-// 靈修內容目前沒有地方持久化，先放佔位文字，等內容確定後補上。
-const PLACEHOLDER_TEXT = "這裡先放佔位文字，等靈修內容確定後補上。"
 
 export default async function CampDevotionPage() {
   await requireFlowAccess("camp")
@@ -27,9 +25,11 @@ export default async function CampDevotionPage() {
         </Link>
       </Button>
 
-      <div className="mt-10 flex flex-col gap-1">
+      <div className="mt-10">
         <p className="text-sm text-muted-foreground">靈修內容</p>
-        <p className="text-base">{PLACEHOLDER_TEXT}</p>
+        <div className="mt-4">
+          <CampDevotionContent />
+        </div>
       </div>
     </main>
   )
