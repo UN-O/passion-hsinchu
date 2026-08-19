@@ -3,12 +3,12 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { X } from "lucide-react"
+import { Check, X } from "lucide-react"
 
 import { ConferenceCountdown } from "@/components/conference-countdown"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useDialogBackClose } from "@/hooks/use-dialog-back-close"
-import { conferenceWorkshops, getConferenceWorkshop } from "@/lib/opening-conference-content"
+import { conferenceWorkshops, getConferenceWorkshop, isWorkshopRegistered } from "@/lib/opening-conference-content"
 import { conference } from "@/lib/site-config"
 
 // 聚會場次的詳細內容目前沒有 CMS 可以管理，先用整場特會第一天的時間佔位，
@@ -138,7 +138,15 @@ export function ConferenceMissionHome({
 
           <div className="flex flex-col gap-2 p-6">
             <p className="text-sm text-muted-foreground">工作坊介紹</p>
-            <p className="text-xl font-bold">{activeWorkshop?.title}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xl font-bold">{activeWorkshop?.title}</p>
+              {activeWorkshop && isWorkshopRegistered(activeWorkshop.id) && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-medium text-green-400">
+                  <Check className="size-3.5 rounded-full bg-green-400 p-0.5 text-card" strokeWidth={3} />
+                  已報名
+                </span>
+              )}
+            </div>
             <p className="text-base">{activeWorkshop?.body}</p>
           </div>
         </DialogContent>

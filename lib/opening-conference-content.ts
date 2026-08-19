@@ -176,3 +176,12 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
 export function getConferenceWorkshop(id: string): ConferenceWorkshop | undefined {
   return conferenceWorkshops.find((workshop) => workshop.id === id)
 }
+
+// TODO: 工作坊報名資料之後會從後台上傳（一人固定報名兩場），目前還沒有真正的
+// 報名資料表，先用假資料佔位（固定顯示某人報名了工作坊二、工作坊三），等資料
+// 確定後改成依登入者查詢真正的報名結果。
+const MOCK_REGISTERED_WORKSHOP_IDS: string[] = ["workshop-2", "workshop-3"]
+
+export function isWorkshopRegistered(id: string): boolean {
+  return MOCK_REGISTERED_WORKSHOP_IDS.includes(id)
+}
