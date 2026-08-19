@@ -109,7 +109,7 @@ export function ConferenceMissionHome({
 
           <div className="mt-6 rounded-3xl bg-slate-300 p-6">
             <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-black/70">
-              距離下場聚會還剩
+              距離下場聚會還剩...
             </p>
 
             {/* 下場聚會視覺先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換。
