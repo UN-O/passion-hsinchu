@@ -85,27 +85,48 @@ export function ConferenceMissionHome({
           </div>
 
           {/* 下一場還沒開始的聚會（同一個 session 也是聚會流程表印的三場）。
-              左右邊跟工作坊那排卡片切齊（同一層 px 內距），不是貼齊螢幕邊緣。 */}
+              左右邊跟工作坊那排卡片切齊（同一層 px 內距），不是貼齊螢幕邊緣。
+              背景先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換；
+              疊一層由下往上的黑色漸層，確保文字在任何圖片上都維持可讀。 */}
           <Link
             href={meetingHref}
-            className="mt-6 flex aspect-[5/4] w-full flex-col justify-end rounded-3xl bg-[#DC2626] p-6"
+            className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl bg-[#DC2626] p-6"
           >
-            <p className="text-sm text-white/80">
+            <Image
+              src="/images/conference-next-meeting-visual.jpg"
+              alt=""
+              fill
+              sizes="(min-width: 640px) 640px, 100vw"
+              className="object-cover"
+              style={{ objectPosition: "50% 30%" }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            <p className="relative z-10 text-sm text-white/80">
               {nextSession.dateLabel}・{nextSession.sessionLabel}
             </p>
-            <p className="mt-2 text-2xl font-bold text-white">{nextSession.typeLabel}</p>
+            <p className="relative z-10 mt-2 text-2xl font-bold text-white">{nextSession.typeLabel}</p>
           </Link>
 
           <div className="mt-6 rounded-3xl bg-slate-300 p-6">
             <p className="text-sm font-medium text-black/70">下場聚會倒數</p>
 
-            {/* 下場聚會視覺尚未提供圖片，先用色塊佔位。點下去彈出 16:9 大圖預覽。 */}
+            {/* 下場聚會視覺先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換。
+                點下去彈出 16:9 大圖預覽。 */}
             <button
               type="button"
               onClick={() => setNextMeetingVisualOpen(true)}
               aria-label="下場聚會視覺預覽"
-              className="mt-3 aspect-video w-full rounded-2xl bg-white/70"
-            />
+              className="relative mt-3 aspect-video w-full overflow-hidden rounded-2xl bg-white/70"
+            >
+              <Image
+                src="/images/conference-next-meeting-visual.jpg"
+                alt="晚場聚會視覺"
+                fill
+                sizes="(min-width: 640px) 640px, 100vw"
+                className="object-cover"
+                style={{ objectPosition: "50% 30%" }}
+              />
+            </button>
 
             <ConferenceCountdown targetISO={nextSession.startISO} />
           </div>
@@ -165,8 +186,17 @@ export function ConferenceMissionHome({
             <span className="sr-only">關閉</span>
           </DialogClose>
 
-          {/* 下場聚會視覺尚未提供圖片，先用色塊佔位 */}
-          <div className="aspect-video w-full bg-[#3B82F6]" />
+          {/* 下場聚會視覺先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換 */}
+          <div className="relative aspect-video w-full">
+            <Image
+              src="/images/conference-next-meeting-visual.jpg"
+              alt="晚場聚會視覺"
+              fill
+              sizes="(min-width: 640px) 448px, 100vw"
+              className="object-cover"
+              style={{ objectPosition: "50% 30%" }}
+            />
+          </div>
 
           {/* 圖片下面放聚會資訊，跟工作坊彈窗同樣的排版方式 */}
           <div className="flex flex-col gap-2 p-6">
