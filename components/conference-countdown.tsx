@@ -40,11 +40,15 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
   }, [targetISO])
 
   if (!remaining) {
-    return <div className="mt-3 h-[52px] sm:h-[60px]" aria-hidden />
+    return <div className="h-[52px] w-full sm:h-[60px]" aria-hidden />
   }
 
   if (remaining.done) {
-    return <p className="mt-3 text-xl font-bold text-black">聚會進行中</p>
+    return (
+      <p className="rounded-xl bg-white/30 px-4 py-3 text-xl font-bold text-black backdrop-blur-md">
+        聚會進行中
+      </p>
+    )
   }
 
   const segments = [
@@ -58,15 +62,16 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
     // 本身的寬度，不是整個視窗寬度，這樣卡片多寬，數字就跟著等比例放多大。
     // cqw 尺寸都寫在 globals.css 的 .conf-countdown-* class 裡，帶了舊瀏覽器
     // 看不懂 container query 時的固定尺寸備援（避免退回瀏覽器預設字級跑版）。
-    <div className="@container mt-3 w-full">
+    <div className="@container w-full">
       {/* 三個數字框直接各自 flex-1 佔同一列的等分寬度，冒號是獨立的兄弟元素、
           不佔彈性空間，這樣不管有沒有冒號夾在旁邊，三個框框的寬度都會一致
           （之前冒號跟框框綁在同一個 flex-1 容器裡，最後一組沒有冒號分走空間，
-          框框會比前兩組寬）。 */}
+          框框會比前兩組寬）。數字框疊在聚會照片上面，白底改成半透明＋
+          backdrop-blur 的霧化玻璃質感，讓照片透出來又不影響數字辨識度。 */}
       <div className="conf-countdown-row flex items-stretch">
         {segments.map((segment, index) => (
           <Fragment key={segment.label}>
-            <div className="conf-countdown-box flex flex-1 flex-col items-center rounded-xl bg-white/70">
+            <div className="conf-countdown-box flex flex-1 flex-col items-center rounded-xl bg-white/30 backdrop-blur-md">
               <span className="conf-countdown-digit leading-none font-bold tabular-nums text-black">
                 {pad(segment.value)}
               </span>

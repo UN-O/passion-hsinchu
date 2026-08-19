@@ -111,7 +111,8 @@ export function ConferenceMissionHome({
             <p className="text-sm font-medium text-black/70">下場聚會倒數</p>
 
             {/* 下場聚會視覺先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換。
-                點下去彈出 16:9 大圖預覽。 */}
+                點下去彈出 16:9 大圖預覽。倒數計時疊在照片下緣，底下加一層黑色
+                漸層墊底，讓霧化玻璃數字框在任何照片內容上都維持穩定的可讀度。 */}
             <button
               type="button"
               onClick={() => setNextMeetingVisualOpen(true)}
@@ -126,9 +127,11 @@ export function ConferenceMissionHome({
                 className="object-cover"
                 style={{ objectPosition: "50% 30%" }}
               />
+              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/50 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
+                <ConferenceCountdown targetISO={nextSession.startISO} />
+              </div>
             </button>
-
-            <ConferenceCountdown targetISO={nextSession.startISO} />
           </div>
         </div>
       </div>
