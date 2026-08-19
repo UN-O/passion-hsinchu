@@ -116,8 +116,8 @@ export function ConferenceMissionHome({
         <Image
           src="/images/conference-schedule.jpg"
           alt="PASSION CONFERENCE 特會流程表"
-          width={480}
-          height={1000}
+          width={1080}
+          height={2250}
           className="h-auto w-full"
         />
       </div>
