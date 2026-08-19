@@ -32,7 +32,13 @@ export function ConferenceMissionHome({
         </div>
 
         <div className="px-4 pt-6 sm:px-6">
-          <p className="text-lg font-bold text-black sm:text-xl">歡迎來到 PASSION</p>
+          <Image
+            src="/images/conference-slogan.png"
+            alt="我們相信，每個人都會在這裡遇見神。WE BELIEVE EVERYONE WILL EXPERIENCE GOD'S PRESENCE HERE."
+            width={1200}
+            height={126}
+            className="h-auto w-full"
+          />
 
           {/* 工作坊主視覺尚未提供圖片，先用純色塊佔位，往右滑可看到其他工作坊 */}
           <div
