@@ -53,13 +53,16 @@ export function ConferenceMissionHome({
             </Link>
           ))}
         </div>
+      </div>
 
-        {/* 聚會內容目前沒有 CMS，先放佔位文字，之後接上真正的聚會資料 */}
-        <Link href={meetingHref} className="mt-6 block rounded-3xl bg-[#DC2626] p-6">
-          <p className="text-sm text-white/80">{PLACEHOLDER_MEETING_DAY_LABEL}</p>
-          <p className="mt-2 text-2xl font-bold text-white">{PLACEHOLDER_MEETING_TITLE}</p>
-        </Link>
+      {/* 聚會內容目前沒有 CMS，先放佔位文字，之後接上真正的聚會資料。
+          左右永遠貼齊螢幕邊緣，所以特意脫離上面那層有左右內距的容器。 */}
+      <Link href={meetingHref} className="mt-6 flex aspect-[5/4] w-full flex-col justify-end bg-[#DC2626] p-6">
+        <p className="text-sm text-white/80">{PLACEHOLDER_MEETING_DAY_LABEL}</p>
+        <p className="mt-2 text-2xl font-bold text-white">{PLACEHOLDER_MEETING_TITLE}</p>
+      </Link>
 
+      <div className="px-4 sm:px-6">
         <div className="mt-6 rounded-3xl bg-slate-300 p-6">
           <p className="text-sm font-medium text-black/70">下場聚會倒數</p>
           <ConferenceCountdown targetISO={conference.startDateISO} />
