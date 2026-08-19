@@ -25,12 +25,18 @@
   mix-blend-mode: normal;
 }
 
-/* vendor 的 .pc-card 用 aspect-ratio 從 height 反推 width，寬螢幕/高視窗下會超出
-   .camp-profile-card 的 320px 而造成手機版跑版，這裡直接鎖住 shell/card 的寬度上限。 */
+/* vendor 預設 .pc-card 用 aspect-ratio: 0.718（大約 5:7），跟我們卡片圖真正的
+   2:3（800x1200）比例對不上。avatar 圖層是靠 bottom: -1px 貼齊底部撐滿寬度，
+   容器比例不對的話，圖片實際渲染高度會比容器高，多出來的部分（貼底對齊）就會從
+   「上面」被容器的 overflow 裁掉——這就是卡片上緣被切掉的原因。改成鎖定 2:3，
+   讓容器高度直接照圖片比例算，不會再裁到。 */
 .camp-profile-card .pc-card-shell,
 .camp-profile-card .pc-card {
   width: 100%;
   max-width: 320px;
+  aspect-ratio: 2 / 3;
+  height: auto;
+  max-height: none;
   margin: 0 auto;
 }
 
@@ -93,28 +99,6 @@
 @media (min-width: 769px) {
   .camp-profile-card .pc-details p {
     font-size: 13px;
-  }
-}
-
-/* 卡片整體高度在小螢幕比 vendor 預設更高一點，維持比例的同時讓卡面感覺更飽滿。 */
-@media (max-width: 768px) {
-  .camp-profile-card .pc-card {
-    height: 78svh;
-    max-height: 520px;
-  }
-}
-
-@media (max-width: 480px) {
-  .camp-profile-card .pc-card {
-    height: 74svh;
-    max-height: 460px;
-  }
-}
-
-@media (max-width: 320px) {
-  .camp-profile-card .pc-card {
-    height: 68svh;
-    max-height: 400px;
   }
 }
 
