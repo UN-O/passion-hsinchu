@@ -19,17 +19,7 @@ export function ConferenceMissionHome({
 } = {}) {
   return (
     <main className="min-h-svh bg-[#feed74] pb-16">
-      <div className="sticky top-0 z-10 h-44 w-full sm:h-56">
-        <div className="relative size-full">
-          <Image
-            src="/og-image.jpg"
-            alt="PASSION® THE COURAGE GENERATIONS 勇者世代"
-            fill
-            priority
-            className="object-cover"
-          />
-        </div>
-      </div>
+      {/* TODO: 頂部主視覺圖片尚未提供，之後補上後改成 sticky top-0 吸頂固定 */}
 
       <div className="px-4 pt-6 sm:px-6">
         <p className="text-lg font-bold text-black sm:text-xl">歡迎來到 PASSION</p>
