@@ -44,9 +44,13 @@ export function ConferenceMissionHome({
       <div className="mx-auto max-w-2xl">
         {/* 主視覺四邊留空間，跟下面工作坊／聚會場次同一層 px 內距，不貼齊螢幕邊緣。
             上方額外加 env(safe-area-inset-top)：App 化後全螢幕沒有網址列，
-            iPhone 瀏海／動態島或 Android 狀態列不然會直接疊在主視覺上面。 */}
+            iPhone 瀏海／動態島或 Android 狀態列不然會直接疊在主視覺上面。
+            z-20（比下面聚會卡片文字的 z-10 高一階）：sticky 定位本身不會自動
+            疊在後面的內容上面，兩邊 z-index 打平時是看 DOM 順序決定，聚會卡片
+            在主視覺後面反而會贏，往上捲動時卡片文字會透出來蓋在主視覺上，
+            所以主視覺一定要明確比任何會捲到它下面的內容都高一階。 */}
         <div
-          className="sticky top-0 z-10 bg-[#0458e2] px-4 pb-4 sm:px-6"
+          className="sticky top-0 z-20 bg-[#0458e2] px-4 pb-4 sm:px-6"
           style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
         >
           <Image
