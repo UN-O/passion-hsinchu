@@ -108,20 +108,24 @@ export function ConferenceMissionHome({
             />
           </Link>
         </div>
+      </div>
 
+      {/* 主視覺標題圖（THE COURAGE GENERATIONS! 勇者世代＋WORSHIP / RELATION /
+          EXPERIENCE 標語）刻意脫離上面 max-w-2xl 置中容器，左右直接貼齊螢幕
+          邊緣佔滿版面，跟下面聚會流程表圖片同一個做法。背景的人群照片維持
+          原本疊法（從螢幕最頂端往下鋪 100svh），不因為這張圖改滿版而跟著
+          移動位置。跟上面 sticky 的 PASSION LOGO 是兩張獨立圖，不隨捲動
+          縮放、正常捲動離開畫面。 */}
+      <Image
+        src="/images/conference-title-visual.png"
+        alt="THE COURAGE GENERATIONS 勇者世代 WORSHIP RELATION EXPERIENCE"
+        width={1400}
+        height={1202}
+        className="h-auto w-full"
+      />
+
+      <div className="mx-auto max-w-2xl">
         <div className="px-[6%] pt-6 sm:px-8">
-          {/* 主視覺標題圖（THE COURAGE GENERATIONS! 勇者世代＋
-              WORSHIP / RELATION / EXPERIENCE 標語）跟上面 sticky 的 PASSION
-              LOGO 是兩張獨立圖，不隨捲動縮放、正常捲動離開畫面。跟下面的
-              標語圖之間留 mt-6 空隙。 */}
-          <Image
-            src="/images/conference-title-visual.png"
-            alt="THE COURAGE GENERATIONS 勇者世代 WORSHIP RELATION EXPERIENCE"
-            width={1400}
-            height={1202}
-            className="h-auto w-full"
-          />
-
           <Image
             src="/images/conference-slogan.png"
             alt="我們相信，每個人都會在這裡遇見神。WE BELIEVE EVERYONE WILL EXPERIENCE GOD'S PRESENCE HERE."
