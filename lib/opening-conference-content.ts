@@ -159,16 +159,24 @@ export function getCategoryForItem(itemId: string): ConferenceCategory | undefin
   return conferenceCategories.find((category) => category.items.some((item) => item.id === itemId))
 }
 
-// 工作坊分兩個時段（R1、R2），一人固定報名兩場——每個時段各選一場。
-// B、C、D 兩個時段都開放同一位講員／同一個主題，A（陳懷之牧師）只在 R1 開放。
+// 工作坊分兩個場次（場次一、場次二），一人固定報名兩場——每個場次各選一場。
+// B、C、D 兩個場次都開放同一位講員／同一個主題，A（陳懷之牧師）只在場次一開放。
+// 兩個場次同一天，日期只顯示一次（workshopDateLabel），不用每個場次各自重複。
 // 工作坊地點跟聚會不同棟，不能直接套用 siteConfig.venueShortName（築聖館），
 // 使用者說之後會另外提供每個工作坊各自的地點，先放「地點待公布」佔位。
 export type ConferenceWorkshopRound = "R1" | "R2"
 
-export const workshopRoundTimeLabels: Record<ConferenceWorkshopRound, string> = {
-  R1: "8/29（六）15:15",
-  R2: "8/29（六）16:35",
+export const workshopRoundLabels: Record<ConferenceWorkshopRound, string> = {
+  R1: "場次一",
+  R2: "場次二",
 }
+
+export const workshopRoundTimeLabels: Record<ConferenceWorkshopRound, string> = {
+  R1: "15:15",
+  R2: "16:35",
+}
+
+export const workshopDateLabel = "8/29（六）"
 
 export type ConferenceWorkshop = {
   id: string

@@ -14,6 +14,8 @@ import {
   getConferenceWorkshop,
   getNextConferenceSession,
   isWorkshopRegistered,
+  workshopDateLabel,
+  workshopRoundLabels,
   workshopRoundTimeLabels,
 } from "@/lib/opening-conference-content"
 import { siteConfig } from "@/lib/site-config"
@@ -186,11 +188,14 @@ export function ConferenceMissionHome({
             {activeWorkshop?.topic && (
               <p className="text-base text-muted-foreground">{activeWorkshop.speaker}</p>
             )}
-            <p className="text-sm text-muted-foreground">
-              {activeWorkshop?.rounds
-                .map((round) => `${round}｜${workshopRoundTimeLabels[round]}`)
-                .join("、")}
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm text-muted-foreground">
+              {activeWorkshop?.rounds.map((round) => (
+                <span key={round}>
+                  {workshopRoundLabels[round]}｜{workshopRoundTimeLabels[round]}
+                </span>
+              ))}
+              <span>{workshopDateLabel}</span>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
