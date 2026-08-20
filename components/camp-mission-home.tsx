@@ -11,6 +11,7 @@ import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { getRegionTotals } from "@/lib/exp"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
+import { getNextCampSession } from "@/lib/opening-camp-content"
 
 // 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
 // 先放佔位內容做畫面，之後接上真正的小隊資料庫再換掉（之後會把全部名單分隊做進後台）。
@@ -19,10 +20,9 @@ const PLACEHOLDER_SQUAD_NAME = "六眼肥魚"
 const PLACEHOLDER_SQUAD_COURAGE_POINTS = 1280
 const PLACEHOLDER_USER_ZONE_KEY = "clownfish"
 
-// 聚會內容目前沒有 CMS，先放佔位文字，等聚會排程資料表定案後改成真的「下一場聚會」資訊。
-// 跟 conference-mission-home.tsx 的聚會內容卡同一個格式（大方框、置底文字）。
-const PLACEHOLDER_MEETING_DAY_LABEL = "聚會內容"
-const PLACEHOLDER_MEETING_TITLE = "查看這場聚會的大綱與筆記"
+// 大方框、置底文字，跟 conference-mission-home.tsx 的聚會內容卡同一個格式。
+// 場次名稱已經接上 campSessions／getNextCampSession 的真實場次資料。
+const MEETING_CARD_LABEL = "聚會內容"
 
 // 對應 lib/exp-regions.ts 的 region key，但圖示／名稱沿用 onboarding 那邊
 // 已經定案的三區吉祥物（土撥鼠區／小丑魚區／熊蜂區），維持前後一致。
@@ -86,6 +86,7 @@ export async function CampMissionHome({
     ZONE_META.map((zone) => ({ ...zone, total: totals[zone.key] })),
     PLACEHOLDER_USER_ZONE_KEY
   )
+  const nextSession = getNextCampSession()
 
   return (
     <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
@@ -133,8 +134,8 @@ export async function CampMissionHome({
         href={meetingHref}
         className="camp-glass-card mt-6 flex aspect-[5/4] w-full flex-col justify-end rounded-3xl border-2 border-white/50 bg-[radial-gradient(120%_100%_at_25%_15%,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.06)_35%,rgba(191,219,254,0.05)_70%,rgba(255,255,255,0.08)_100%)] p-6 shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),inset_0_-3px_4px_rgba(30,64,124,0.14),0_16px_40px_rgba(0,0,0,0.22)]"
       >
-        <p className="text-sm text-muted-foreground">{PLACEHOLDER_MEETING_DAY_LABEL}</p>
-        <p className="mt-2 text-2xl font-bold text-foreground">{PLACEHOLDER_MEETING_TITLE}</p>
+        <p className="text-sm text-muted-foreground">{MEETING_CARD_LABEL}</p>
+        <p className="mt-2 text-2xl font-bold text-foreground">{nextSession.label}</p>
       </Link>
 
       <CampCountdownCard />
