@@ -73,7 +73,10 @@ export default async function ConferenceMeetingPage({
           </p>
           <div className="mt-1 flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">
-              {nextSession.doorsOpenTime} 開放入場・{nextSession.startTime} 聚會開始
+              {nextSession.doorsOpenTime} 開放入場
+              <span className="hidden sm:inline">・</span>
+              <br className="sm:hidden" />
+              {nextSession.startTime} 聚會開始
             </p>
             <ConferenceSessionSelect
               sessions={unlockedSessions}

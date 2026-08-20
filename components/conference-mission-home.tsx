@@ -332,7 +332,10 @@ export function ConferenceMissionHome({
               {nextSession.dateLabel}・{nextSession.sessionLabel}
             </p>
             <p className="text-sm text-muted-foreground">
-              {nextSession.doorsOpenTime} 開放入場・{nextSession.startTime} 聚會開始
+              {nextSession.doorsOpenTime} 開放入場
+              <span className="hidden sm:inline">・</span>
+              <br className="sm:hidden" />
+              {nextSession.startTime} 聚會開始
             </p>
           </div>
         </DialogContent>
