@@ -26,13 +26,15 @@ export default async function ConferenceMeetingPage() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
-      <PassionLogoHeader />
-
-      <Button asChild size="icon" variant="outline" aria-label="返回" className="mt-10 rounded-full">
-        <Link href="/conference">
-          <ArrowLeft />
-        </Link>
-      </Button>
+      <PassionLogoHeader
+        leftSlot={
+          <Button asChild size="icon-sm" variant="outline" aria-label="返回" className="rounded-full">
+            <Link href="/conference">
+              <ArrowLeft />
+            </Link>
+          </Button>
+        }
+      />
 
       <div className="mt-10 flex flex-col gap-10">
         <div className="flex flex-col gap-1">

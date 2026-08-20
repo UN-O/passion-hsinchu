@@ -25,13 +25,16 @@ export default async function CampProfilePage() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
-      <PassionLogoHeader logoTone="dark" />
-
-      <Button asChild size="icon" variant="outline" aria-label="返回" className="mt-10 rounded-full">
-        <Link href="/camp">
-          <ArrowLeft />
-        </Link>
-      </Button>
+      <PassionLogoHeader
+        logoTone="dark"
+        leftSlot={
+          <Button asChild size="icon-sm" variant="outline" aria-label="返回" className="rounded-full">
+            <Link href="/camp">
+              <ArrowLeft />
+            </Link>
+          </Button>
+        }
+      />
 
       <div className="mt-10 flex flex-col items-center gap-6 text-center">
         {/* eslint-disable-next-line @next/next/no-img-element -- data URI 頭像，next/image 優化不到 */}

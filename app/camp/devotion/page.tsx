@@ -17,13 +17,16 @@ export default async function CampDevotionPage() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
-      <PassionLogoHeader logoTone="dark" />
-
-      <Button asChild size="icon" variant="outline" aria-label="返回" className="mt-10 rounded-full">
-        <Link href="/camp">
-          <ArrowLeft />
-        </Link>
-      </Button>
+      <PassionLogoHeader
+        logoTone="dark"
+        leftSlot={
+          <Button asChild size="icon-sm" variant="outline" aria-label="返回" className="rounded-full">
+            <Link href="/camp">
+              <ArrowLeft />
+            </Link>
+          </Button>
+        }
+      />
 
       <div className="mt-10">
         <p className="text-sm text-muted-foreground">靈修內容</p>
