@@ -43,7 +43,11 @@ function VersePrayerContent({
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-8 px-6 py-10 text-center">
       <p className="text-sm tracking-[0.2em] text-white/60">{label}</p>
-      <p className="w-full max-w-md text-xl leading-loose sm:text-2xl">{bodyText}</p>
+      {/* w-full：flex-col + items-center 下，子元素預設用內容本身需要的寬度
+          算大小、不是照容器實際寬度撐開，長文字會整行不換行、左右對稱溢出
+          畫面外。break-all 是額外保險：這段是純中文長句，逗號句號之間常常
+          沒有半形空格，用 break-all 讓每個中文字都可以是斷行點。 */}
+      <p className="w-full max-w-md text-xl leading-loose break-all sm:text-2xl">{bodyText}</p>
       {isVersePage && <p className="text-base text-white/70">（{content.verseRef}）</p>}
 
       <div className="flex gap-3">
