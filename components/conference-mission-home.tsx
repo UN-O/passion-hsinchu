@@ -69,9 +69,12 @@ export function ConferenceMissionHome({
           {/* 工作坊主視覺是活動組提供的正式海報，4:5 直式跟卡片比例完全吻合，
               不用裁切。點卡片彈出視窗顯示介紹，不跳頁。
               overscroll-x-contain：滑到這排的頭尾邊界時，捲動不會「溢出」去觸發
-              App 外層的返回手勢（iOS／Android 邊緣滑動＝返回），滑動效果留在這排裡面。 */}
+              App 外層的返回手勢（iOS／Android 邊緣滑動＝返回），滑動效果留在這排裡面。
+              pb-10：overflow-x-auto 會連帶把垂直方向也裁掉，卡片底下的白色光暈
+              需要留夠的空間才不會被裁到看不見；下面區塊改用負的 margin-top 抵銷
+              多出來的內距，視覺間距跟裁光暈之前維持一致。 */}
           <div
-            className="mt-6 flex gap-4 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="mt-6 flex gap-4 overflow-x-auto overscroll-x-contain pb-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{ scrollSnapType: "x mandatory" }}
           >
             {conferenceWorkshops.map((workshop) => (
@@ -100,7 +103,7 @@ export function ConferenceMissionHome({
               疊一層由下往上的黑色漸層，確保文字在任何圖片上都維持可讀。 */}
           <Link
             href={meetingHref}
-            className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl bg-[#DC2626] p-6"
+            className="relative -mt-3 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl bg-[#DC2626] p-6"
           >
             <Image
               src="/images/conference-next-meeting-visual.jpg"
