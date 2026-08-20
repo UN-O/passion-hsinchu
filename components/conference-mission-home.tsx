@@ -13,6 +13,7 @@ import { useDialogBackClose } from "@/hooks/use-dialog-back-close"
 import {
   conferenceWorkshops,
   getConferenceWorkshop,
+  getNextConferenceCountdownTarget,
   getNextConferenceSession,
   isWorkshopRegistered,
   workshopDateLabel,
@@ -48,6 +49,8 @@ export function ConferenceMissionHome({
   // 伺服器算出來的跟瀏覽器 hydrate 那一刻幾乎不會跨到下一場，直接算不用另外處理
   // hydration mismatch。
   const nextSession = getNextConferenceSession()
+  // 倒數計時的對象比「下一場聚會」卡片更細，還要包含工作坊場次，所以另外算。
+  const nextCountdownTarget = getNextConferenceCountdownTarget()
 
   // App 化之後，讓系統返回鍵／手勢可以先關掉彈窗，而不是直接離開頁面
   useDialogBackClose(activeWorkshop !== undefined, () => setActiveWorkshopId(null))
@@ -143,7 +146,7 @@ export function ConferenceMissionHome({
 
           <div className="mt-6 rounded-3xl bg-slate-300 p-6">
             <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-black/70">
-              距離下場聚會還剩...
+              距離{nextCountdownTarget.label}開始，還剩...
             </p>
 
             {/* 下場聚會視覺先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換。
@@ -165,7 +168,7 @@ export function ConferenceMissionHome({
               />
               <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/50 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
-                <ConferenceCountdown targetISO={nextSession.startISO} />
+                <ConferenceCountdown targetISO={nextCountdownTarget.startISO} />
               </div>
             </button>
           </div>

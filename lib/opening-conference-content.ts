@@ -293,3 +293,28 @@ export function getNextConferenceSession(now: Date = new Date()): ConferenceSess
   const upcoming = conferenceSessions.find((session) => new Date(session.startISO).getTime() > nowMs)
   return upcoming ?? conferenceSessions[conferenceSessions.length - 1]
 }
+
+// 倒數計時卡片要倒數的對象比「下一場聚會」更細，還要包含 DAY2 的兩個工作坊
+// 場次，所以另外開一組依時間排序的清單，跟上面 conferenceSessions（只給
+// 「下一場聚會」卡片／彈窗用）分開算。
+export type ConferenceCountdownTarget = {
+  id: string
+  label: string
+  startISO: string
+}
+
+export const conferenceCountdownTargets: ConferenceCountdownTarget[] = [
+  { id: "session-1", label: "晚場聚會", startISO: "2026-08-28T19:00:00+08:00" },
+  { id: "session-2", label: "午場聚會", startISO: "2026-08-29T14:00:00+08:00" },
+  { id: "workshop-round-1", label: "工作坊一", startISO: `2026-08-29T${workshopRoundTimeLabels.R1}:00+08:00` },
+  { id: "workshop-round-2", label: "工作坊二", startISO: `2026-08-29T${workshopRoundTimeLabels.R2}:00+08:00` },
+  { id: "session-3", label: "晚場聚會", startISO: "2026-08-29T19:00:00+08:00" },
+]
+
+// 回傳「下一個還沒開始的倒數目標」（聚會或工作坊場次皆有可能）；全部都已經
+// 開始的話回傳最後一個。
+export function getNextConferenceCountdownTarget(now: Date = new Date()): ConferenceCountdownTarget {
+  const nowMs = now.getTime()
+  const upcoming = conferenceCountdownTargets.find((target) => new Date(target.startISO).getTime() > nowMs)
+  return upcoming ?? conferenceCountdownTargets[conferenceCountdownTargets.length - 1]
+}
