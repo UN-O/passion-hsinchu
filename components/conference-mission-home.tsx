@@ -126,22 +126,13 @@ export function ConferenceMissionHome({
         <div className="px-[6%] pt-6 sm:px-8">
           {/* 主視覺標題圖（THE COURAGE GENERATIONS! 勇者世代＋
               WORSHIP / RELATION / EXPERIENCE 標語）跟上面 sticky 的 PASSION
-              LOGO 是兩張獨立圖，不隨捲動縮放、正常捲動離開畫面。跟下面的
-              標語圖之間留 mt-6 空隙。 */}
+              LOGO 是兩張獨立圖，不隨捲動縮放、正常捲動離開畫面。 */}
           <Image
             src="/images/conference-title-visual.png"
             alt="THE COURAGE GENERATIONS 勇者世代 WORSHIP RELATION EXPERIENCE"
             width={1400}
             height={1202}
             className="h-auto w-full"
-          />
-
-          <Image
-            src="/images/conference-slogan.png"
-            alt="我們相信，每個人都會在這裡遇見神。WE BELIEVE EVERYONE WILL EXPERIENCE GOD'S PRESENCE HERE."
-            width={1200}
-            height={126}
-            className="mx-auto mt-6 h-auto w-[70%]"
           />
 
           {/* 工作坊方框底是真正的液態玻璃折射（.conf-glass-surface，SVG
