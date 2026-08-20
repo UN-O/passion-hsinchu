@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
@@ -47,6 +48,19 @@ export default async function ConferenceMeetingPage({
       />
 
       <div className="mt-10 flex flex-col gap-10">
+        {/* 聚會視覺圖，跟首頁聚會卡片／倒數計時預覽同一張 nextSession.image，
+            16:9 滿版圓角。 */}
+        <div className="relative aspect-video w-full overflow-hidden rounded-3xl">
+          <Image
+            src={nextSession.image}
+            alt={`${nextSession.typeLabel}視覺`}
+            fill
+            sizes="(min-width: 640px) 672px, 100vw"
+            className="object-cover"
+            style={{ objectPosition: "50% 30%" }}
+          />
+        </div>
+
         <div className="flex flex-col gap-1">
           <span className="inline-flex w-fit items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium">
             <LocationPinIcon className="size-4" />
