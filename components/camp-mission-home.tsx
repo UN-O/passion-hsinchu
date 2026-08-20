@@ -127,12 +127,14 @@ export async function CampMissionHome({
         <ZoneScoreChart zones={zoneScores} />
       </SectionCard>
 
+      {/* 跟 CONF 那邊的下場聚會卡片一樣拿掉紅色底：CAMP 這裡也還沒有真的聚會
+          視覺照片，紅色純色塊比較突兀，改用跟其他卡片一致的液態玻璃質感。 */}
       <Link
         href={meetingHref}
-        className="mt-6 flex aspect-[5/4] w-full flex-col justify-end rounded-3xl bg-[#DC2626] p-6"
+        className="camp-glass-card mt-6 flex aspect-[5/4] w-full flex-col justify-end rounded-3xl border-2 border-white/50 bg-[radial-gradient(120%_100%_at_25%_15%,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.06)_35%,rgba(191,219,254,0.05)_70%,rgba(255,255,255,0.08)_100%)] p-6 shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),inset_0_-3px_4px_rgba(30,64,124,0.14),0_16px_40px_rgba(0,0,0,0.22)]"
       >
-        <p className="text-sm text-white/80">{PLACEHOLDER_MEETING_DAY_LABEL}</p>
-        <p className="mt-2 text-2xl font-bold text-white">{PLACEHOLDER_MEETING_TITLE}</p>
+        <p className="text-sm text-muted-foreground">{PLACEHOLDER_MEETING_DAY_LABEL}</p>
+        <p className="mt-2 text-2xl font-bold text-foreground">{PLACEHOLDER_MEETING_TITLE}</p>
       </Link>
 
       <CampCountdownCard />
