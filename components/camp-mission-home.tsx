@@ -12,6 +12,7 @@ import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { getRegionTotals } from "@/lib/exp"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
 import { getNextCampSession } from "@/lib/opening-camp-content"
+import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 // 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
 // 先放佔位內容做畫面，之後接上真正的小隊資料庫再換掉（之後會把全部名單分隊做進後台）。
@@ -144,7 +145,9 @@ export async function CampMissionHome({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
         <p className="relative z-10 text-sm text-white/80">{MEETING_CARD_LABEL}</p>
-        <p className="relative z-10 mt-2 text-2xl font-bold text-white">{nextSession.label}</p>
+        <p className={`${genRyuMin.className} relative z-10 mt-2 w-[min(74%,28rem)] text-2xl text-white`}>
+          {nextSession.label}
+        </p>
       </Link>
 
       <CampCountdownCard />

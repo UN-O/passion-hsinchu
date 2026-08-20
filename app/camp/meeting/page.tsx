@@ -54,7 +54,7 @@ export default async function CampMeetingPage() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <p className={`${genRyuMin.className} text-2xl`}>{nextSession.label}</p>
+          <p className={`${genRyuMin.className} w-[min(74%,28rem)] text-2xl`}>{nextSession.label}</p>
         </div>
 
         <div className="flex flex-col gap-1">

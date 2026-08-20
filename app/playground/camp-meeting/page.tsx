@@ -44,7 +44,7 @@ export default function CampMeetingPlaygroundPage() {
 
           <div className="flex flex-col gap-1">
             <p className="text-sm text-muted-foreground">聚會場次、名稱</p>
-            <p className={`${genRyuMin.className} text-2xl`}>{nextSession.label}</p>
+            <p className={`${genRyuMin.className} w-[min(74%,28rem)] text-2xl`}>{nextSession.label}</p>
           </div>
 
           <div className="flex flex-col gap-1">
