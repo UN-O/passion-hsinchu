@@ -82,7 +82,9 @@ function formatRelativeTime(iso: string): string {
 }
 
 // 頭貼先用姓名的第一個字當佔位，之後如果有真的大頭貼圖檔案再換掉這裡。
-function Avatar({ name, size }: { name: string | null; size: number }) {
+// export 給 root-content.tsx 用——root post 也要用同一顆頭貼（「PASSION
+// 官方」發文），不是另外刻一份。
+export function Avatar({ name, size }: { name: string | null; size: number }) {
   const initial = name?.trim().slice(0, 1) || "?"
   return (
     <div

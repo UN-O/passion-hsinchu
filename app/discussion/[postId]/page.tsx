@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { DiscussionThread } from "@/components/discussion/discussion-thread"
+import { cn } from "@/lib/utils"
 import { isDiscussionAdmin } from "@/lib/discussion/permissions"
 import { getAncestorChain, getDiscussionPage, getPostContext } from "@/lib/discussion/queries"
 import { flowForRootKey, getRegisteredRoot } from "@/lib/discussion/root-registry"
@@ -54,39 +55,46 @@ export default async function DiscussionThreadPage({ params }: { params: Promise
   const ancestors = chain.slice(0, -1).filter((item) => item.post.id !== context.rootPostId)
   const rootDefinition = context.rootKey ? getRegisteredRoot(context.rootKey) : null
 
+  // 這是一條通用路由，不在 app/camp/layout.tsx 底下，本來不會套用 CAMP 的
+  // 淺黃 camp-theme（那層 class 只包在 /camp/* 的頁面外面）。CAMP 的貼文
+  // 點進來卻沒有這層，畫面會掉回全站預設的深色底——所以這裡自己依 flow
+  // 補一次同樣的包法，保持跟來源頁面一致的背景，不是討論串元件自己的顏色
+  // 問題。
   return (
-    <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
-      <PassionLogoHeader
-        logoTone={flow === "camp" ? "dark" : undefined}
-        leftSlot={
-          <Button asChild size="icon-sm" variant="outline" aria-label="返回" className="rounded-full">
-            <Link href={rootDefinition?.sourcePath ?? "/"}>
-              <ArrowLeft />
+    <div className={cn(flow === "camp" && "camp-theme min-h-screen bg-background text-foreground")}>
+      <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
+        <PassionLogoHeader
+          logoTone={flow === "camp" ? "dark" : undefined}
+          leftSlot={
+            <Button asChild size="icon-sm" variant="outline" aria-label="返回" className="rounded-full">
+              <Link href={rootDefinition?.sourcePath ?? "/"}>
+                <ArrowLeft />
+              </Link>
+            </Button>
+          }
+        />
+
+        <div className="mt-10 flex flex-col gap-6">
+          {rootDefinition && (
+            <Link href={rootDefinition.sourcePath} className="text-sm text-muted-foreground hover:text-foreground">
+              {rootDefinition.title}
             </Link>
-          </Button>
-        }
-      />
+          )}
 
-      <div className="mt-10 flex flex-col gap-6">
-        {rootDefinition && (
-          <Link href={rootDefinition.sourcePath} className="text-sm text-muted-foreground hover:text-foreground">
-            {rootDefinition.title}
-          </Link>
-        )}
-
-        {/* 顏色跟著頁面主題走、不加圓角／水平 padding，跟 DiscussionRoot
-            自己包的那層同一套 class（這裡沒有經過 DiscussionRoot，是
-            DiscussionThread 直接掛在頁面上，所以外層自己包一次）。 */}
-        <div className="flex flex-col bg-background py-6 text-foreground">
-          <DiscussionThread
-            ancestors={ancestors}
-            focus={focus}
-            viewer={{ id: session.user.id, name: session.user.name, role: session.user.role }}
-            isDiscussionAdmin={isDiscussionAdmin(session)}
-            initialReplies={replies}
-          />
+          {/* 顏色跟著頁面主題走、不加圓角／水平 padding，跟 DiscussionRoot
+              自己包的那層同一套 class（這裡沒有經過 DiscussionRoot，是
+              DiscussionThread 直接掛在頁面上，所以外層自己包一次）。 */}
+          <div className="flex flex-col bg-background py-6 text-foreground">
+            <DiscussionThread
+              ancestors={ancestors}
+              focus={focus}
+              viewer={{ id: session.user.id, name: session.user.name, role: session.user.role }}
+              isDiscussionAdmin={isDiscussionAdmin(session)}
+              initialReplies={replies}
+            />
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   )
 }
