@@ -15,7 +15,7 @@ import {
   getConferenceWorkshop,
   getNextConferenceCountdownTarget,
   getNextConferenceSession,
-  isWorkshopRegistered,
+  getRegisteredWorkshopRounds,
   workshopDateLabel,
   workshopRoundLabels,
   workshopRoundTimeLabels,
@@ -44,6 +44,9 @@ export function ConferenceMissionHome({
 } = {}) {
   const [activeWorkshopId, setActiveWorkshopId] = useState<string | null>(null)
   const activeWorkshop = activeWorkshopId ? getConferenceWorkshop(activeWorkshopId) : undefined
+  // 報名通知要照場次顯示「已報名場次一」「已報名場次二」，不是單純顯示
+  // 「已報名」，所以要知道具體報了哪幾場，不只是報名與否。
+  const registeredRounds = activeWorkshop ? getRegisteredWorkshopRounds(activeWorkshop.id) : []
   const [nextMeetingVisualOpen, setNextMeetingVisualOpen] = useState(false)
   // 下一場還沒開始的聚會。場次資料是小時等級的固定時間表，不像倒數計時每秒都變，
   // 伺服器算出來的跟瀏覽器 hydrate 那一刻幾乎不會跨到下一場，直接算不用另外處理
@@ -264,10 +267,10 @@ export function ConferenceMissionHome({
                 <LocationPinIcon className="size-4" />
                 {activeWorkshop?.location}
               </span>
-              {activeWorkshop && isWorkshopRegistered(activeWorkshop.id) && (
+              {registeredRounds.length > 0 && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-2.5 py-1 text-xs font-medium text-green-400">
                   <Check className="size-3.5 rounded-full bg-green-400 p-0.5 text-card" strokeWidth={3} />
-                  已報名
+                  已報名{registeredRounds.map((round) => workshopRoundLabels[round]).join("、")}
                 </span>
               )}
             </div>
