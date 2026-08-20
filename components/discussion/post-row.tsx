@@ -1,23 +1,19 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
+import { Heart, MessageCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { DiscussionEntry, DiscussionItem, PollDTO } from "@/lib/discussion/dto"
 import { PollView } from "./poll-view"
-import { Composer } from "./composer"
 
 export type PostRowController = {
   viewerId: string
   viewerRole: "attendee" | "staff" | "admin"
   isDiscussionAdmin: boolean
-  replyTargetId: string | null
-  replyPending: boolean
-  onToggleReplyTarget: (postId: string | null) => void
-  onSubmitReply: (parentId: string, content: string, poll?: { allowMultiple: boolean; options: string[] }) => void
+  onOpenComposer: (entry: DiscussionEntry) => void
   onLike: (entry: DiscussionEntry) => void
-  onBookmark: (entry: DiscussionEntry) => void
   onPollChange: (postId: string, next: Pick<PollDTO, "options" | "viewerOptionIds">) => void
   onPin: (postId: string) => void
   onUnpin: (postId: string) => void
@@ -88,32 +84,38 @@ function EntryBody({
       )}
 
       {!post.isDeleted && (
-        <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="mt-1 flex items-center gap-4">
           <button
             type="button"
             onClick={() => controller.onLike(entry)}
-            className={cn("hover:text-foreground", viewer.hasLiked && "font-semibold text-primary")}
+            aria-label={viewer.hasLiked ? "取消讚" : "讚"}
+            className={cn(
+              "flex items-center gap-1.5 text-muted-foreground hover:text-foreground",
+              viewer.hasLiked && "text-primary hover:text-primary"
+            )}
           >
-            讚{stats.likeCount > 0 ? ` (${stats.likeCount})` : ""}
+            <Heart className="size-[18px]" fill={viewer.hasLiked ? "currentColor" : "none"} strokeWidth={1.75} />
+            {stats.likeCount > 0 && <span className="text-xs">{stats.likeCount}</span>}
           </button>
-          <button
-            type="button"
-            onClick={() => controller.onBookmark(entry)}
-            className={cn("hover:text-foreground", viewer.hasBookmarked && "font-semibold text-primary")}
-          >
-            {viewer.hasBookmarked ? "已收藏" : "收藏"}
-          </button>
+
           {depth < 6 && (
             <button
               type="button"
-              onClick={() => controller.onToggleReplyTarget(controller.replyTargetId === post.id ? null : post.id)}
-              className="hover:text-foreground"
+              onClick={() => controller.onOpenComposer(entry)}
+              aria-label="回覆"
+              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
             >
-              回覆
+              <MessageCircle className="size-[18px]" strokeWidth={1.75} />
+              {stats.directReplyCount > 0 && <span className="text-xs">{stats.directReplyCount}</span>}
             </button>
           )}
+
           {canDelete && (
-            <button type="button" onClick={() => controller.onDelete(post.id)} className="hover:text-foreground">
+            <button
+              type="button"
+              onClick={() => controller.onDelete(post.id)}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
               刪除
             </button>
           )}
@@ -157,17 +159,6 @@ export function PostRow({ item, controller, depth = 0 }: { item: DiscussionItem;
             </button>
           )}
         </div>
-      )}
-
-      {controller.replyTargetId === item.post.id && (
-        <Composer
-          placeholder="寫下回覆..."
-          submitLabel="送出回覆"
-          allowPoll
-          pending={controller.replyPending}
-          onSubmit={(content, poll) => controller.onSubmitReply(item.post.id, content, poll)}
-          onCancel={() => controller.onToggleReplyTarget(null)}
-        />
       )}
 
       {hasFeatured && item.featuredChild && (

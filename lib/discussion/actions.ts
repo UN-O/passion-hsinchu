@@ -6,13 +6,11 @@ import { requireClaimedSession } from "@/lib/session"
 import type { DiscussionResponse, DiscussionItem, MoreRepliesResponse, PollDTO } from "./dto"
 import { getDiscussionPage, getMoreReplies, type SortMode } from "./queries"
 import {
-  bookmarkPost,
   createReply,
   editReply,
   likePost,
   pinReply,
   softDeleteReply,
-  unbookmarkPost,
   unlikePost,
   unpinReply,
   updateDiscussionSettings,
@@ -101,7 +99,7 @@ export async function submitReply(
           isPinned: false,
         },
         stats: { likeCount: 0, directReplyCount: 0 },
-        viewer: { hasLiked: false, hasBookmarked: false },
+        viewer: { hasLiked: false },
         hiddenReplyCount: 0,
       } satisfies DiscussionItem
     })()
@@ -142,26 +140,6 @@ export async function submitUnlike(postId: string): Promise<ActionResult<{ likeC
     (async () => {
       const session = await requireClaimedSession()
       return unlikePost(postId, session.user.id)
-    })()
-  )
-}
-
-export async function submitBookmark(postId: string): Promise<ActionResult<null>> {
-  return toResult(
-    (async () => {
-      const session = await requireClaimedSession()
-      await bookmarkPost(postId, session.user.id)
-      return null
-    })()
-  )
-}
-
-export async function submitUnbookmark(postId: string): Promise<ActionResult<null>> {
-  return toResult(
-    (async () => {
-      const session = await requireClaimedSession()
-      await unbookmarkPost(postId, session.user.id)
-      return null
     })()
   )
 }

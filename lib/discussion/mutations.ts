@@ -4,7 +4,6 @@ import { and, desc, eq, isNull, sql } from "drizzle-orm"
 import { db } from "@/db"
 import { user } from "@/db/schema/auth"
 import {
-  bookmarks,
   discussionPins,
   discussionSettings,
   pollOptions,
@@ -211,14 +210,6 @@ export async function unlikePost(postId: string, userId: string): Promise<{ like
     const [rank] = await tx.select({ likeCount: replyRank.likeCount }).from(replyRank).where(eq(replyRank.postId, postId))
     return { likeCount: rank?.likeCount ?? 0 }
   })
-}
-
-export async function bookmarkPost(postId: string, userId: string): Promise<void> {
-  await db.insert(bookmarks).values({ userId, postId }).onConflictDoNothing()
-}
-
-export async function unbookmarkPost(postId: string, userId: string): Promise<void> {
-  await db.delete(bookmarks).where(and(eq(bookmarks.userId, userId), eq(bookmarks.postId, postId)))
 }
 
 // 單選：投同一個選項＝取消；投別的選項＝換票（先移除舊票再插新票）。

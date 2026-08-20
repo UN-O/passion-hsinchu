@@ -8,17 +8,16 @@ import type { DiscussionEntry, DiscussionItem, DiscussionResponse, PollDTO, Post
 import {
   loadDiscussion,
   loadMoreReplies,
-  submitBookmark,
   submitLike,
   submitPin,
   submitDeleteReply,
   submitReply,
-  submitUnbookmark,
   submitUnlike,
   submitUnpin,
 } from "@/lib/discussion/actions"
 import type { SortMode } from "@/lib/discussion/queries"
-import { Composer } from "./composer"
+import { ComposerOverlay, type ComposerTarget } from "./composer-overlay"
+import { BottomComposerBar } from "./bottom-composer-bar"
 import { PostRow, type PostRowController } from "./post-row"
 import { patchList, patchChildrenMap } from "./tree-utils"
 
@@ -102,7 +101,7 @@ function buildPendingItem(
       isPinned: false,
     },
     stats: { likeCount: 0, directReplyCount: 0 },
-    viewer: { hasLiked: false, hasBookmarked: false },
+    viewer: { hasLiked: false },
     hiddenReplyCount: 0,
     poll: poll
       ? {
@@ -140,9 +139,8 @@ export function DiscussionView({
   const [optimistic, addOptimistic] = useOptimistic(base, reduce)
   const [, startTransition] = useTransition()
 
-  const [replyTargetId, setReplyTargetId] = useState<string | null>(null)
+  const [composerTarget, setComposerTarget] = useState<ComposerTarget | null>(null)
   const [replyPending, setReplyPending] = useState(false)
-  const [rootComposerOpen, setRootComposerOpen] = useState(false)
 
   const [childCursor, setChildCursor] = useState<Record<string, string | null>>({})
   const [childHasMoreMap, setChildHasMoreMap] = useState<Record<string, boolean>>({})
@@ -180,23 +178,24 @@ export function DiscussionView({
     })
   }
 
-  function commitBookmarkToggle(entry: DiscussionEntry) {
-    const wasBookmarked = entry.viewer.hasBookmarked
-    const changes: Partial<DiscussionEntry> = { viewer: { ...entry.viewer, hasBookmarked: !wasBookmarked } }
-    startTransition(async () => {
-      addOptimistic({ kind: "patch", postId: entry.post.id, changes })
-      const result = wasBookmarked ? await submitUnbookmark(entry.post.id) : await submitBookmark(entry.post.id)
-      if (result.ok) {
-        setBase((prev) => reduce(prev, { kind: "patch", postId: entry.post.id, changes }))
-      }
-    })
-  }
-
   function handlePollChange(postId: string, next: Pick<PollDTO, "options" | "viewerOptionIds">) {
     const entry = findEntry(postId)
     if (!entry?.poll) return
     const merged: PollDTO = { ...entry.poll, ...next }
     setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { poll: merged } }))
+  }
+
+  function handleOpenComposer(entry: DiscussionEntry) {
+    setComposerTarget({
+      parentId: entry.post.id,
+      replyingToName: entry.post.authorName,
+      replyingToContent: entry.post.content,
+      allowPoll: true,
+    })
+  }
+
+  function handleOpenRootComposer() {
+    setComposerTarget({ parentId: rootPostId, replyingToName: null, replyingToContent: null, allowPoll: true })
   }
 
   function handleSubmitReply(parentId: string, content: string, poll?: { allowMultiple: boolean; options: string[] }) {
@@ -221,8 +220,7 @@ export function DiscussionView({
               : { kind: "insertChild", parentId, item: result.data }
           )
         )
-        setReplyTargetId(null)
-        setRootComposerOpen(false)
+        setComposerTarget(null)
         if (!isRootParent) setLoadedChildParents((prev) => new Set(prev).add(parentId))
       }
       setReplyPending(false)
@@ -312,12 +310,8 @@ export function DiscussionView({
     viewerId: viewer.id,
     viewerRole: viewer.role,
     isDiscussionAdmin,
-    replyTargetId,
-    replyPending,
-    onToggleReplyTarget: setReplyTargetId,
-    onSubmitReply: handleSubmitReply,
+    onOpenComposer: handleOpenComposer,
     onLike: commitLikeToggle,
-    onBookmark: commitBookmarkToggle,
     onPollChange: handlePollChange,
     onPin: handlePin,
     onUnpin: handleUnpin,
@@ -332,32 +326,13 @@ export function DiscussionView({
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 pb-20">
       {optimistic.pinned.length > 0 && (
         <div className="flex flex-col gap-6">
           {optimistic.pinned.map((item) => (
             <PostRow key={item.post.id} item={item} controller={controller} depth={0} />
           ))}
         </div>
-      )}
-
-      {!rootComposerOpen ? (
-        <button
-          type="button"
-          onClick={() => setRootComposerOpen(true)}
-          className="self-start rounded-full border border-border px-5 py-2 text-sm hover:border-foreground/40"
-        >
-          分享你的心得...
-        </button>
-      ) : (
-        <Composer
-          placeholder="分享你的心得、筆記，或提出問題..."
-          submitLabel="發布"
-          allowPoll={isDiscussionAdmin}
-          pending={replyPending}
-          onSubmit={(content, poll) => handleSubmitReply(rootPostId, content, poll)}
-          onCancel={() => setRootComposerOpen(false)}
-        />
       )}
 
       <div className="flex items-center gap-4 border-t border-border pt-4 text-sm">
@@ -390,6 +365,16 @@ export function DiscussionView({
           顯示更多討論
         </Button>
       )}
+
+      <BottomComposerBar placeholder="在這則討論中留言..." onOpen={handleOpenRootComposer} />
+
+      <ComposerOverlay
+        key={composerTarget?.parentId ?? "closed"}
+        target={composerTarget}
+        pending={replyPending}
+        onSubmit={handleSubmitReply}
+        onClose={() => setComposerTarget(null)}
+      />
     </div>
   )
 }

@@ -4,7 +4,6 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core"
 import { db } from "@/db"
 import { user } from "@/db/schema/auth"
 import {
-  bookmarks,
   discussionPins,
   pollOptions,
   polls,
@@ -246,7 +245,7 @@ async function enrichRows(
   const allRows = [...rows, ...featuredRows]
   const allIds = allRows.map((r) => r.post.id)
 
-  const [pollByPostId, likedIds, bookmarkedIds] = await Promise.all([
+  const [pollByPostId, likedIds] = await Promise.all([
     fetchPollsByPostIds(allIds, viewerId),
     viewerId
       ? db
@@ -254,23 +253,16 @@ async function enrichRows(
           .from(postLikes)
           .where(and(inArray(postLikes.postId, allIds), eq(postLikes.userId, viewerId)))
       : Promise.resolve([]),
-    viewerId
-      ? db
-          .select({ postId: bookmarks.postId })
-          .from(bookmarks)
-          .where(and(inArray(bookmarks.postId, allIds), eq(bookmarks.userId, viewerId)))
-      : Promise.resolve([]),
   ])
 
   const likedSet = new Set(likedIds.map((r) => r.postId))
-  const bookmarkedSet = new Set(bookmarkedIds.map((r) => r.postId))
   const featuredByChildId = new Map(featuredRows.map((r) => [r.post.id, r]))
 
   function toEntry(row: CandidateRow): DiscussionEntry {
     return {
       post: toPostDTO(row, pinnedIds),
       stats: { likeCount: row.likeCount, directReplyCount: row.directReplyCount },
-      viewer: { hasLiked: likedSet.has(row.post.id), hasBookmarked: bookmarkedSet.has(row.post.id) },
+      viewer: { hasLiked: likedSet.has(row.post.id) },
       poll: pollByPostId.get(row.post.id),
     }
   }
@@ -308,7 +300,7 @@ export async function getDiscussionPage(input: GetDiscussionPageInput): Promise<
   const hasMore = candidateRows.length > limit
   const pageRows = candidateRows.slice(0, limit)
 
-  // pinned 跟 page 合成一次 enrichRows：featured child／poll／like／bookmark
+  // pinned 跟 page 合成一次 enrichRows：featured child／poll／like
   // 這幾批查詢對兩邊是共用的批次操作，分開呼叫兩次等於白白多打一輪。
   const pinnedIdSet = new Set(pinnedIds)
   const enrichedAll = await enrichRows([...pinnedRows, ...pageRows], input.viewerId, pinnedIdSet)

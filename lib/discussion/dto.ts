@@ -23,7 +23,7 @@ export type PollDTO = {
 export type DiscussionEntry = {
   post: PostDTO
   stats: { likeCount: number; directReplyCount: number }
-  viewer: { hasLiked: boolean; hasBookmarked: boolean }
+  viewer: { hasLiked: boolean }
   poll?: PollDTO
 }
 

@@ -18,7 +18,7 @@ function makeItem(id: string, overrides?: Partial<DiscussionItem>): DiscussionIt
       isPinned: false,
     },
     stats: { likeCount: 0, directReplyCount: 0 },
-    viewer: { hasLiked: false, hasBookmarked: false },
+    viewer: { hasLiked: false },
     hiddenReplyCount: 0,
     ...overrides,
   }
@@ -38,7 +38,7 @@ test("patchItem：也會更新 featuredChild（一個 post 同時出現在別人
   const child = makeItem("child-1")
   const parent = makeItem("parent-1", { featuredChild: child })
 
-  const patched = patchItem(parent, "child-1", { viewer: { hasLiked: true, hasBookmarked: false } })
+  const patched = patchItem(parent, "child-1", { viewer: { hasLiked: true } })
   assert.equal(patched.featuredChild?.viewer.hasLiked, true)
   // parent 自己的欄位沒被動到
   assert.equal(patched.post.id, "parent-1")

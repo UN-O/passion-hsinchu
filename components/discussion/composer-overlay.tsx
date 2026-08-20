@@ -1,0 +1,136 @@
+"use client"
+
+import { useState } from "react"
+import { X } from "lucide-react"
+
+import { cn } from "@/lib/utils"
+import { MAX_CONTENT_LENGTH, MAX_POLL_OPTIONS, MIN_POLL_OPTIONS } from "@/lib/discussion/constants"
+
+export type ComposerTarget = {
+  parentId: string
+  replyingToName: string | null
+  replyingToContent: string | null
+  allowPoll: boolean
+}
+
+type ComposerOverlayProps = {
+  target: ComposerTarget | null
+  pending: boolean
+  onSubmit: (parentId: string, content: string, poll?: { allowMultiple: boolean; options: string[] }) => void
+  onClose: () => void
+}
+
+// 全螢幕的發文／回覆畫面，仿 Threads：上面一條 Cancel／標題／送出的 header，
+// 下面是撐滿剩餘高度的輸入框。textarea 字級一定要 >= 16px（text-base），
+// 不然 iOS Safari 對焦時會自動放大整個頁面。
+//
+// 呼叫端要記得在外層用 key={target?.parentId} 包這個元件：換一個回覆對象
+// 時要讓輸入內容重置，用 key 讓 React 直接整個重新掛載、拿到全新的
+// useState 初始值，比在 effect 裡 setState 乾淨（也不會觸發
+// react-hooks/set-state-in-effect 那個 cascading render 的警告）。
+export function ComposerOverlay({ target, pending, onSubmit, onClose }: ComposerOverlayProps) {
+  const [content, setContent] = useState("")
+  const [pollOpen, setPollOpen] = useState(false)
+  const [pollOptions, setPollOptions] = useState<string[]>(["", ""])
+  const [pollAllowMultiple, setPollAllowMultiple] = useState(false)
+
+  if (!target) return null
+
+  const trimmedOptions = pollOptions.map((o) => o.trim()).filter(Boolean)
+  const canSubmit = content.trim().length > 0 && (!pollOpen || trimmedOptions.length >= MIN_POLL_OPTIONS) && !pending
+
+  function handleSubmit() {
+    if (!canSubmit || !target) return
+    onSubmit(target.parentId, content.trim(), pollOpen ? { allowMultiple: pollAllowMultiple, options: trimmedOptions } : undefined)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+        <button type="button" onClick={onClose} disabled={pending} className="text-sm text-muted-foreground hover:text-foreground">
+          取消
+        </button>
+        <p className="text-sm font-semibold">{target.replyingToName ? `回覆 ${target.replyingToName}` : "發布"}</p>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          className={cn("text-sm font-semibold text-primary disabled:opacity-40", pending && "opacity-70")}
+        >
+          送出
+        </button>
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-4">
+        {target.replyingToContent !== null && (
+          <div className="border-l-2 border-border pl-3 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">{target.replyingToName ?? "匿名"}</p>
+            <p className="line-clamp-3 whitespace-pre-wrap">{target.replyingToContent}</p>
+          </div>
+        )}
+
+        <textarea
+          autoFocus
+          value={content}
+          onChange={(e) => setContent(e.target.value.slice(0, MAX_CONTENT_LENGTH))}
+          placeholder={target.replyingToName ? "寫下回覆..." : "分享你的心得、筆記，或提出問題..."}
+          className="min-h-32 w-full flex-1 resize-none bg-transparent text-base outline-none placeholder:text-muted-foreground"
+        />
+
+        {target.allowPoll && !pollOpen && (
+          <button
+            type="button"
+            onClick={() => setPollOpen(true)}
+            className="self-start text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            加入投票
+          </button>
+        )}
+
+        {pollOpen && (
+          <div className="flex shrink-0 flex-col gap-2 rounded-2xl border border-border p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium">投票選項</p>
+              <button type="button" onClick={() => setPollOpen(false)} aria-label="移除投票" className="text-muted-foreground hover:text-foreground">
+                <X className="size-4" />
+              </button>
+            </div>
+
+            {pollOptions.map((option, index) => (
+              <input
+                key={index}
+                value={option}
+                onChange={(e) => {
+                  const next = [...pollOptions]
+                  next[index] = e.target.value
+                  setPollOptions(next)
+                }}
+                placeholder={`選項 ${index + 1}`}
+                className="w-full rounded-full border border-border bg-transparent px-4 py-2 text-base outline-none placeholder:text-muted-foreground"
+              />
+            ))}
+
+            <div className="flex items-center justify-between">
+              {pollOptions.length < MAX_POLL_OPTIONS ? (
+                <button
+                  type="button"
+                  onClick={() => setPollOptions([...pollOptions, ""])}
+                  className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                >
+                  新增選項
+                </button>
+              ) : (
+                <span />
+              )}
+
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                <input type="checkbox" checked={pollAllowMultiple} onChange={(e) => setPollAllowMultiple(e.target.checked)} />
+                允許多選
+              </label>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
