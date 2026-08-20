@@ -60,6 +60,35 @@ export function ConferenceMissionHome({
     <main className="relative z-0 min-h-svh bg-[#0458e2]">
       <ConferenceLiquidGlassFilter filterId="conf-liquid-glass-filter" />
 
+      {/* 背景圖改用 fixed（不是 absolute）：不隨頁面捲動，捲動時內容從它
+          上面滑過去，畫面上看起來像被往上滑走的是內容，不是背景本身，
+          一路釘在原地直到被後面不透明的內容（工作坊卡片、聚會卡，最後
+          是滿版的流程表圖）蓋過去才「消失」。position:fixed 是相對
+          viewport 計算，不受 main 的 relative 影響；top-0 剛好對齊
+          viewport 最頂端，跟 sticky 的 PASSION LOGO 列（同樣釘在
+          viewport 頂端）疊在同一個位置，LOGO 列的不透明底色會自然蓋掉
+          背景圖，所以背景圖不用另外算「從 LOGO 列下面開始」的偏移量，
+          兩者都固定在 viewport 頂端、順序疊起來就是對的。背景圖只鋪
+          一個螢幕高的範圍：圖片本身下緣已經漸層融合成跟 bg-[#0458e2]
+          一樣的純藍色，蓋到 100svh 之後直接接回 main 本身的純色底，
+          銜接處不會看出接縫。-z-10 讓背景圖蓋在 main 的純色底之上、
+          後面正常排版的內容之下（main 一定要有 z-0，見下面 sticky 那段
+          註解）。backgroundSize 刻意寫死 "auto 100%"（不是 cover）：
+          cover 會依螢幕比例自己選裁切的軸，寬螢幕時反而會裁到上下；
+          auto 100% 強制高度永遠等於容器高度（上下永遠滿版、不裁切），
+          寬度依圖片比例等比縮放，比容器寬的部分才裁左右，比容器窄時
+          兩側露出跟圖片色調很接近的純色底。圖片直接用原始解析度，沒有
+          另外壓縮，避免裁到最寬的機型時因為放大而模糊。 */}
+      <div
+        className="fixed inset-x-0 top-0 -z-10 h-[100svh] bg-no-repeat"
+        style={{
+          backgroundImage: "url('/images/conference-background.jpg')",
+          backgroundSize: "auto 100%",
+          backgroundPosition: "center",
+        }}
+        aria-hidden
+      />
+
       {/* sticky 這條 PASSION LOGO 列的藍底刻意脫離 max-w-2xl 置中容器、
           左右貼齊螢幕邊緣（寬螢幕時才不會兩側露出背景照片，看起來像沒
           裁乾淨），LOGO 本身還是用內層 max-w-2xl + px 內距置中，尺寸跟
@@ -69,7 +98,11 @@ export function ConferenceMissionHome({
           定位本身不會自動疊在後面的內容上面，兩邊 z-index 打平時是看 DOM
           順序決定，聚會卡片在主視覺後面反而會贏，往上捲動時卡片文字會
           透出來蓋在主視覺上，所以主視覺一定要明確比任何會捲到它下面的
-          內容都高一階。 */}
+          內容都高一階。main 本身也一定要有 z-0（不能只有 relative）：
+          relative 沒有搭配 z-index 的話不會建立新的 stacking context，
+          子層的 -z-10 就不是相對 main 局部計算，而是直接跳到更外層
+          （body）的疊層順序裡競爭，結果整張背景圖沉到 main 自己的純色底
+          下面、完全被蓋住看不見。 */}
       <div className="sticky top-0 z-20 bg-[#0458e2]">
         <div
           className="mx-auto max-w-2xl px-[6%] pb-4 sm:px-8"
@@ -88,32 +121,8 @@ export function ConferenceMissionHome({
         </div>
       </div>
 
-      {/* 背景圖銜接在 sticky LOGO 列下面（不是整個頁面最頂端）：外層這個
-          relative 容器從 LOGO 列結束的地方開始算起，裡面的背景圖用
-          absolute + top-0 對齊這個容器的頂端，所以背景圖的頂端剛好接上
-          LOGO 列的底端，不會疊在 LOGO 列後面。背景圖只鋪一個螢幕高的
-          範圍，不是整張長頁面：圖片本身下緣已經漸層融合成跟 bg-[#0458e2]
-          一樣的純藍色，蓋到 100svh 之後直接接回 main 本身的純色底，銜接處
-          不會看出接縫。-z-10 讓背景圖蓋在 relative 容器的純色底之上、
-          後面正常排版的內容之下。backgroundSize 刻意寫死 "auto 100%"
-          （不是 cover）：cover 會依螢幕比例自己選裁切的軸，寬螢幕時反而
-          會裁到上下；auto 100% 強制高度永遠等於容器高度（上下永遠滿版、
-          不裁切），寬度依圖片比例等比縮放，比容器寬的部分才裁左右，比
-          容器窄時兩側露出跟圖片色調很接近的純色底。圖片直接用原始解析度，
-          沒有另外壓縮，避免裁到最寬的機型時因為放大而模糊。 */}
-      <div className="relative">
-        <div
-          className="absolute inset-x-0 top-0 -z-10 h-[100svh] bg-no-repeat"
-          style={{
-            backgroundImage: "url('/images/conference-background.jpg')",
-            backgroundSize: "auto 100%",
-            backgroundPosition: "center",
-          }}
-          aria-hidden
-        />
-
-        <div className="mx-auto max-w-2xl">
-          <div className="px-[6%] pt-6 sm:px-8">
+      <div className="mx-auto max-w-2xl">
+        <div className="px-[6%] pt-6 sm:px-8">
           {/* 主視覺標題圖（THE COURAGE GENERATIONS! 勇者世代＋
               WORSHIP / RELATION / EXPERIENCE 標語）跟上面 sticky 的 PASSION
               LOGO 是兩張獨立圖，不隨捲動縮放、正常捲動離開畫面。跟下面的
@@ -215,7 +224,6 @@ export function ConferenceMissionHome({
               </div>
             </button>
           </div>
-        </div>
         </div>
       </div>
 
