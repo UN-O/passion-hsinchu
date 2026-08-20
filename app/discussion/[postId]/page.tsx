@@ -74,13 +74,18 @@ export default async function DiscussionThreadPage({ params }: { params: Promise
           </Link>
         )}
 
-        <DiscussionThread
-          ancestors={ancestors}
-          focus={focus}
-          viewer={{ id: session.user.id, name: session.user.name, role: session.user.role }}
-          isDiscussionAdmin={isDiscussionAdmin(session)}
-          initialReplies={replies}
-        />
+        {/* 討論串一律深色主題，跟 DiscussionRoot 自己包的那層同一套 class
+            （這裡沒有經過 DiscussionRoot，是 DiscussionThread 直接掛在頁面
+            上，所以外層自己包一次）。 */}
+        <div className="dark rounded-3xl bg-background px-4 py-6 text-foreground sm:px-5">
+          <DiscussionThread
+            ancestors={ancestors}
+            focus={focus}
+            viewer={{ id: session.user.id, name: session.user.name, role: session.user.role }}
+            isDiscussionAdmin={isDiscussionAdmin(session)}
+            initialReplies={replies}
+          />
+        </div>
       </div>
     </main>
   )

@@ -26,6 +26,7 @@ export function buildPendingItem(
       updatedAt: now,
       isDeleted: false,
       isPinned: false,
+      isOfficial: false,
     },
     stats: { likeCount: 0, directReplyCount: 0 },
     viewer: { hasLiked: false },

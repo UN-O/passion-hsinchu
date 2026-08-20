@@ -1,4 +1,7 @@
 export type DevotionEntry = {
+  // 穩定 id，給路由／討論串 root key 用（day 是給人看的中文文案，不適合當
+  // 網址／資料庫 key——文案之後可能會改，id 不會）。
+  id: "day2" | "day3"
   day: string
   title: string
   // USFM 格式的固定經節（book.chapter.verse-verse），例如 "JHN.3.16"、"NEH.2.11-20"。
@@ -15,6 +18,7 @@ export type DevotionEntry = {
 // 內容來自 2026第一篇晨更.docx／2026第二篇晨更-若芸.docx。
 export const DEVOTION_ENTRIES: DevotionEntry[] = [
   {
+    id: "day2",
     day: "第二天早上",
     title: "勇敢是：選擇神看為正確的事",
     reference: "NEH.2.11-20",
@@ -28,6 +32,7 @@ export const DEVOTION_ENTRIES: DevotionEntry[] = [
     closing: "勇敢是：即便面對掙扎/還沒看見結果，我們仍然做神看為正確的事情。",
   },
   {
+    id: "day3",
     day: "第三天早上",
     title: "勇敢是：相信耶穌已經得勝",
     reference: "JHN.16.25-33",

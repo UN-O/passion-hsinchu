@@ -221,3 +221,59 @@ export function getNextCampSession(now: Date = new Date()): CampSession {
   const upcoming = campSessions.find((session) => new Date(session.startISO).getTime() > nowMs)
   return upcoming ?? campSessions[campSessions.length - 1]
 }
+
+// campSessions 裡只有 4 場是真正的「SESSION」正式聚會（開場／兩場晚場／
+// 閉幕），其餘（大地競賽／辯論場／Podcast）是活動而不是聚會，逐場討論串
+// 只接這 4 場——見 lib/discussion/root-registry.ts。
+const CAMP_MEETING_SESSION_IDS = ["day1-opening", "day1-evening", "day2-evening", "day3-closing"] as const
+
+export function getCampMeetingSessions(): CampSession[] {
+  return campSessions.filter((session) => (CAMP_MEETING_SESSION_IDS as readonly string[]).includes(session.id))
+}
+
+export function getNextCampMeetingSession(now: Date = new Date()): CampSession {
+  const nowMs = now.getTime()
+  const sessions = getCampMeetingSessions()
+  const upcoming = sessions.find((session) => new Date(session.startISO).getTime() > nowMs)
+  return upcoming ?? sessions[sessions.length - 1]
+}
+
+// 場次選單只能選「已經輪到過」的場次，工作人員不受限——跟
+// getUnlockedConferenceSessions 同一套邏輯（見該函式的註解）。
+export function getUnlockedCampMeetingSessions(now: Date = new Date(), unlockAll = false): CampSession[] {
+  const sessions = getCampMeetingSessions()
+  if (unlockAll) return sessions
+  const next = getNextCampMeetingSession(now)
+  const nextIndex = sessions.findIndex((session) => session.id === next.id)
+  return sessions.slice(0, nextIndex + 1)
+}
+
+const campMeetingDateFormatter = new Intl.DateTimeFormat("zh-TW", {
+  timeZone: "Asia/Taipei",
+  month: "numeric",
+  day: "numeric",
+  weekday: "short",
+})
+
+// 場次選單要顯示日期＋名稱（單純「晚場聚會」會撞名——day1、day2 各有一場）。
+// 用 formatToParts 自己組字串，不直接吃 formatter.format() 的 literal 分隔字元
+// ——原因見 components/discussion/post-row.tsx 的 formatAbsoluteTime 註解
+// （Node 的 ICU 跟瀏覽器的 ICU 對分隔符號可能不一致，會觸發 hydration mismatch）。
+export function formatCampMeetingDateLabel(iso: string): string {
+  const parts = campMeetingDateFormatter.formatToParts(new Date(iso))
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? ""
+  return `${get("month")}/${get("day")}（${get("weekday")}）`
+}
+
+const campMeetingTimeFormatter = new Intl.DateTimeFormat("zh-TW", {
+  timeZone: "Asia/Taipei",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+})
+
+export function formatCampMeetingTimeLabel(iso: string): string {
+  const parts = campMeetingTimeFormatter.formatToParts(new Date(iso))
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? ""
+  return `${get("hour")}:${get("minute")}`
+}

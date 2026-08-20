@@ -12,6 +12,7 @@ import {
   submitPin,
   submitDeleteReply,
   submitReply,
+  submitToggleOfficial,
   submitUnlike,
   submitUnpin,
 } from "@/lib/discussion/actions"
@@ -114,7 +115,8 @@ export function DiscussionView({
   // 討論中留言」這個入口，直接回覆 root，不會有針對某一則貼文另外開框的
   // 情況（見 post-row.tsx：貼文本身跟回覆 icon 都改成連到討論串頁）。
   function handleOpenRootComposer() {
-    setComposerTarget({ parentId: rootPostId, context: [], allowPoll: true })
+    // 只有工作人員以上能建立投票（server action 也會擋，見 mutations.ts）。
+    setComposerTarget({ parentId: rootPostId, context: [], allowPoll: viewer.role !== "attendee" })
   }
 
   function handleSubmitReply(content: string, poll?: { allowMultiple: boolean; options: string[] }) {
@@ -170,6 +172,20 @@ export function DiscussionView({
       addOptimistic({ kind: "patch", postId, changes: { post: unpinnedPost } })
       const result = await submitUnpin(rootPostId, postId)
       if (result.ok) setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: unpinnedPost } }))
+    })
+  }
+
+  // 官方旗標只換顯示（見 mutations.ts toggleOfficial 的說明），一樣走
+  // patch，不影響貼文在列表裡的位置。
+  function handleToggleOfficial(postId: string, next: boolean) {
+    const entry = findEntry(postId)
+    if (!entry) return
+    const patchedPost: PostDTO = { ...entry.post, isOfficial: next }
+
+    startTransition(async () => {
+      addOptimistic({ kind: "patch", postId, changes: { post: patchedPost } })
+      const result = await submitToggleOfficial(postId, next)
+      if (result.ok) setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: patchedPost } }))
     })
   }
 
@@ -231,6 +247,7 @@ export function DiscussionView({
     onPin: handlePin,
     onUnpin: handleUnpin,
     onDelete: handleDelete,
+    onToggleOfficial: handleToggleOfficial,
     onLoadMoreChildren: handleLoadMoreChildren,
     childLoading: (postId) => childLoadingMap[postId] ?? false,
     childHasLoaded: (postId) => loadedChildParents.has(postId),

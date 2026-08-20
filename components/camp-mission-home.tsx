@@ -12,7 +12,8 @@ import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { getRegionTotals } from "@/lib/exp"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
-import { getNextCampSession } from "@/lib/opening-camp-content"
+import { getNextCampMeetingSession } from "@/lib/opening-camp-content"
+import { DEVOTION_ENTRIES } from "@/lib/devotion-content"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 // 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
@@ -88,7 +89,10 @@ export async function CampMissionHome({
     ZONE_META.map((zone) => ({ ...zone, total: totals[zone.key] })),
     PLACEHOLDER_USER_ZONE_KEY
   )
-  const nextSession = getNextCampSession()
+  // 只在 4 場正式 SESSION 裡挑，因為卡片點進去的 /camp/meeting 現在專門
+  // 顯示這 4 場，兩邊的「下一場」要對得起來（大地競賽／辯論場／Podcast
+  // 不算聚會，見 lib/opening-camp-content.ts 的 CAMP_MEETING_SESSION_IDS）。
+  const nextSession = getNextCampMeetingSession()
 
   return (
     <main className="relative z-0 mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
@@ -180,6 +184,20 @@ export async function CampMissionHome({
           {nextSession.label}
         </p>
       </Link>
+
+      {/* 早晨靈修：直接在首頁放兩個按鈕，取代原本只能從側邊欄「靈修內容」
+          進去的路徑（側邊欄那個連結還留著，兩邊都能到）。沒有現成的靈修
+          視覺圖，先用素卡片頂著，不硬套不相關的照片。 */}
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        {DEVOTION_ENTRIES.map((entry) => (
+          <Link key={entry.id} href={`/camp/devotion/${entry.id}`}>
+            <SectionCard variant="glass" className="flex h-full flex-col justify-end gap-1">
+              <p className={`${genRyuMin.className} text-lg`}>{entry.id === "day2" ? "Day 2" : "Day 3"}</p>
+              <p className="text-sm text-muted-foreground">早晨靈修</p>
+            </SectionCard>
+          </Link>
+        ))}
+      </div>
 
       {IG_STORY_IMAGE && (
         <SectionCard className="mt-6 flex flex-col gap-2">

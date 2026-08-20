@@ -13,7 +13,7 @@ import {
   pollVotes,
   replyRank,
 } from "@/db/schema/discussion"
-import { applyRankingForNewReply, propagateScoreChange, recomputeBestDirectChild } from "./ranking-updates"
+import { applyRankingForNewReply, propagateScoreChange, recomputeBestDirectChild, type Tx } from "./ranking-updates"
 import {
   DiscussionError,
   MAX_CONTENT_LENGTH,
@@ -43,6 +43,9 @@ export async function createReply(input: CreateReplyInput) {
 
   let pollOptionLabels: string[] | null = null
   if (input.poll) {
+    // 只有工作人員以上能建立投票——前端已經用 viewer.role 隱藏了「加入投票」
+    // 按鈕，但 server action 可以被直接呼叫，這裡沒擋就等於沒擋。
+    if (!isStaffRole(input.authorRole)) throw new DiscussionError("只有工作人員可以建立投票")
     pollOptionLabels = input.poll.options.map((label) => label.trim()).filter(Boolean)
     if (pollOptionLabels.length < MIN_POLL_OPTIONS) {
       throw new DiscussionError(`投票至少要有 ${MIN_POLL_OPTIONS} 個選項`)
@@ -147,6 +150,72 @@ export async function editReply(postId: string, authorId: string, content: strin
     .returning({ id: posts.id })
 
   if (rows.length === 0) throw new DiscussionError("找不到這則貼文，或你不是作者")
+}
+
+// 只能切換自己發的貼文（跟 editReply 一樣用 authorId 卡在 WHERE 裡）——
+// 呼叫端（actions.ts）已經先確認過是 discussion admin，這裡再擋一層
+// 「必須是自己的貼文」，兩個條件都要成立。isOfficial 純粹是顯示旗標，
+// 不影響 authorId／編輯／刪除權限。
+export async function toggleOfficial(postId: string, authorId: string, next: boolean): Promise<void> {
+  const rows = await db
+    .update(posts)
+    .set({ isOfficial: next, updatedAt: new Date() })
+    .where(and(eq(posts.id, postId), eq(posts.authorId, authorId), isNull(posts.deletedAt)))
+    .returning({ id: posts.id })
+
+  if (rows.length === 0) throw new DiscussionError("找不到這則貼文，或你不是作者")
+}
+
+// root post 沒有作者（authorId 是 null），沒辦法像 editReply 那樣比對
+// authorId——呼叫端（actions.ts）改用 isDiscussionAdmin 擋，這裡只用
+// reply_to_id is null 確認真的是在改 root，不是隨便一則貼文。
+export async function editRootContent(rootPostId: string, content: string): Promise<void> {
+  const trimmed = content.trim()
+  if (!trimmed) throw new DiscussionError("內容不能是空的")
+  if (trimmed.length > MAX_CONTENT_LENGTH) throw new DiscussionError(`內容不能超過 ${MAX_CONTENT_LENGTH} 字`)
+
+  const rows = await db
+    .update(posts)
+    .set({ content: trimmed, updatedAt: new Date() })
+    .where(and(eq(posts.id, rootPostId), isNull(posts.replyToId)))
+    .returning({ id: posts.id })
+
+  if (rows.length === 0) throw new DiscussionError("找不到這個討論 root")
+}
+
+// 靈修引導問題＝root 底下置頂的「官方」直接回覆，只在 root 剛建立時（見
+// lib/discussion/root.ts 的 getOrCreateDevotionRoot）由那個 request 播種一次
+// ——呼叫端已經用 posts.root_key 的 unique index 保證只有一個 request 會
+// 走到這裡，不用再另外防重。authorId 是 null：這些問題不是任何人發的，
+// 是活動內容本身（跟 root post 自己 authorId 是 null 同樣的道理）。
+export async function seedOfficialQuestions(tx: Tx, rootId: string, questions: string[]): Promise<void> {
+  const now = new Date()
+  for (const [index, question] of questions.entries()) {
+    const trimmed = question.trim()
+    if (!trimmed) continue
+
+    const id = randomUUID()
+    await tx.insert(posts).values({
+      id,
+      authorId: null,
+      content: trimmed,
+      replyToId: rootId,
+      rootPostId: rootId,
+      rootBranchId: id,
+      isOfficial: true,
+      createdAt: now,
+      updatedAt: now,
+    })
+
+    await applyRankingForNewReply(
+      tx,
+      { id, createdAt: now, rootPostId: rootId, rootBranchId: id },
+      { id: rootId, createdAt: now, replyToId: null, isStaffAuthor: false },
+      false
+    )
+
+    await tx.insert(discussionPins).values({ rootPostId: rootId, postId: id, pinnedBy: null, position: index })
+  }
 }
 
 // 保留 tree 結構：只標記 deleted_at，子孫節點完全不動。

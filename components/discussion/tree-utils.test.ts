@@ -16,6 +16,7 @@ function makeItem(id: string, overrides?: Partial<DiscussionItem>): DiscussionIt
       updatedAt: "2026-08-20T00:00:00.000Z",
       isDeleted: false,
       isPinned: false,
+      isOfficial: false,
     },
     stats: { likeCount: 0, directReplyCount: 0 },
     viewer: { hasLiked: false },

@@ -11,6 +11,7 @@ import {
   submitDeleteReply,
   submitLike,
   submitReply,
+  submitToggleOfficial,
   submitUnlike,
 } from "@/lib/discussion/actions"
 import type { SortMode } from "@/lib/discussion/queries"
@@ -134,7 +135,8 @@ export function DiscussionThread({
         content: item.post.content,
         isDeleted: item.post.isDeleted,
       })),
-      allowPoll: true,
+      // 只有工作人員以上能建立投票（server action 也會擋，見 mutations.ts）。
+      allowPoll: viewer.role !== "attendee",
     })
   }
 
@@ -165,6 +167,18 @@ export function DiscussionThread({
       if (result.ok) {
         setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: deletedDto } }))
       }
+    })
+  }
+
+  function handleToggleOfficial(postId: string, next: boolean) {
+    const entry = findEntry(postId)
+    if (!entry) return
+    const patchedPost: PostDTO = { ...entry.post, isOfficial: next }
+
+    startTransition(async () => {
+      addOptimistic({ kind: "patch", postId, changes: { post: patchedPost } })
+      const result = await submitToggleOfficial(postId, next)
+      if (result.ok) setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: patchedPost } }))
     })
   }
 
@@ -225,6 +239,7 @@ export function DiscussionThread({
     onPin: () => {},
     onUnpin: () => {},
     onDelete: handleDelete,
+    onToggleOfficial: handleToggleOfficial,
     onLoadMoreChildren: handleLoadMoreChildren,
     childLoading: (postId) => childLoadingMap[postId] ?? false,
     childHasLoaded: (postId) => loadedChildParents.has(postId),

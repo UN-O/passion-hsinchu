@@ -6,8 +6,9 @@ import { posts, replyRank } from "@/db/schema/discussion"
 import { computeBranchScore, computeReplyScore } from "./ranking"
 
 // 從 db.transaction 的 callback 參數型別直接推導，避免手動維護一份
-// PgTransaction 泛型簽章。
-type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
+// PgTransaction 泛型簽章。export 出去給 mutations.ts 的 seedOfficialQuestions
+// 用（它跟這裡一樣需要在同一個 transaction 裡呼叫 applyRankingForNewReply）。
+export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
 type NewPostForRanking = {
   id: string

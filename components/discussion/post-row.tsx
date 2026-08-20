@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react"
 import Link from "next/link"
-import { ChevronDown, Heart, MessageCircle, Pin, PinOff, Trash2 } from "lucide-react"
+import { BadgeCheck, ChevronDown, Heart, MessageCircle, Pin, PinOff, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import type { DiscussionEntry, DiscussionItem, PollDTO } from "@/lib/discussion/dto"
@@ -17,6 +17,7 @@ export type PostRowController = {
   onPin: (postId: string) => void
   onUnpin: (postId: string) => void
   onDelete: (postId: string) => void
+  onToggleOfficial: (postId: string, next: boolean) => void
   // 展開這則底下的主幹。沒有游標參數：主幹查詢就是從這個節點順著
   // best_direct_child 指標往下走，鏈太長時由鏈尾那則自己再展開一段。
   onLoadMoreChildren: (postId: string) => void
@@ -116,11 +117,16 @@ function EntryBody({
 }) {
   const { post, stats, viewer } = entry
   const canDelete = !post.isDeleted && (post.authorId === controller.viewerId || controller.isDiscussionAdmin)
+  // 官方旗標只換顯示：貼文實際上還是原本那個 authorId 發的，這裡只是
+  // 把畫面上看到的名字／頭貼換成「PASSION 官方」。
+  const showOfficial = post.isOfficial && !post.isDeleted
+  const displayName = post.isDeleted ? null : showOfficial ? "PASSION 官方" : post.authorName
+  const canToggleOfficial = !post.isDeleted && post.authorId === controller.viewerId && controller.isDiscussionAdmin
 
   return (
     <div className="flex" style={{ gap: RAIL_GAP }}>
       <div className="flex flex-col items-center" style={{ width: avatarSize }}>
-        <Avatar name={post.isDeleted ? null : post.authorName} size={avatarSize} />
+        <Avatar name={displayName} size={avatarSize} />
         {hasRail && <RailLine />}
       </div>
 
@@ -134,11 +140,18 @@ function EntryBody({
             刻意留在這個連結範圍外面，不然點讚會被連結吃掉變成導頁。 */}
         <Link href={`/discussion/${post.id}`} className="flex flex-col gap-2">
           <div className="flex flex-wrap items-baseline gap-x-2">
-            <span className={cn("text-sm font-semibold", post.isDeleted && "text-muted-foreground")}>
-              {post.isDeleted ? "已刪除的貼文" : (post.authorName ?? "匿名")}
+            <span
+              className={cn(
+                "flex items-center gap-1 text-sm font-semibold",
+                post.isDeleted && "text-muted-foreground",
+                showOfficial && "text-primary"
+              )}
+            >
+              {showOfficial && <BadgeCheck className="size-3.5" strokeWidth={2} />}
+              {post.isDeleted ? "已刪除的貼文" : (displayName ?? "匿名")}
             </span>
             <span className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</span>
-            {post.authorRole && post.authorRole !== "attendee" && !post.isDeleted && (
+            {!showOfficial && post.authorRole && post.authorRole !== "attendee" && !post.isDeleted && (
               <span className="text-xs text-muted-foreground">工作人員</span>
             )}
             {post.isPinned && <span className="text-xs text-primary">已置頂</span>}
@@ -206,6 +219,17 @@ function EntryBody({
                   <Pin className="size-[18px]" strokeWidth={1.75} />
                 </button>
               ))}
+
+            {canToggleOfficial && (
+              <button
+                type="button"
+                onClick={() => controller.onToggleOfficial(post.id, !post.isOfficial)}
+                aria-label={showOfficial ? "取消官方公告" : "轉為官方公告"}
+                className={cn("text-muted-foreground hover:text-foreground", showOfficial && "text-primary")}
+              >
+                <BadgeCheck className="size-[18px]" strokeWidth={1.75} />
+              </button>
+            )}
 
             {canDelete && (
               <button

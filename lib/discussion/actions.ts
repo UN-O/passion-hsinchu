@@ -9,9 +9,11 @@ import { flowForRootKey } from "./root-registry"
 import {
   createReply,
   editReply,
+  editRootContent,
   likePost,
   pinReply,
   softDeleteReply,
+  toggleOfficial,
   unlikePost,
   unpinReply,
   updateDiscussionSettings,
@@ -146,6 +148,7 @@ export async function submitReply(
           updatedAt: post.updatedAt.toISOString(),
           isDeleted: false,
           isPinned: false,
+          isOfficial: false,
         },
         stats: { likeCount: 0, directReplyCount: 0 },
         viewer: { hasLiked: false },
@@ -165,11 +168,37 @@ export async function submitEditReply(postId: string, content: string): Promise<
   )
 }
 
+// root 沒有作者，不能像 submitEditReply 那樣讓「作者本人」編輯——只有
+// discussion admin 能編輯 root 的大綱文字。
+export async function submitEditRootContent(rootPostId: string, content: string): Promise<ActionResult<null>> {
+  return toResult(
+    (async () => {
+      const session = await requireClaimedSession()
+      if (!isDiscussionAdmin(session)) throw new DiscussionError("沒有權限")
+      await editRootContent(rootPostId, content)
+      return null
+    })()
+  )
+}
+
 export async function submitDeleteReply(postId: string): Promise<ActionResult<null>> {
   return toResult(
     (async () => {
       const session = await requireClaimedSession()
       await softDeleteReply(postId, session.user.id, isDiscussionAdmin(session))
+      return null
+    })()
+  )
+}
+
+// 只有 discussion admin 能切換官方顯示旗標，而且只能切自己發的貼文——
+// mutations.ts 的 toggleOfficial 再擋一次 authorId，這裡先擋角色。
+export async function submitToggleOfficial(postId: string, next: boolean): Promise<ActionResult<null>> {
+  return toResult(
+    (async () => {
+      const session = await requireClaimedSession()
+      if (!isDiscussionAdmin(session)) throw new DiscussionError("沒有權限")
+      await toggleOfficial(postId, session.user.id, next)
       return null
     })()
   )

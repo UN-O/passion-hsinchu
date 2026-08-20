@@ -10,6 +10,9 @@ export type PostDTO = {
   updatedAt: string
   isDeleted: boolean
   isPinned: boolean
+  // 顯示旗標：畫面上把作者名稱／icon 換成「PASSION 官方」，貼文實際作者
+  // （authorId）跟編輯／刪除權限都不受影響。
+  isOfficial: boolean
 }
 
 export type PollDTO = {

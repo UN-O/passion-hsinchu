@@ -48,6 +48,10 @@ export const posts = pgTable(
     rootBranchId: uuid("root_branch_id").references((): AnyPgColumn => posts.id, { onDelete: "set null" }),
     // 只有 root post 會設定：拿來冪等尋找／建立某個頁面對應的討論 root。
     rootKey: text("root_key"),
+    // 「PASSION 官方」顯示旗標：貼文還是原本那個 admin 發的（authorId 不變，
+    // 刪除／編輯權限也不變），只是畫面上把作者名稱／icon 換成「PASSION 官方」。
+    // 不是獨立帳號——admin 只能切換自己發的貼文（見 mutations.ts toggleOfficial）。
+    isOfficial: boolean("is_official").notNull().default(false),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

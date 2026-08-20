@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { X } from "lucide-react"
+import { ListChecks, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { MAX_CONTENT_LENGTH, MAX_POLL_OPTIONS, MIN_POLL_OPTIONS } from "@/lib/discussion/constants"
@@ -61,14 +61,30 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
           取消
         </button>
         <p className="text-sm font-semibold">{replyingTo ? `回覆 ${replyingTo.isDeleted ? "已刪除的貼文" : (replyingTo.authorName ?? "匿名")}` : "發布"}</p>
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={!canSubmit}
-          className={cn("text-sm font-semibold text-primary disabled:opacity-40", pending && "opacity-70")}
-        >
-          送出
-        </button>
+        <div className="flex items-center gap-3">
+          {/* 只有工作人員以上看得到（allowPoll 由呼叫端依 viewer.role 決定，
+              server action 也另外擋一次）。放在送出旁邊，跟送出同一個
+              「這篇貼文最終長怎樣」的決定點，不是內文裡的次要選項。 */}
+          {target.allowPoll && !pollOpen && (
+            <button
+              type="button"
+              onClick={() => setPollOpen(true)}
+              disabled={pending}
+              aria-label="加入投票"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <ListChecks className="size-5" strokeWidth={1.75} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            className={cn("text-sm font-semibold text-primary disabled:opacity-40", pending && "opacity-70")}
+          >
+            送出
+          </button>
+        </div>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-4">
@@ -92,16 +108,6 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
           placeholder={replyingTo ? "寫下回覆..." : "分享你的心得、筆記，或提出問題..."}
           className="min-h-32 w-full flex-1 resize-none bg-transparent text-base outline-none placeholder:text-muted-foreground"
         />
-
-        {target.allowPoll && !pollOpen && (
-          <button
-            type="button"
-            onClick={() => setPollOpen(true)}
-            className="self-start text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-          >
-            加入投票
-          </button>
-        )}
 
         {pollOpen && (
           <div className="flex shrink-0 flex-col gap-2 rounded-2xl border border-border p-4">
