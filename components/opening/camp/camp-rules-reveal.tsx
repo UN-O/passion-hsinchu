@@ -6,10 +6,12 @@ import { mantouSans } from "@/app/fonts/mantou-sans"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 import { campRulesTitle, type CampRuleScreen } from "@/lib/opening-camp-content"
 
-// 所有標題／標籤字：白色字，細黑線外框
+// 所有標題／標籤字：白色字，細黑線外框。外框粗細用 em（跟著自己的字級走），
+// 不用固定 px——不然字級用 clamp() 響應式縮放時，小字級外框會顯得過粗、
+// 大字級又顯得過細，兩邊都對不齊視覺比例。
 const HEADING_STROKE_STYLE = {
   color: "#ffffff",
-  WebkitTextStroke: "1.5px #000000",
+  WebkitTextStroke: "0.035em #000000",
 } as const
 
 const BODY_TEXT_COLOR = "#3a352c"
@@ -86,14 +88,14 @@ export function CampRuleContentScreen({
     <div className="relative flex h-full flex-col items-center gap-6 px-6 pt-[24vh] text-center">
       <PassionLogo />
       <h2
-        className={`${mantouSans.className} w-full text-[clamp(1.75rem,7vw,3rem)]`}
+        className={`${mantouSans.className} w-full text-[clamp(2rem,8vw,3.5rem)]`}
         style={HEADING_STROKE_STYLE}
       >
         {screen.label}
       </h2>
       <div
-        className={`${genRyuMin.className} w-[min(74%,28rem)] self-center text-left`}
-        style={{ color: BODY_TEXT_COLOR, transform: "skewX(-5deg)" }}
+        className={`${genRyuMin.className} w-[min(74%,28rem)] self-center text-center`}
+        style={{ color: BODY_TEXT_COLOR }}
       >
         {screen.lines.map((line) => (
           <p key={line} className="text-[clamp(1rem,4.5vw,1.5rem)]">
