@@ -91,7 +91,8 @@ export default async function ConferenceMeetingPage({
         </div>
 
         <div className="flex flex-col gap-1">
-          <div>
+          {/* 深黑底跟頁面本身的深灰底色拉開對比，讓留言區在視覺上獨立成一塊。 */}
+          <div className="rounded-3xl bg-black p-6">
             <DiscussionRoot rootKey={conferenceSessionRootKey(nextSession.id)} session={session} />
           </div>
         </div>

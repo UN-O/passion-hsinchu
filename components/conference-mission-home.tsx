@@ -105,8 +105,8 @@ export function ConferenceMissionHome({
           下面、完全被蓋住看不見。 */}
       <div className="sticky top-0 z-20 bg-[#0458e2]">
         <div
-          className="mx-auto max-w-2xl px-[6%] pb-4 sm:px-8"
-          style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
+          className="mx-auto max-w-2xl px-[6%] pb-2 sm:px-8"
+          style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)" }}
         >
           <Link href="https://www.passion-hsinchu.com/" target="_blank" rel="noopener noreferrer">
             <Image
