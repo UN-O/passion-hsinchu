@@ -27,11 +27,12 @@ export default function CampMeetingPlaygroundPage() {
         />
 
         <div className="mt-10 flex flex-col gap-10">
-          {/* 聚會視覺圖，跟首頁聚會卡片／倒數計時預覽同一張 nextSession.image，
-              16:9 滿版圓角（跟 CONF 的聚會內容頁同一個排版）。 */}
+          {/* 聚會視覺圖用有字版 nextSession.infoImage（跟首頁卡片／倒數計時縮圖
+              用的無字版 image 是不同兩張圖），16:9 滿版圓角（跟 CONF 的聚會內容頁
+              同一個排版）。 */}
           <div className="relative aspect-video w-full overflow-hidden rounded-3xl">
             <Image
-              src={nextSession.image}
+              src={nextSession.infoImage}
               alt={`${nextSession.label}視覺`}
               fill
               sizes="(min-width: 640px) 672px, 100vw"
