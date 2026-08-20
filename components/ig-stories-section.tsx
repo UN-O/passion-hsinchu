@@ -1,33 +1,21 @@
-import { getActiveStories } from "@/lib/instagram-stories"
+import Image from "next/image"
 
-// 官方帳號目前沒有限時動態、或還沒設定 IG_ACCESS_TOKEN／IG_BUSINESS_ACCOUNT_ID
-// 時，getActiveStories() 一律回傳空陣列，這裡就顯示這行文字，不特別區分兩種情況
-// （對使用者來說看起來一樣，都是「現在沒有東西可看」）。
-export async function IgStoriesSection() {
-  const stories = await getActiveStories()
+import { IG_STORY_IMAGE } from "@/lib/instagram-stories"
+import { socialLinks } from "@/lib/site-config"
 
-  if (stories.length === 0) {
-    return <p className="text-base text-muted-foreground">目前沒有限時動態。</p>
-  }
+// 手動維護的限動截圖（9:16 直式），點下去跳到官方 IG 個人頁看目前真正的限動。
+// 沒有圖片時回傳 null，呼叫端（camp-mission-home.tsx）會連同外層卡片一起隱藏。
+export function IgStoriesSection() {
+  if (!IG_STORY_IMAGE) return null
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-1">
-      {stories.map((story) => (
-        <a
-          key={story.id}
-          href={story.permalink}
-          target="_blank"
-          rel="noreferrer"
-          className="aspect-[9/16] w-24 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted/40 sm:w-28"
-        >
-          {story.mediaType === "VIDEO" ? (
-            <video src={story.mediaUrl} muted playsInline preload="metadata" className="size-full object-cover" />
-          ) : (
-            // eslint-disable-next-line @next/next/no-img-element -- 動態外部網址（IG CDN），next/image 優化不到
-            <img src={story.mediaUrl} alt="限時動態" className="size-full object-cover" />
-          )}
-        </a>
-      ))}
-    </div>
+    <a
+      href={socialLinks.instagram}
+      target="_blank"
+      rel="noreferrer"
+      className="relative block aspect-[9/16] w-2/5 max-w-[200px] overflow-hidden rounded-2xl border border-border bg-muted/40"
+    >
+      <Image src={IG_STORY_IMAGE} alt="官方 IG 限時動態" fill sizes="200px" className="object-cover" />
+    </a>
   )
 }

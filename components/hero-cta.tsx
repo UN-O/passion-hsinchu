@@ -31,7 +31,7 @@ export function HeroCta() {
           <Link href="/camp">進入 CAMP</Link>
         </Button>
         <Button asChild size="xl" variant="secondary" className="w-full sm:w-auto">
-          <Link href="/conference">進入 Conference</Link>
+          <Link href="/conference">進入 CONFERENCE</Link>
         </Button>
       </div>
     )

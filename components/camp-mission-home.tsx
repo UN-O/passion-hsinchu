@@ -7,6 +7,7 @@ import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampSidebar } from "@/components/camp-sidebar"
 import { SquadCourageCard } from "@/components/squad-courage-card"
 import { IgStoriesSection } from "@/components/ig-stories-section"
+import { IG_STORY_IMAGE } from "@/lib/instagram-stories"
 import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { getRegionTotals } from "@/lib/exp"
@@ -152,10 +153,12 @@ export async function CampMissionHome({
 
       <CampCountdownCard />
 
-      <SectionCard className="mt-6 flex flex-col gap-2">
-        <p className="text-sm text-muted-foreground">官方 IG 限時動態</p>
-        <IgStoriesSection />
-      </SectionCard>
+      {IG_STORY_IMAGE && (
+        <SectionCard className="mt-6 flex flex-col gap-2">
+          <p className="text-sm text-muted-foreground">官方 IG 限時動態</p>
+          <IgStoriesSection />
+        </SectionCard>
+      )}
     </main>
   )
 }

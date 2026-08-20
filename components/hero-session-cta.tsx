@@ -20,7 +20,7 @@ export function HeroSessionCta({ session }: { session: AppSession }) {
           <Link href="/camp">查看 CAMP 頁面</Link>
         </Button>
         <Button asChild size="xl" variant="secondary" className="w-full sm:w-auto">
-          <Link href="/conference">查看 Conference 頁面</Link>
+          <Link href="/conference">查看 CONFERENCE 頁面</Link>
         </Button>
       </div>
     )
@@ -51,7 +51,7 @@ export function HeroSessionCta({ session }: { session: AppSession }) {
           variant={inCamp ? "secondary" : "default"}
           className="w-full sm:w-auto"
         >
-          <Link href="/conference">進入 Conference</Link>
+          <Link href="/conference">進入 CONFERENCE</Link>
         </Button>
       )}
     </div>
