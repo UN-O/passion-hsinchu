@@ -66,15 +66,13 @@ export function ConferenceMissionHome({
             className="h-auto w-[70%]"
           />
 
-          {/* 工作坊主視覺是活動組提供的正式海報，4:5 直式跟卡片比例完全吻合，
-              不用裁切。點卡片彈出視窗顯示介紹，不跳頁。
+          {/* 工作坊方框先做成液態玻璃質感（半透明底＋backdrop-blur＋內緣高光），
+              照片去背後會疊在玻璃上面，玻璃本身要先能在任何背景上都看起來
+              通透，所以這裡不放海報圖。點卡片彈出視窗顯示介紹，不跳頁。
               overscroll-x-contain：滑到這排的頭尾邊界時，捲動不會「溢出」去觸發
-              App 外層的返回手勢（iOS／Android 邊緣滑動＝返回），滑動效果留在這排裡面。
-              pb-10：overflow-x-auto 會連帶把垂直方向也裁掉，卡片底下的白色光暈
-              需要留夠的空間才不會被裁到看不見；下面區塊改用負的 margin-top 抵銷
-              多出來的內距，視覺間距跟裁光暈之前維持一致。 */}
+              App 外層的返回手勢（iOS／Android 邊緣滑動＝返回），滑動效果留在這排裡面。 */}
           <div
-            className="mt-6 flex gap-4 overflow-x-auto overscroll-x-contain pb-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="mt-6 flex gap-4 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{ scrollSnapType: "x mandatory" }}
           >
             {conferenceWorkshops.map((workshop) => (
@@ -83,17 +81,9 @@ export function ConferenceMissionHome({
                 type="button"
                 onClick={() => setActiveWorkshopId(workshop.id)}
                 aria-label={workshop.topic || workshop.speaker}
-                className="relative aspect-[4/5] w-[118px] shrink-0 overflow-hidden rounded-3xl shadow-[0_18px_32px_-4px_rgba(255,255,255,0.75)] sm:w-[151px]"
+                className="relative aspect-[4/5] w-[118px] shrink-0 overflow-hidden rounded-3xl border border-white/50 bg-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] backdrop-blur-md sm:w-[151px]"
                 style={{ scrollSnapAlign: "start" }}
-              >
-                <Image
-                  src={workshop.image}
-                  alt=""
-                  fill
-                  sizes="151px"
-                  className="object-cover"
-                />
-              </button>
+              />
             ))}
           </div>
 
@@ -103,7 +93,7 @@ export function ConferenceMissionHome({
               疊一層由下往上的黑色漸層，確保文字在任何圖片上都維持可讀。 */}
           <Link
             href={meetingHref}
-            className="relative -mt-3 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl bg-[#DC2626] p-6"
+            className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl bg-[#DC2626] p-6"
           >
             <Image
               src="/images/conference-next-meeting-visual.jpg"
