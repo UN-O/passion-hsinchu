@@ -4,6 +4,7 @@ import ws from "ws"
 
 import * as appSchema from "./schema/app"
 import * as authSchema from "./schema/auth"
+import * as discussionSchema from "./schema/discussion"
 
 // 用 neon-serverless（WebSocket）而不是 neon-http：better-auth 的 adapter
 // 有些操作需要 transaction，而 neon-http 不支援。
@@ -18,6 +19,6 @@ if (!connectionString) {
 
 const pool = new Pool({ connectionString })
 
-export const schema = { ...authSchema, ...appSchema }
+export const schema = { ...authSchema, ...appSchema, ...discussionSchema }
 
 export const db = drizzle(pool, { schema })

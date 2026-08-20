@@ -5,7 +5,8 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { LocationPinIcon } from "@/components/location-pin-icon"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
-import { MeetingNotes } from "@/components/meeting-notes"
+import { DiscussionRoot } from "@/components/discussion/discussion-root"
+import { conferenceSessionRootKey } from "@/lib/discussion/root-registry"
 import { getNextConferenceSession } from "@/lib/opening-conference-content"
 import { requireFlowAccess } from "@/lib/session"
 import { siteConfig } from "@/lib/site-config"
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
 const PLACEHOLDER_OUTLINE = "這裡先放佔位文字，等聚會大綱與 PPT 連結確定後補上。"
 
 export default async function ConferenceMeetingPage() {
-  await requireFlowAccess("conference")
+  const session = await requireFlowAccess("conference")
   const nextSession = getNextConferenceSession()
 
   return (
@@ -55,9 +56,9 @@ export default async function ConferenceMeetingPage() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">心得筆記欄</p>
-          <div className="mt-2">
-            <MeetingNotes />
+          <p className="text-sm text-muted-foreground">討論與心得</p>
+          <div className="mt-4">
+            <DiscussionRoot rootKey={conferenceSessionRootKey(nextSession.id)} session={session} />
           </div>
         </div>
       </div>
