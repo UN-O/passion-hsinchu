@@ -197,7 +197,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     topic: "預備自己成為對的人，其實很需要勇氣！",
     location: "地點待公布",
     rounds: ["R1"],
-    image: "/images/conference-workshop-a.jpg",
+    image: "/images/conference-workshop-a.png",
   },
   {
     id: "workshop-b",
@@ -205,7 +205,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     topic: "人生要做出選擇，其實很需要勇氣！",
     location: "地點待公布",
     rounds: ["R1", "R2"],
-    image: "/images/conference-workshop-b.jpg",
+    image: "/images/conference-workshop-b.png",
   },
   {
     id: "workshop-c",
@@ -213,7 +213,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     topic: "要在職場中傳福音，其實很需要勇氣！",
     location: "地點待公布",
     rounds: ["R1", "R2"],
-    image: "/images/conference-workshop-c.jpg",
+    image: "/images/conference-workshop-c.png",
   },
   {
     id: "workshop-d",
@@ -221,7 +221,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     topic: "面對自己的不完美，其實很需要勇氣！",
     location: "地點待公布",
     rounds: ["R1", "R2"],
-    image: "/images/conference-workshop-d.jpg",
+    image: "/images/conference-workshop-d.png",
   },
 ]
 
