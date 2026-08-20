@@ -108,6 +108,16 @@ export async function CampMissionHome({
         }
       />
 
+      {/* 主視覺標題圖，跟 CONF 的 conference-title-visual.png 同一個放法：
+          頁面最上面、logo 列下面，滿版寬度、正常隨頁面捲動。 */}
+      <Image
+        src="/images/camp-title-visual.png"
+        alt="PASSION CAMP"
+        width={1400}
+        height={1202}
+        className="mt-6 h-auto w-full"
+      />
+
       <SectionCard className="mt-10 flex items-center justify-center gap-6">
         {ZONE_META.map((zone) => (
           <Image
