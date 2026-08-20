@@ -57,7 +57,17 @@ export function ConferenceMissionHome({
   useDialogBackClose(nextMeetingVisualOpen, () => setNextMeetingVisualOpen(false))
 
   return (
-    <main className="min-h-svh bg-[#0458e2]">
+    <main className="relative min-h-svh bg-[#0458e2]">
+      {/* 背景圖只鋪在頂部一個螢幕高的範圍，不是整張長頁面：圖片本身下緣已經
+          漸層融合成跟 bg-[#0458e2] 一樣的純藍色，蓋到 100svh 之後直接接回
+          main 本身的純色底，銜接處不會看出接縫。-z-10：這個背景層是
+          position:absolute 且在 DOM 最前面，不特別給負的 z-index 的話，
+          瀏覽器的疊層順序會讓它蓋在後面正常排版的內容上面，不是被蓋住。 */}
+      <div
+        className="absolute inset-x-0 top-0 -z-10 h-[100svh] bg-cover bg-top bg-no-repeat"
+        style={{ backgroundImage: "url('/images/conference-background.jpg')" }}
+        aria-hidden
+      />
       <ConferenceLiquidGlassFilter filterId="conf-liquid-glass-filter" />
       <div className="mx-auto max-w-2xl">
         {/* 主視覺四邊留空間，跟下面工作坊／聚會場次同一層 px 內距，不貼齊螢幕邊緣。
@@ -75,7 +85,7 @@ export function ConferenceMissionHome({
               src="/images/conference-hero-visual.png"
               alt="PASSION THE COURAGE GENERATIONS 勇者世代"
               width={1400}
-              height={1400}
+              height={1206}
               priority
               className="h-auto w-full rounded-3xl"
             />
