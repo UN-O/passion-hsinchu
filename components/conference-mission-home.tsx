@@ -163,7 +163,7 @@ export function ConferenceMissionHome({
       <Dialog open={activeWorkshop !== undefined} onOpenChange={(next) => !next && setActiveWorkshopId(null)}>
         <DialogContent
           showCloseButton={false}
-          className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl border-none bg-card p-0 sm:max-w-md"
+          className="flex max-w-[calc(100%-2rem)] flex-col gap-0 rounded-3xl border-none bg-card p-0 sm:max-w-md"
         >
           <DialogTitle className="sr-only">{activeWorkshop?.topic || activeWorkshop?.speaker}</DialogTitle>
           <DialogClose className="absolute top-4 right-4 z-10 text-white/80 hover:text-white">
@@ -172,8 +172,10 @@ export function ConferenceMissionHome({
           </DialogClose>
 
           {/* 工作坊資訊欄的頭圖跟上面卡片縮圖是不同兩張圖，使用者說之後會另外
-              上傳，先用色塊佔位。 */}
-          <div className="relative aspect-video w-full bg-[#3B82F6]">
+              上傳，先用色塊佔位。overflow-hidden 放在這裡（不是外層 DialogContent）
+              只裁圖片本身的圓角，外層才能保留 overflow-y-auto 讓內容過長時可以
+              捲動，不會在小螢幕手機上被切掉。 */}
+          <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-t-3xl bg-[#3B82F6]">
             {activeWorkshop?.infoImage && (
               <Image
                 src={activeWorkshop.infoImage}
@@ -219,7 +221,7 @@ export function ConferenceMissionHome({
       <Dialog open={nextMeetingVisualOpen} onOpenChange={setNextMeetingVisualOpen}>
         <DialogContent
           showCloseButton={false}
-          className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl border-none bg-card p-0 sm:max-w-md"
+          className="flex max-w-[calc(100%-2rem)] flex-col gap-0 rounded-3xl border-none bg-card p-0 sm:max-w-md"
         >
           <DialogTitle className="sr-only">下場聚會視覺</DialogTitle>
           <DialogClose className="absolute top-4 right-4 z-10 text-white/80 hover:text-white">
@@ -227,8 +229,9 @@ export function ConferenceMissionHome({
             <span className="sr-only">關閉</span>
           </DialogClose>
 
-          {/* 下場聚會視覺先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換 */}
-          <div className="relative aspect-video w-full">
+          {/* 下場聚會視覺先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換。
+              overflow-hidden 放在這裡裁圖片圓角，外層 DialogContent 保留可捲動。 */}
+          <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-t-3xl">
             <Image
               src="/images/conference-next-meeting-visual.jpg"
               alt="晚場聚會視覺"
