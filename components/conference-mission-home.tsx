@@ -162,17 +162,18 @@ export function ConferenceMissionHome({
 
           {/* 下一場還沒開始的聚會（同一個 session 也是聚會流程表印的三場）。
               左右邊跟工作坊那排卡片切齊（同一層 px 內距），不是貼齊螢幕邊緣。
-              背景先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換；
-              疊一層由下往上的黑色漸層，確保文字在任何圖片上都維持可讀。
-              底色拿掉改透明：圖片還沒載入完成的瞬間會先看到這層底色，紅色跟
-              頁面本身的藍色背景反差太大，載入時會很明顯地閃一下紅色；透明的
-              話載入中直接透出頁面底色，比較不突兀。 */}
+              視覺圖依場次換成 nextSession.image（還沒拿到真圖的場次先共用
+              佔位圖，見 lib/opening-conference-content.ts）；疊一層由下往上
+              的黑色漸層，確保文字在任何圖片上都維持可讀。底色拿掉改透明：
+              圖片還沒載入完成的瞬間會先看到這層底色，紅色跟頁面本身的藍色
+              背景反差太大，載入時會很明顯地閃一下紅色；透明的話載入中直接
+              透出頁面底色，比較不突兀。 */}
           <Link
             href={meetingHref}
             className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
           >
             <Image
-              src="/images/conference-next-meeting-visual.jpg"
+              src={nextSession.image}
               alt=""
               fill
               sizes="(min-width: 640px) 640px, 100vw"
@@ -191,9 +192,9 @@ export function ConferenceMissionHome({
               距離{nextCountdownTarget.label}開始，還剩...
             </p>
 
-            {/* 下場聚會視覺先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換。
-                點下去彈出 16:9 大圖預覽。倒數計時疊在照片下緣，底下加一層黑色
-                漸層墊底，讓霧化玻璃數字框在任何照片內容上都維持穩定的可讀度。 */}
+            {/* 下場聚會視覺依場次換成 nextSession.image，點下去彈出 16:9
+                大圖預覽。倒數計時疊在照片下緣，底下加一層黑色漸層墊底，
+                讓霧化玻璃數字框在任何照片內容上都維持穩定的可讀度。 */}
             <button
               type="button"
               onClick={() => setNextMeetingVisualOpen(true)}
@@ -201,8 +202,8 @@ export function ConferenceMissionHome({
               className="relative mt-3 aspect-video w-full overflow-hidden rounded-2xl bg-white/70"
             >
               <Image
-                src="/images/conference-next-meeting-visual.jpg"
-                alt="晚場聚會視覺"
+                src={nextSession.image}
+                alt={`${nextSession.typeLabel}視覺`}
                 fill
                 sizes="(min-width: 640px) 640px, 100vw"
                 className="object-cover"
@@ -299,12 +300,12 @@ export function ConferenceMissionHome({
             <span className="sr-only">關閉</span>
           </DialogClose>
 
-          {/* 下場聚會視覺先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換。
-              overflow-hidden 放在這裡裁圖片圓角，外層 DialogContent 保留可捲動。 */}
+          {/* 下場聚會視覺依場次換成 nextSession.image。overflow-hidden 放在
+              這裡裁圖片圓角，外層 DialogContent 保留可捲動。 */}
           <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-t-3xl">
             <Image
-              src="/images/conference-next-meeting-visual.jpg"
-              alt="晚場聚會視覺"
+              src={nextSession.image}
+              alt={`${nextSession.typeLabel}視覺`}
               fill
               sizes="(min-width: 640px) 448px, 100vw"
               className="object-cover"

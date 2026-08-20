@@ -255,7 +255,12 @@ export type ConferenceSession = {
   doorsOpenTime: string
   startTime: string
   startISO: string
+  // 16:9 視覺圖（聚會卡片、倒數計時縮圖、大圖預覽共用）。還沒拿到真的圖之前
+  // 先全部指到同一張佔位圖，拿到之後逐場換成各自的視覺。
+  image: string
 }
+
+const PLACEHOLDER_SESSION_VISUAL = "/images/conference-next-meeting-visual.jpg"
 
 export const conferenceSessions: ConferenceSession[] = [
   {
@@ -266,6 +271,7 @@ export const conferenceSessions: ConferenceSession[] = [
     doorsOpenTime: "18:50",
     startTime: "19:00",
     startISO: "2026-08-28T19:00:00+08:00",
+    image: "/images/conference-session-1-visual.jpg",
   },
   {
     id: "session-2",
@@ -275,6 +281,7 @@ export const conferenceSessions: ConferenceSession[] = [
     doorsOpenTime: "13:50",
     startTime: "14:00",
     startISO: "2026-08-29T14:00:00+08:00",
+    image: PLACEHOLDER_SESSION_VISUAL,
   },
   {
     id: "session-3",
@@ -284,6 +291,7 @@ export const conferenceSessions: ConferenceSession[] = [
     doorsOpenTime: "18:50",
     startTime: "19:00",
     startISO: "2026-08-29T19:00:00+08:00",
+    image: PLACEHOLDER_SESSION_VISUAL,
   },
 ]
 
