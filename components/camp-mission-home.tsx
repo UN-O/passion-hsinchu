@@ -91,7 +91,23 @@ export async function CampMissionHome({
   const nextSession = getNextCampSession()
 
   return (
-    <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
+    <main className="relative z-0 mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
+      {/* 各區積分卡片之後背景直接切成黑色，不是漸層。用滿版寬度的絕對定位層
+          蓋掉 camp-theme 的黃色底（見 app/camp/layout.tsx），不是直接改
+          camp-theme 本身——那是全部 /camp/* 頁面共用的，只有首頁要這個
+          效果。inset-y-0 高度貼齊 main 自己的內容高度，跟著內容多寡自動
+          伸縮；left-1/2 + -translate-x-1/2 + w-screen 是脫離 max-w-2xl
+          置中容器、貼齊螢幕左右邊緣的常見手法。z-0（main 本身）＋
+          -z-10（這層）建立新的 stacking context，這層才會準確蓋在 main
+          局部範圍內、不會沉到更外層跟其他元素的疊層順序打架。分界點是抓
+          「各區積分」卡片在目前內容量下大約落在 79% 估的，之後如果卡片
+          內容變多變少，位置會跟著微調，不是像素級精準對齊。 */}
+      <div
+        className="pointer-events-none absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2"
+        style={{ background: "linear-gradient(to bottom, #feed74 79%, #000000 79%)" }}
+        aria-hidden
+      />
+
       <CampLiquidGlassFilter filterId="camp-liquid-glass-filter" />
       <PassionLogoHeader
         logoTone="dark"
