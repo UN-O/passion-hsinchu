@@ -21,6 +21,21 @@ import {
 } from "@/lib/opening-conference-content"
 import { siteConfig } from "@/lib/site-config"
 
+// 工作坊資訊欄的標題全部從第一個逗號後面換行，例如「預備自己成為對的人，
+// 其實很需要勇氣！」變成兩行。沒有逗號（例如講員名字當標題的 fallback）
+// 就照原樣單行顯示。
+function breakAfterFirstComma(text: string) {
+  const commaIndex = text.indexOf("，")
+  if (commaIndex === -1) return text
+  return (
+    <>
+      {text.slice(0, commaIndex + 1)}
+      <br />
+      {text.slice(commaIndex + 1)}
+    </>
+  )
+}
+
 export function ConferenceMissionHome({
   meetingHref = "/conference/meeting",
 }: {
@@ -210,7 +225,7 @@ export function ConferenceMissionHome({
               )}
             </div>
             <p className="text-xl font-bold">
-              {activeWorkshop?.topic || activeWorkshop?.speaker}
+              {activeWorkshop && breakAfterFirstComma(activeWorkshop.topic || activeWorkshop.speaker)}
             </p>
             {activeWorkshop?.topic && (
               <p className="text-base text-muted-foreground">{activeWorkshop.speaker}</p>
