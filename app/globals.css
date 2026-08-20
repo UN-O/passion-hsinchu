@@ -149,6 +149,12 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* 中文字預設可以在任兩個字中間換行；但夾在中間的英文字／片語（PASSION、
+       T-shirt）如果沒特別處理，畫面窄的時候會被從單字中間硬切開。keep-all
+       讓換行點只能落在空格或標點後面，英文片語會整段一起換到下一行；
+       overflow-wrap 當一個字本身就比整行還長時還是能斷行，不會直接溢出版面。 */
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
   html {
     @apply font-sans;

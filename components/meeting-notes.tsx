@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { ShareIcon } from "@/components/share-icon"
 
 // 心得筆記跟分享目前都還沒有後端可以存，先做成畫面上可以打字、
 // 「分享」呼叫瀏覽器原生分享（沒有就退回複製到剪貼簿），
@@ -31,7 +32,8 @@ export function MeetingNotes() {
         className="w-full resize-none rounded-2xl border border-border bg-transparent p-4 text-base outline-none placeholder:text-muted-foreground"
       />
       <div className="flex gap-3">
-        <Button variant="outline" className="flex-1" onClick={handleShare}>
+        <Button variant="outline" className="flex-1 gap-2" onClick={handleShare}>
+          <ShareIcon className="size-4" />
           {copied ? "已複製" : "分享"}
         </Button>
         <Button variant="outline" className="flex-1" disabled>

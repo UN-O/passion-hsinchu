@@ -9,7 +9,9 @@ const LODGING_NOTES = [
 const LODGING_SPECIAL_NOTES = [
   "離房鑰匙請交櫃檯，晚上請準備好隔天上午會用到的東西。",
   "第三天早上退房，請前一晚先收好行李，在早上 8:20 前將行李放在大廳寄存。",
-  "第二天下午統一換穿 PASSION T-shirt。",
+  // T 和 shirt 中間用不換行連字號（U+2011），視覺上跟一般連字號一樣，
+  // 但不會被當成換行點——不然畫面窄的時候「T-」跟「shirt」會被拆成兩行。
+  "第二天下午統一換穿 PASSION T‑shirt。",
 ]
 
 export function CampLodgingInfo() {
