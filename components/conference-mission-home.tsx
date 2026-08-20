@@ -57,12 +57,17 @@ export function ConferenceMissionHome({
   useDialogBackClose(nextMeetingVisualOpen, () => setNextMeetingVisualOpen(false))
 
   return (
-    <main className="relative min-h-svh bg-[#0458e2]">
+    <main className="relative z-0 min-h-svh bg-[#0458e2]">
       {/* 背景圖只鋪在頂部一個螢幕高的範圍，不是整張長頁面：圖片本身下緣已經
           漸層融合成跟 bg-[#0458e2] 一樣的純藍色，蓋到 100svh 之後直接接回
           main 本身的純色底，銜接處不會看出接縫。-z-10：這個背景層是
           position:absolute 且在 DOM 最前面，不特別給負的 z-index 的話，
           瀏覽器的疊層順序會讓它蓋在後面正常排版的內容上面，不是被蓋住。
+          main 本身也一定要有 z-0（不能只有 relative）：relative 沒有搭配
+          z-index 的話不會建立新的 stacking context，子層的 -z-10 就不是
+          相對 main 局部計算，而是直接跳到更外層（body）的疊層順序裡競爭，
+          結果整張背景圖沉到 main 自己的純色底下面、完全被蓋住看不見
+          （這正是這次「背景圖不見了」的成因）。
           backgroundSize 刻意寫死 "auto 100%"（不是 cover）：cover 會依螢幕
           比例自己選裁切的軸，寬螢幕時反而會裁到上下；auto 100% 強制高度
           永遠等於容器高度（上下永遠滿版、不裁切），寬度依圖片比例等比縮放，
