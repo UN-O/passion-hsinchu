@@ -294,6 +294,18 @@ export function getNextConferenceSession(now: Date = new Date()): ConferenceSess
   return upcoming ?? conferenceSessions[conferenceSessions.length - 1]
 }
 
+export function getConferenceSession(id: string): ConferenceSession | undefined {
+  return conferenceSessions.find((session) => session.id === id)
+}
+
+// 聚會內容頁的場次切換選單只能選「已經輪到過」的場次：目前這場（下一場聚會）
+// 跟在它之前的場次，還沒開始顯示的場次不能提前用網址參數跳過去看。
+export function getUnlockedConferenceSessions(now: Date = new Date()): ConferenceSession[] {
+  const next = getNextConferenceSession(now)
+  const nextIndex = conferenceSessions.findIndex((session) => session.id === next.id)
+  return conferenceSessions.slice(0, nextIndex + 1)
+}
+
 // 倒數計時卡片要倒數的對象比「下一場聚會」更細，還要包含 DAY2 的兩個工作坊
 // 場次，所以另外開一組依時間排序的清單，跟上面 conferenceSessions（只給
 // 「下一場聚會」卡片／彈窗用）分開算。

@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { LocationPinIcon } from "@/components/location-pin-icon"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { DiscussionRoot } from "@/components/discussion/discussion-root"
+import { ConferenceSessionSelect } from "@/components/conference-session-select"
 import { conferenceSessionRootKey } from "@/lib/discussion/root-registry"
-import { getNextConferenceSession } from "@/lib/opening-conference-content"
+import { getNextConferenceSession, getUnlockedConferenceSessions } from "@/lib/opening-conference-content"
 import { requireFlowAccess } from "@/lib/session"
 import { siteConfig } from "@/lib/site-config"
 
@@ -20,9 +21,16 @@ export const metadata: Metadata = {
 // 聚會場次、名稱本身已經接上 lib/opening-conference-content.ts 的真實場次資料。
 const PLACEHOLDER_OUTLINE = "這裡先放佔位文字，等聚會大綱與 PPT 連結確定後補上。"
 
-export default async function ConferenceMeetingPage() {
+export default async function ConferenceMeetingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session?: string }>
+}) {
   const session = await requireFlowAccess("conference")
-  const nextSession = getNextConferenceSession()
+  const { session: sessionParam } = await searchParams
+  const unlockedSessions = getUnlockedConferenceSessions()
+  const nextSession =
+    unlockedSessions.find((s) => s.id === sessionParam) ?? getNextConferenceSession()
 
   return (
     <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
@@ -47,9 +55,16 @@ export default async function ConferenceMeetingPage() {
             <br />
             {nextSession.typeLabel}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {nextSession.doorsOpenTime} 開放入場・{nextSession.startTime} 聚會開始
-          </p>
+          <div className="mt-1 flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              {nextSession.doorsOpenTime} 開放入場・{nextSession.startTime} 聚會開始
+            </p>
+            <ConferenceSessionSelect
+              sessions={unlockedSessions}
+              activeId={nextSession.id}
+              basePath="/conference/meeting"
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-1">

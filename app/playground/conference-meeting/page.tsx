@@ -5,11 +5,19 @@ import { Button } from "@/components/ui/button"
 import { LocationPinIcon } from "@/components/location-pin-icon"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { MeetingNotes } from "@/components/meeting-notes"
-import { getNextConferenceSession } from "@/lib/opening-conference-content"
+import { ConferenceSessionSelect } from "@/components/conference-session-select"
+import { getNextConferenceSession, getUnlockedConferenceSessions } from "@/lib/opening-conference-content"
 import { siteConfig } from "@/lib/site-config"
 
-export default function ConferenceMeetingPlaygroundPage() {
-  const nextSession = getNextConferenceSession()
+export default async function ConferenceMeetingPlaygroundPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session?: string }>
+}) {
+  const { session: sessionParam } = await searchParams
+  const unlockedSessions = getUnlockedConferenceSessions()
+  const nextSession =
+    unlockedSessions.find((s) => s.id === sessionParam) ?? getNextConferenceSession()
 
   return (
     <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
@@ -34,9 +42,16 @@ export default function ConferenceMeetingPlaygroundPage() {
             <br />
             {nextSession.typeLabel}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {nextSession.doorsOpenTime} 開放入場・{nextSession.startTime} 聚會開始
-          </p>
+          <div className="mt-1 flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              {nextSession.doorsOpenTime} 開放入場・{nextSession.startTime} 聚會開始
+            </p>
+            <ConferenceSessionSelect
+              sessions={unlockedSessions}
+              activeId={nextSession.id}
+              basePath="/playground/conference-meeting"
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-1">
