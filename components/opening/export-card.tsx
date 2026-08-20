@@ -23,7 +23,7 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(function E
       </div>
       <div className="relative flex h-full flex-col items-center justify-center gap-4 p-12 text-center text-white">
         <p className="text-sm tracking-[0.2em] text-white/70">{label}</p>
-        <p className="text-2xl leading-relaxed">{verse}</p>
+        <p className="w-full text-2xl leading-relaxed">{verse}</p>
         {verseRef && <p className="text-base text-white/70">（{verseRef}）</p>}
       </div>
     </div>

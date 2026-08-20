@@ -19,7 +19,7 @@ function WelcomeContent() {
   // 使用者看起來就像文字最上面被切掉了。
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-8 px-6 py-8 text-center">
-      <div>
+      <div className="w-full">
         <p className="text-sm tracking-[0.2em] text-white/60">旅程的開始</p>
         <h1 className="font-heading mt-3 text-3xl font-bold sm:text-4xl">歡迎來到 PASSION 系統</h1>
       </div>

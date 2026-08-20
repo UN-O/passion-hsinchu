@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ShareIcon } from "@/components/share-icon"
+import { SendIcon } from "@/components/send-icon"
 
 // 心得筆記跟分享目前都還沒有後端可以存，先做成畫面上可以打字、
 // 「分享」呼叫瀏覽器原生分享（沒有就退回複製到剪貼簿），
@@ -36,7 +37,8 @@ export function MeetingNotes() {
           <ShareIcon className="size-4" />
           {copied ? "已複製" : "分享"}
         </Button>
-        <Button variant="outline" className="flex-1" disabled>
+        <Button variant="outline" className="flex-1 gap-2" disabled>
+          <SendIcon className="size-4" />
           傳送給官方 IG
         </Button>
       </div>

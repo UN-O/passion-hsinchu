@@ -28,7 +28,7 @@ function QuizContent({ onStepChange }: { onStepChange: (step: CampStep) => void 
       <p className="text-sm tracking-[0.2em] text-white/60">
         第 {index + 1} 題 / 共 {campQuizQuestions.length} 題
       </p>
-      <h2 className="font-heading text-2xl font-bold sm:text-3xl">{question.question}</h2>
+      <h2 className="font-heading w-full text-2xl font-bold sm:text-3xl">{question.question}</h2>
 
       <div className="grid w-full max-w-sm grid-cols-2 gap-4">
         {question.options.map((option) => (

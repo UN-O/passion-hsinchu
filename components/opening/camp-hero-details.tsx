@@ -18,7 +18,7 @@ export function CampHeroDetails({
   const labelClass = tone === "dark" ? "text-white/60" : "text-muted-foreground"
 
   return (
-    <div className={`flex flex-col items-center gap-4 text-center ${bodyClass}`}>
+    <div className={`flex w-full flex-col items-center gap-4 text-center ${bodyClass}`}>
       <Image
         src={src}
         alt={result.name}
@@ -27,12 +27,12 @@ export function CampHeroDetails({
         draggable={false}
         className="w-full max-w-40 self-center rounded-2xl"
       />
-      <p>{result.description}</p>
-      <div>
+      <p className="w-full">{result.description}</p>
+      <div className="w-full">
         <p className={`text-sm font-bold ${labelClass}`}>勇者特質</p>
         <p className="mt-1">{result.traits.join("、")}</p>
       </div>
-      <div>
+      <div className="w-full">
         <p className={`text-sm font-bold ${labelClass}`}>小提醒</p>
         <p className="mt-1">{result.reminder}</p>
       </div>

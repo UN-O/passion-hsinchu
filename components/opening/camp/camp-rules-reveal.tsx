@@ -62,7 +62,7 @@ export function CampRulesTitleScreen({ onAdvance }: { onAdvance: () => void }) {
       <PassionLogo />
       <CourageGenerationsTagline className="w-56 sm:w-64" />
       <h1
-        className={`${mantouSans.className} text-[clamp(2rem,9vw,4.5rem)]`}
+        className={`${mantouSans.className} w-full text-[clamp(2rem,9vw,4.5rem)]`}
         style={HEADING_STROKE_STYLE}
       >
         {campRulesTitle}
@@ -86,7 +86,7 @@ export function CampRuleContentScreen({
     <div className="relative flex h-full flex-col items-center gap-6 px-6 pt-[24vh] text-center">
       <PassionLogo />
       <h2
-        className={`${mantouSans.className} text-[clamp(1.75rem,7vw,3rem)]`}
+        className={`${mantouSans.className} w-full text-[clamp(1.75rem,7vw,3rem)]`}
         style={HEADING_STROKE_STYLE}
       >
         {screen.label}

@@ -85,14 +85,18 @@ export function CampSidebar() {
           className="camp-theme max-h-[85vh] max-w-[calc(100%-2rem)] gap-0 overflow-y-auto rounded-3xl border-none bg-transparent p-0 sm:max-w-sm"
         >
           <DialogTitle className="sr-only">{activeItem?.label ?? ""}</DialogTitle>
-          <div className="sticky top-0 z-10 flex justify-end p-2">
-            <DialogClose className="rounded-full bg-black/50 p-1 text-white/90 backdrop-blur-sm hover:text-white">
-              <X className="size-5" />
-              <span className="sr-only">關閉</span>
-            </DialogClose>
-          </div>
+          <DialogClose className="absolute top-2 right-2 z-10 rounded-full bg-black/50 p-1 text-white/90 backdrop-blur-sm hover:text-white">
+            <X className="size-5" />
+            <span className="sr-only">關閉</span>
+          </DialogClose>
           {activeItem?.type === "image" && (
-            <Image src={activeItem.imageSrc} alt={activeItem.label} width={600} height={1472} className="h-auto w-full" />
+            <Image
+              src={activeItem.imageSrc}
+              alt={activeItem.label}
+              width={700}
+              height={1718}
+              className="block h-auto w-full"
+            />
           )}
           {activeItem?.type === "content" && activeItem.key === "lodging" && (
             <div className="px-2 pb-2">

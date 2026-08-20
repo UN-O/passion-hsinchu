@@ -43,7 +43,7 @@ function VersePrayerContent({
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-8 px-6 py-10 text-center">
       <p className="text-sm tracking-[0.2em] text-white/60">{label}</p>
-      <p className="max-w-md text-xl leading-loose sm:text-2xl">{bodyText}</p>
+      <p className="w-full max-w-md text-xl leading-loose sm:text-2xl">{bodyText}</p>
       {isVersePage && <p className="text-base text-white/70">（{content.verseRef}）</p>}
 
       <div className="flex gap-3">

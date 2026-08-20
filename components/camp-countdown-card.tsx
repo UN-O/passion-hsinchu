@@ -36,7 +36,7 @@ export function CampCountdownCard() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           showCloseButton={false}
-          className="camp-theme max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl border-none bg-card p-0 sm:max-w-md"
+          className="camp-theme flex max-w-[calc(100%-2rem)] flex-col gap-0 rounded-3xl border-none bg-card p-0 sm:max-w-md"
         >
           <DialogTitle className="sr-only">營會資訊</DialogTitle>
           <DialogClose className="absolute top-4 right-4 z-10 text-white/80 hover:text-white">
@@ -44,8 +44,11 @@ export function CampCountdownCard() {
             <span className="sr-only">關閉</span>
           </DialogClose>
 
-          {/* 還沒有真的營會視覺照片，先用色塊佔位 */}
-          <div className="aspect-video w-full bg-slate-400" />
+          {/* 還沒有真的營會視覺照片，先用色塊佔位。overflow-hidden 放在這裡（不是
+              外層 DialogContent）只裁圖片本身的圓角，外層才能保留 overflow-y-auto
+              讓內容過長時可以捲動，不會在小螢幕手機上被切掉或壓扁變形
+              （跟 conference-mission-home.tsx 同一個修法）。 */}
+          <div className="aspect-video w-full shrink-0 overflow-hidden rounded-t-3xl bg-slate-400" />
 
           <div className="flex flex-col gap-2 p-6">
             <p className="text-sm text-muted-foreground">營會資訊</p>
