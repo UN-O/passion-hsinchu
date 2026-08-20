@@ -224,3 +224,13 @@
   font-size: 1.75rem;
   font-size: 7cqw;
 }
+
+/* camp 液態玻璃卡片的即時扭曲：跟 .conf-countdown-* 同一招，同一個屬性寫兩次——
+   Safari 不支援 backdrop-filter 裡的 url() SVG 濾鏡，會直接把第二行當成無效值
+   丟掉，退回第一行的純模糊；有支援的瀏覽器（Chrome／Edge）第二行才會生效，
+   疊加 #camp-liquid-glass-filter 做出扭曲的液態感。兩種情況畫面都不會壞。 */
+.camp-glass-card {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px) url(#camp-liquid-glass-filter);
+}

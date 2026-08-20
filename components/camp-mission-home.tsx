@@ -1,6 +1,8 @@
 import Image from "next/image"
 import Link from "next/link"
 
+import { cn } from "@/lib/utils"
+import { CampLiquidGlassFilter } from "@/components/camp-liquid-glass-filter"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampSidebar } from "@/components/camp-sidebar"
 import { SquadCourageCard } from "@/components/squad-courage-card"
@@ -32,9 +34,32 @@ const ZONE_META = [
   { key: "bee", title: "熊蜂區", icon: "/images/zone-icon-3.png", color: "#3987e5" },
 ] as const
 
-function SectionCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function SectionCard({
+  children,
+  className = "",
+  variant = "default",
+}: {
+  children: React.ReactNode
+  className?: string
+  variant?: "default" | "glass"
+}) {
   return (
-    <div className={`rounded-3xl border border-border bg-muted/20 p-6 ${className}`}>{children}</div>
+    <div
+      className={cn(
+        "rounded-3xl p-6",
+        variant === "glass"
+          ? // 液態玻璃：模擬 iOS 最新系統的玻璃材質。camp-glass-card（見 globals.css）
+            // 負責 backdrop-filter 的漸進增強（有支援的瀏覽器才會扭曲，Safari 退回
+            // 純模糊，不會壞）；這裡的漸層／陰影是靜態的視覺基底，卡片內部疊一層
+            // 左上亮、右下藍灰的放射狀漸層模擬玻璃材質本身的光影與色澤，邊緣用內
+            // 陰影做出鏡片感的高光／暗邊，外面加落地陰影撐出浮起來的立體感。
+            "camp-glass-card border-2 border-white/50 bg-[radial-gradient(120%_100%_at_25%_15%,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.06)_35%,rgba(191,219,254,0.05)_70%,rgba(255,255,255,0.08)_100%)] shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),inset_0_-3px_4px_rgba(30,64,124,0.14),0_16px_40px_rgba(0,0,0,0.22)]"
+          : "border border-border bg-muted/20",
+        className
+      )}
+    >
+      {children}
+    </div>
   )
 }
 
@@ -64,6 +89,7 @@ export async function CampMissionHome({
 
   return (
     <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
+      <CampLiquidGlassFilter filterId="camp-liquid-glass-filter" />
       <PassionLogoHeader
         logoTone="dark"
         leftSlot={<CampSidebar />}
@@ -92,11 +118,11 @@ export async function CampMissionHome({
         ))}
       </SectionCard>
 
-      <SectionCard className="mt-6">
+      <SectionCard variant="glass" className="mt-6">
         <SquadCourageCard squadName={PLACEHOLDER_SQUAD_NAME} total={PLACEHOLDER_SQUAD_COURAGE_POINTS} />
       </SectionCard>
 
-      <SectionCard className="mt-6 flex flex-col gap-2">
+      <SectionCard variant="glass" className="mt-6 flex flex-col gap-2">
         <p className="text-sm text-muted-foreground">各區目前積分</p>
         <ZoneScoreChart zones={zoneScores} />
       </SectionCard>
