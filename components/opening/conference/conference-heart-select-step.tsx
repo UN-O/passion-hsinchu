@@ -28,9 +28,15 @@ function HeartSelectContent() {
     <div className="flex min-h-full flex-col gap-6 px-6 py-8 text-center">
       <h2 className="font-heading text-2xl font-bold sm:text-3xl">什麼事情，是你最需要勇氣去面對的？</h2>
 
-      <div className="min-h-0 flex-1">
+      {/* flex + flex-1（不是 h-full）：h-full 是 height:100%，百分比高度
+          在「祖先高度是靠 flex-grow 算出來、不是寫死的 height」這種巢狀情境
+          下常常算不出來，grid 會整個縮回內容本身的高度，四個選項框變得很扁、
+          下面留一大片空白（實測量過：h-full 那版 grid 高度只有 133px，
+          父層明明有 924px 可以用）。改成外層跟 grid 都用 flex-1，flex-grow
+          分配空間不看百分比、對這種巢狀結構比較可靠。 */}
+      <div className="flex min-h-0 flex-1 flex-col">
         {!category ? (
-          <div className="grid h-full grid-cols-2 grid-rows-2 gap-3 sm:gap-4">
+          <div className="grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-3 sm:gap-4">
             {conferenceCategories.map((cat) => (
               <button
                 key={cat.key}
