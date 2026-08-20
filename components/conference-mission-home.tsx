@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Check, X } from "lucide-react"
 
 import { ConferenceCountdown } from "@/components/conference-countdown"
+import { ConferenceLiquidGlassFilter } from "@/components/conference-liquid-glass-filter"
 import { LocationPinIcon } from "@/components/location-pin-icon"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useDialogBackClose } from "@/hooks/use-dialog-back-close"
@@ -39,6 +40,7 @@ export function ConferenceMissionHome({
 
   return (
     <main className="min-h-svh bg-[#0458e2]">
+      <ConferenceLiquidGlassFilter filterId="conf-liquid-glass-filter" />
       <div className="mx-auto max-w-2xl">
         {/* 主視覺四邊留空間，跟下面工作坊／聚會場次同一層 px 內距，不貼齊螢幕邊緣。
             上方額外加 env(safe-area-inset-top)：App 化後全螢幕沒有網址列，
@@ -66,9 +68,11 @@ export function ConferenceMissionHome({
             className="h-auto w-[70%]"
           />
 
-          {/* 工作坊方框是液態玻璃質感（半透明底＋backdrop-blur＋內緣高光）當底，
-              照片這次是真的去背 PNG（有 alpha），直接疊滿整個方框，透明的部分
-              會透出底下的玻璃質感。點卡片彈出視窗顯示介紹，不跳頁。
+          {/* 工作坊方框底是真正的液態玻璃折射（.conf-glass-surface，SVG
+              feDisplacementMap 讓背景真的扭曲，不是單純模糊；濾鏡定義掛在
+              上面的 ConferenceLiquidGlassFilter，這裡直接引用同一個 id），
+              照片是去背 PNG（有 alpha），疊在玻璃上面，透明的部分會透出
+              玻璃折射效果。點卡片彈出視窗顯示介紹，不跳頁。
               overscroll-x-contain：滑到這排的頭尾邊界時，捲動不會「溢出」去觸發
               App 外層的返回手勢（iOS／Android 邊緣滑動＝返回），滑動效果留在這排裡面。 */}
           <div
@@ -81,9 +85,10 @@ export function ConferenceMissionHome({
                 type="button"
                 onClick={() => setActiveWorkshopId(workshop.id)}
                 aria-label={workshop.topic || workshop.speaker}
-                className="relative aspect-[4/5] w-[118px] shrink-0 overflow-hidden rounded-3xl border border-white/50 bg-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] backdrop-blur-md sm:w-[151px]"
+                className="relative aspect-[4/5] w-[118px] shrink-0 overflow-hidden rounded-3xl border border-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] sm:w-[151px]"
                 style={{ scrollSnapAlign: "start" }}
               >
+                <div className="conf-glass-surface absolute inset-0 bg-white/10" />
                 <Image src={workshop.image} alt="" fill sizes="151px" className="object-cover" />
               </button>
             ))}

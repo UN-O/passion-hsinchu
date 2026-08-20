@@ -234,3 +234,13 @@
   backdrop-filter: blur(12px);
   backdrop-filter: blur(8px) url(#camp-liquid-glass-filter);
 }
+
+/* CONF 液態玻璃卡片的即時扭曲：屬性寫兩次——Safari 不支援 backdrop-filter 裡的
+   url() SVG 濾鏡，會把第二行當無效值丟掉，退回第一行的純模糊；有支援的瀏覽器
+   （Chrome／Edge）第二行才生效，疊加 #conf-liquid-glass-filter 做出扭曲的液態感。
+   兩種情況畫面都不會壞，跟 .camp-glass-card 同一招。 */
+.conf-glass-surface {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  backdrop-filter: blur(6px) url(#conf-liquid-glass-filter);
+}

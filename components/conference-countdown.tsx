@@ -66,16 +66,20 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
       {/* 三個數字框直接各自 flex-1 佔同一列的等分寬度，冒號是獨立的兄弟元素、
           不佔彈性空間，這樣不管有沒有冒號夾在旁邊，三個框框的寬度都會一致
           （之前冒號跟框框綁在同一個 flex-1 容器裡，最後一組沒有冒號分走空間，
-          框框會比前兩組寬）。數字框疊在聚會照片上面，白底改成半透明＋
-          backdrop-blur 的霧化玻璃質感，讓照片透出來又不影響數字辨識度。 */}
+          框框會比前兩組寬）。數字框疊在聚會照片上面，底改成真正的液態玻璃
+          折射（.conf-glass-surface，濾鏡定義掛在 ConferenceMissionHome，見
+          conference-mission-home.tsx），照片會透過玻璃真的扭曲，不只是模糊。
+          這個元件也被 CAMP 的 CampCountdownCard 重用，那邊頁面沒有掛 CONF
+          的濾鏡，會自動退回 .conf-glass-surface 裡的純模糊備援，不會壞。 */}
       <div className="conf-countdown-row flex items-stretch">
         {segments.map((segment, index) => (
           <Fragment key={segment.label}>
-            <div className="conf-countdown-box flex flex-1 flex-col items-center rounded-xl bg-white/30 backdrop-blur-md">
-              <span className="conf-countdown-digit leading-none font-bold tabular-nums text-black">
+            <div className="conf-countdown-box relative flex flex-1 flex-col items-center overflow-hidden rounded-xl">
+              <div className="conf-glass-surface absolute inset-0 bg-white/10" />
+              <span className="conf-countdown-digit relative leading-none font-bold tabular-nums text-black">
                 {pad(segment.value)}
               </span>
-              <span className="conf-countdown-label text-black/60">{segment.label}</span>
+              <span className="conf-countdown-label relative text-black/60">{segment.label}</span>
             </div>
             {index < segments.length - 1 && (
               <span className="conf-countdown-colon flex items-center font-bold text-black/30">:</span>
