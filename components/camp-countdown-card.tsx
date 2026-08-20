@@ -57,13 +57,14 @@ export function CampCountdownCard() {
             <span className="sr-only">關閉</span>
           </DialogClose>
 
-          {/* 視覺依場次換成 nextSession.image。overflow-hidden 放在這裡（不是
-              外層 DialogContent）只裁圖片本身的圓角，外層才能保留 overflow-y-auto
+          {/* 彈窗頭圖用有字版 nextSession.infoImage（跟卡片／倒數計時縮圖用的
+              無字版 image 是不同兩張圖）。overflow-hidden 放在這裡（不是外層
+              DialogContent）只裁圖片本身的圓角，外層才能保留 overflow-y-auto
               讓內容過長時可以捲動，不會在小螢幕手機上被切掉或壓扁變形
               （跟 conference-mission-home.tsx 同一個修法）。 */}
           <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-t-3xl">
             <Image
-              src={nextSession.image}
+              src={nextSession.infoImage}
               alt={`${nextSession.label}視覺`}
               fill
               sizes="(min-width: 640px) 448px, 100vw"

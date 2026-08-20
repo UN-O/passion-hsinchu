@@ -153,9 +153,12 @@ export type CampSession = {
   id: string
   label: string
   startISO: string
-  // 16:9 視覺圖（聚會卡片、倒數計時縮圖、大圖預覽共用），跟 ConferenceSession.image
+  // 16:9 無字視覺圖：首頁聚會內容卡片、倒數計時縮圖共用，跟 ConferenceSession.image
   // 同一個用法。
   image: string
+  // 16:9 有字（場次名稱）視覺圖，只用在倒數卡片點下去的「營會資訊」彈窗頭圖，
+  // 跟 conference-mission-home.tsx 工作坊的 image／infoImage 分工同一個做法。
+  infoImage: string
 }
 
 export const campSessions: CampSession[] = [
@@ -164,42 +167,49 @@ export const campSessions: CampSession[] = [
     label: "開場聚會",
     startISO: "2026-08-25T14:00:00+08:00",
     image: "/images/camp-session-day1-opening.jpg",
+    infoImage: "/images/camp-session-day1-opening-info.jpg",
   },
   {
     id: "day1-evening",
     label: "晚場聚會",
     startISO: "2026-08-25T19:00:00+08:00",
     image: "/images/camp-session-day1-evening.jpg",
+    infoImage: "/images/camp-session-day1-evening-info.jpg",
   },
   {
     id: "day2-game",
     label: "大地競賽",
     startISO: "2026-08-26T09:20:00+08:00",
     image: "/images/camp-session-day2-game.jpg",
+    infoImage: "/images/camp-session-day2-game-info.jpg",
   },
   {
     id: "day2-debate",
     label: "勇者辯論場",
     startISO: "2026-08-26T14:00:00+08:00",
     image: "/images/camp-session-day2-debate.jpg",
+    infoImage: "/images/camp-session-day2-debate-info.jpg",
   },
   {
     id: "day2-evening",
     label: "晚場聚會",
     startISO: "2026-08-26T19:00:00+08:00",
     image: "/images/camp-session-day2-evening.jpg",
+    infoImage: "/images/camp-session-day2-evening-info.jpg",
   },
   {
     id: "day3-podcast",
     label: "Live Podcast",
     startISO: "2026-08-27T09:20:00+08:00",
     image: "/images/camp-session-day3-podcast.jpg",
+    infoImage: "/images/camp-session-day3-podcast-info.jpg",
   },
   {
     id: "day3-closing",
     label: "閉幕聚會",
     startISO: "2026-08-27T13:30:00+08:00",
     image: "/images/camp-session-day3-closing.jpg",
+    infoImage: "/images/camp-session-day3-closing-info.jpg",
   },
 ]
 
