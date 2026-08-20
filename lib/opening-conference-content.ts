@@ -236,10 +236,11 @@ export function getConferenceWorkshop(id: string): ConferenceWorkshop | undefine
   return conferenceWorkshops.find((workshop) => workshop.id === id)
 }
 
-// TODO: 工作坊報名資料之後會從後台上傳，目前還沒有真正的報名資料表，先用假
-// 資料佔位（固定顯示某人報名了工作坊 A、B），等資料確定後改成依登入者查詢
-// 真正的報名結果。
-const MOCK_REGISTERED_WORKSHOP_IDS: string[] = ["workshop-a", "workshop-b"]
+// TODO: 工作坊報名資料之後會從後台上傳，目前還沒有真正的報名資料表。先前用
+// 固定假資料（顯示某人報名了工作坊 A、B）佔位，但那是全站所有人都看到同樣的
+// 「已報名」，不是依登入者查詢的真結果，會誤導還沒報名的人，先關掉。等後台
+// 有真正的報名名單、能依登入者查詢之後，把這裡換成真的查詢邏輯再打開。
+const MOCK_REGISTERED_WORKSHOP_IDS: string[] = []
 
 export function isWorkshopRegistered(id: string): boolean {
   return MOCK_REGISTERED_WORKSHOP_IDS.includes(id)
