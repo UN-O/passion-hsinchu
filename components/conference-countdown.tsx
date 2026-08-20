@@ -45,7 +45,7 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
 
   if (remaining.done) {
     return (
-      <p className="rounded-xl bg-white/30 px-4 py-3 text-xl font-bold text-black backdrop-blur-md">
+      <p className="rounded-xl border border-white/50 bg-white/30 px-4 py-3 text-xl font-bold text-black shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] backdrop-blur-md">
         聚會進行中
       </p>
     )
@@ -66,16 +66,14 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
       {/* 三個數字框直接各自 flex-1 佔同一列的等分寬度，冒號是獨立的兄弟元素、
           不佔彈性空間，這樣不管有沒有冒號夾在旁邊，三個框框的寬度都會一致
           （之前冒號跟框框綁在同一個 flex-1 容器裡，最後一組沒有冒號分走空間，
-          框框會比前兩組寬）。數字框疊在聚會照片上面，底改成真正的液態玻璃
-          折射（.conf-glass-surface，濾鏡定義掛在 ConferenceMissionHome，見
-          conference-mission-home.tsx），照片會透過玻璃真的扭曲，不只是模糊。
-          這個元件也被 CAMP 的 CampCountdownCard 重用，那邊頁面沒有掛 CONF
-          的濾鏡，會自動退回 .conf-glass-surface 裡的純模糊備援，不會壞。 */}
+          框框會比前兩組寬）。玻璃底跟 CAMP 靈修內容 DAY1／DAY2 切換按鈕同一種
+          樣式（border-white/50 + bg-white/30 + 內緣高光陰影 + backdrop-blur-md），
+          不是 CONF 工作坊卡片那種 SVG 折射液態玻璃。 */}
       <div className="conf-countdown-row flex items-stretch">
         {segments.map((segment, index) => (
           <Fragment key={segment.label}>
             <div className="conf-countdown-box relative flex flex-1 flex-col items-center overflow-hidden rounded-xl">
-              <div className="conf-glass-surface absolute inset-0 bg-white/10" />
+              <div className="absolute inset-0 rounded-xl border border-white/50 bg-white/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] backdrop-blur-md" />
               <span className="conf-countdown-digit relative leading-none font-bold tabular-nums text-black">
                 {pad(segment.value)}
               </span>
