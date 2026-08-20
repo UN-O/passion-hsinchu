@@ -24,15 +24,17 @@ function OnboardingContent() {
       <p className="text-sm tracking-[0.2em] text-white/60">
         {index + 1} / {conferenceWorkshops.length}
       </p>
-      {/* 講員／主題文字改成去背人像圖，寬度跟著螢幕縮放（w-full 頂到 max-w-xs
-          就不再放大），高度用 aspect-[4/5] 跟著寬度等比例算，不同尺寸的手機
-          或平板都能完整顯示、不會裁切變形。 */}
-      <div className="relative aspect-[4/5] w-full max-w-xs">
+      {/* 講員／主題文字改成去背人像圖。flex-1 + min-h-0：圖片撐滿計數文字跟
+          按鈕中間剩下的所有垂直空間（上下頂到底），寬度不另外設定，用
+          aspect-[4/5] 反過來跟著撐滿的高度等比例算寬——高度優先撐滿畫面，
+          而不是原本寬度優先、高度跟著算（那樣螢幕越高只會留白，圖不會變大）。
+          max-w-full 防止極端矮寬螢幕時算出來的寬度超出畫面。 */}
+      <div className="relative aspect-[4/5] max-w-full min-h-0 flex-1">
         <Image
           src={workshop.introImage}
           alt={workshop.topic || workshop.speaker}
           fill
-          sizes="(min-width: 640px) 320px, 70vw"
+          sizes="(min-width: 640px) 500px, 90vw"
           className="object-contain"
         />
       </div>
