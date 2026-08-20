@@ -103,10 +103,13 @@ export function ConferenceMissionHome({
           {/* 下一場還沒開始的聚會（同一個 session 也是聚會流程表印的三場）。
               左右邊跟工作坊那排卡片切齊（同一層 px 內距），不是貼齊螢幕邊緣。
               背景先放晚場聚會的圖片佔位，之後每場有各自的視覺再依場次替換；
-              疊一層由下往上的黑色漸層，確保文字在任何圖片上都維持可讀。 */}
+              疊一層由下往上的黑色漸層，確保文字在任何圖片上都維持可讀。
+              底色拿掉改透明：圖片還沒載入完成的瞬間會先看到這層底色，紅色跟
+              頁面本身的藍色背景反差太大，載入時會很明顯地閃一下紅色；透明的
+              話載入中直接透出頁面底色，比較不突兀。 */}
           <Link
             href={meetingHref}
-            className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl bg-[#DC2626] p-6"
+            className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
           >
             <Image
               src="/images/conference-next-meeting-visual.jpg"
