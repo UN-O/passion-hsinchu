@@ -190,7 +190,7 @@ export function ConferenceMissionHome({
           className="flex max-w-[calc(100%-2rem)] flex-col gap-0 rounded-3xl border-none bg-card p-0 sm:max-w-md"
         >
           <DialogTitle className="sr-only">{activeWorkshop?.topic || activeWorkshop?.speaker}</DialogTitle>
-          <DialogClose className="absolute top-4 right-4 z-10 text-white/80 hover:text-white">
+          <DialogClose className="absolute top-4 left-4 z-10 text-white/80 hover:text-white">
             <X className="size-5" />
             <span className="sr-only">關閉</span>
           </DialogClose>
