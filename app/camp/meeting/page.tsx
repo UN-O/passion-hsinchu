@@ -9,6 +9,7 @@ import { DiscussionRoot } from "@/components/discussion/discussion-root"
 import { campMeetingRootKey } from "@/lib/discussion/root-registry"
 import { getNextCampSession } from "@/lib/opening-camp-content"
 import { requireFlowAccess } from "@/lib/session"
+import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 export const metadata: Metadata = {
   title: "聚會內容",
@@ -53,7 +54,7 @@ export default async function CampMeetingPage() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <p className="text-2xl font-bold">{nextSession.label}</p>
+          <p className={`${genRyuMin.className} text-2xl`}>{nextSession.label}</p>
         </div>
 
         <div className="flex flex-col gap-1">

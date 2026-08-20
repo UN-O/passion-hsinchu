@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { MeetingNotes } from "@/components/meeting-notes"
 import { getNextCampSession } from "@/lib/opening-camp-content"
+import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 // 真正的 /camp/* 頁面都套了 app/camp/layout.tsx 的 .camp-theme（淺黃色底），
 // playground 沒有共用的 layout，這裡自己包一層維持視覺一致，預覽才準。
@@ -43,7 +44,7 @@ export default function CampMeetingPlaygroundPage() {
 
           <div className="flex flex-col gap-1">
             <p className="text-sm text-muted-foreground">聚會場次、名稱</p>
-            <p className="text-2xl font-bold">{nextSession.label}</p>
+            <p className={`${genRyuMin.className} text-2xl`}>{nextSession.label}</p>
           </div>
 
           <div className="flex flex-col gap-1">
