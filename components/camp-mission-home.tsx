@@ -121,6 +121,8 @@ export async function CampMissionHome({
         ))}
       </SectionCard>
 
+      <CampCountdownCard />
+
       <SectionCard variant="glass" className="mt-6">
         <SquadCourageCard squadName={PLACEHOLDER_SQUAD_NAME} total={PLACEHOLDER_SQUAD_COURAGE_POINTS} />
       </SectionCard>
@@ -150,8 +152,6 @@ export async function CampMissionHome({
           {nextSession.label}
         </p>
       </Link>
-
-      <CampCountdownCard />
 
       {IG_STORY_IMAGE && (
         <SectionCard className="mt-6 flex flex-col gap-2">
