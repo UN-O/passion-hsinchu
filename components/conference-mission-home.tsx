@@ -166,17 +166,16 @@ export function ConferenceMissionHome({
             <span className="sr-only">關閉</span>
           </DialogClose>
 
-          {/* 工作坊主視覺是 4:5 直式海報，彈窗頭圖是 16:9 橫式，裁切只留中段
-              （講員臉部＋主題文字開頭那一段），跟卡片縮圖用同一張原圖。 */}
-          <div className="relative aspect-video w-full">
-            {activeWorkshop && (
+          {/* 工作坊資訊欄的頭圖跟上面卡片縮圖是不同兩張圖，使用者說之後會另外
+              上傳，先用色塊佔位。 */}
+          <div className="relative aspect-video w-full bg-[#3B82F6]">
+            {activeWorkshop?.infoImage && (
               <Image
-                src={activeWorkshop.image}
+                src={activeWorkshop.infoImage}
                 alt=""
                 fill
                 sizes="(min-width: 640px) 448px, 100vw"
                 className="object-cover"
-                style={{ objectPosition: "50% 35%" }}
               />
             )}
           </div>

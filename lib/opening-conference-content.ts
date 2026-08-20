@@ -184,10 +184,13 @@ export type ConferenceWorkshop = {
   topic: string
   location: string
   rounds: ConferenceWorkshopRound[]
-  // 活動組提供的正式工作坊主視覺，4:5 直式，跟橫向捲動卡片的比例完全吻合
-  // 不用裁切；主題文字取自視覺上印的正式文案（跟先前使用者口頭給的用詞
-  // 略有出入，以視覺上印的為準）。
+  // 活動組提供的正式工作坊主視覺，4:5 直式去背 PNG，跟橫向捲動卡片的比例
+  // 完全吻合不用裁切；主題文字取自視覺上印的正式文案（跟先前使用者口頭
+  // 給的用詞略有出入，以視覺上印的為準）。
   image: string
+  // 彈窗裡「工作坊資訊欄」上方的頭圖，跟上面卡片用的 image 是不同兩張圖。
+  // 使用者說之後會另外上傳，先留 undefined，畫面上用色塊佔位。
+  infoImage?: string
 }
 
 export const conferenceWorkshops: ConferenceWorkshop[] = [
