@@ -36,10 +36,7 @@ type ThreadData = {
   childrenByParentId: Record<string, DiscussionItem[]>
 }
 
-type Action =
-  | { kind: "patch"; postId: string; changes: Partial<DiscussionEntry> }
-  | { kind: "insertReply"; item: DiscussionItem }
-  | { kind: "insertChild"; parentId: string; item: DiscussionItem }
+type Action = { kind: "patch"; postId: string; changes: Partial<DiscussionEntry> } | { kind: "insertReply"; item: DiscussionItem }
 
 function reduce(state: ThreadData, action: Action): ThreadData {
   switch (action.kind) {
@@ -51,17 +48,6 @@ function reduce(state: ThreadData, action: Action): ThreadData {
       }
     case "insertReply":
       return { ...state, replies: [action.item, ...state.replies] }
-    case "insertChild":
-      // 放在最前面：新回覆是 parent 的「直接」子回覆，位置跟主幹的第一節
-      // 同一層。接在最後面的話，它會被畫成主幹鏈尾的子節點——那是別人的
-      // 回覆，不是它的 parent。
-      return {
-        ...state,
-        childrenByParentId: {
-          ...state.childrenByParentId,
-          [action.parentId]: [action.item, ...(state.childrenByParentId[action.parentId] ?? [])],
-        },
-      }
   }
 }
 
@@ -135,42 +121,34 @@ export function DiscussionThread({
     setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { poll: merged } }))
   }
 
-  function handleOpenComposer(entry: DiscussionEntry) {
+  // 回覆一律回覆「這一頁的焦點貼文」——回覆別人（祖先、或底下顯示的其他
+  // 回覆）要先點進它自己的討論串頁，這裡不會另外針對某一則開回覆框（見
+  // post-row.tsx）。回覆框裡要顯示完整的上文，用目前這條祖先鏈（chain，
+  // 已經包含焦點貼文自己）當 context，一路排到最上層，不裁切。
+  function handleOpenFocusComposer() {
     setComposerTarget({
-      parentId: entry.post.id,
-      replyingToName: entry.post.authorName,
-      replyingToContent: entry.post.content,
+      parentId: focusId,
+      context: optimistic.chain.map((item) => ({
+        id: item.post.id,
+        authorName: item.post.authorName,
+        content: item.post.content,
+        isDeleted: item.post.isDeleted,
+      })),
       allowPoll: true,
     })
   }
 
-  function handleOpenFocusComposer() {
-    handleOpenComposer(focus)
-  }
-
-  function handleSubmitReply(parentId: string, content: string, poll?: { allowMultiple: boolean; options: string[] }) {
+  function handleSubmitReply(content: string, poll?: { allowMultiple: boolean; options: string[] }) {
     const tempId = `pending-${crypto.randomUUID()}`
     const pendingItem = buildPendingItem(tempId, content, viewer, poll)
-    // 回覆焦點貼文的話直接插進下面那串兄弟；回覆其他人的話進到那則的子清單。
-    const isFocusParent = parentId === focusId
     setReplyPending(true)
 
     startTransition(async () => {
-      addOptimistic(
-        isFocusParent ? { kind: "insertReply", item: pendingItem } : { kind: "insertChild", parentId, item: pendingItem }
-      )
-      const result = await submitReply(parentId, content, poll)
+      addOptimistic({ kind: "insertReply", item: pendingItem })
+      const result = await submitReply(focusId, content, poll)
       if (result.ok) {
-        setBase((prev) =>
-          reduce(
-            prev,
-            isFocusParent
-              ? { kind: "insertReply", item: result.data }
-              : { kind: "insertChild", parentId, item: result.data }
-          )
-        )
+        setBase((prev) => reduce(prev, { kind: "insertReply", item: result.data }))
         setComposerTarget(null)
-        if (!isFocusParent) setLoadedChildParents((prev) => new Set(prev).add(parentId))
       }
       setReplyPending(false)
     })
@@ -240,7 +218,6 @@ export function DiscussionThread({
     viewerId: viewer.id,
     viewerRole: viewer.role,
     isDiscussionAdmin,
-    onOpenComposer: handleOpenComposer,
     onLike: commitLikeToggle,
     onPollChange: handlePollChange,
     // 置頂只作用在 root 的直接回覆上（規格第 12 點），討論串頁看到的都不是

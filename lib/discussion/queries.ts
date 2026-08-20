@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, ne, notInArray, sql, type SQL } from "drizzle-orm"
+import { and, desc, eq, inArray, isNull, ne, sql, type SQL } from "drizzle-orm"
 import { alias, type AnyPgColumn } from "drizzle-orm/pg-core"
 
 import { db } from "@/db"
@@ -65,45 +65,25 @@ function toPostDTO(row: CandidateRow, pinnedIds: Set<string>): PostDTO {
   }
 }
 
-async function fetchPinned(rootPostId: string): Promise<CandidateRow[]> {
+// 置頂只是「已置頂」的標記（EntryBody 上那顆徽章），不會把貼文從原本排序
+// 的位置搬走——所以這裡只需要 id 集合，用來標記 toPostDTO 的 isPinned，
+// 不需要再另外查一輪貼文內容／讚數（那份資料一定會在 fetchTopCandidates／
+// fetchLatestCandidates 的結果裡，跟其他貼文一起走同一套排序）。
+async function fetchPinnedIds(rootPostId: string): Promise<Set<string>> {
   const rows = await db
-    .select({
-      post: posts,
-      authorName: user.name,
-      authorRole: user.role,
-      likeCount: replyRank.likeCount,
-      directReplyCount: replyRank.directReplyCount,
-      bestDirectChildId: replyRank.bestDirectChildId,
-      branchScore: replyRank.branchScore,
-      position: discussionPins.position,
-    })
+    .select({ postId: discussionPins.postId })
     .from(discussionPins)
-    .innerJoin(posts, eq(posts.id, discussionPins.postId))
-    .leftJoin(user, eq(user.id, posts.authorId))
-    .leftJoin(replyRank, eq(replyRank.postId, posts.id))
     .where(eq(discussionPins.rootPostId, rootPostId))
-    .orderBy(discussionPins.position)
-
-  return rows.map((r) => ({
-    post: r.post,
-    authorName: r.authorName,
-    authorRole: r.authorRole,
-    likeCount: r.likeCount ?? 0,
-    directReplyCount: r.directReplyCount ?? 0,
-    bestDirectChildId: r.bestDirectChildId ?? null,
-    branchScore: r.branchScore ?? null,
-  }))
+  return new Set(rows.map((r) => r.postId))
 }
 
 // Top：走 reply_rank_parent_branch_score_idx (parent_id, branch_score DESC, post_id DESC)。
 async function fetchTopCandidates(
   parentPostId: string,
-  excludeIds: string[],
   cursor: Cursor | null,
   limit: number
 ): Promise<CandidateRow[]> {
   const conditions = [eq(replyRank.parentId, parentPostId), isNull(posts.deletedAt)]
-  if (excludeIds.length > 0) conditions.push(sqlNotIn(replyRank.postId, excludeIds))
   if (cursor?.branchScore !== undefined) {
     conditions.push(cursorBefore(replyRank.branchScore, replyRank.postId, cursor.branchScore, cursor.id))
   }
@@ -131,12 +111,10 @@ async function fetchTopCandidates(
 // Latest：走 posts_reply_to_created_idx (reply_to_id, created_at DESC, id DESC)。
 async function fetchLatestCandidates(
   parentPostId: string,
-  excludeIds: string[],
   cursor: Cursor | null,
   limit: number
 ): Promise<CandidateRow[]> {
   const conditions = [eq(posts.replyToId, parentPostId), isNull(posts.deletedAt)]
-  if (excludeIds.length > 0) conditions.push(sqlNotIn(posts.id, excludeIds))
   if (cursor?.createdAt !== undefined) {
     conditions.push(cursorBefore(posts.createdAt, posts.id, new Date(cursor.createdAt), cursor.id))
   }
@@ -295,23 +273,19 @@ export async function getDiscussionPage(input: GetDiscussionPageInput): Promise<
   const limit = clampLimit(input.limit)
   const cursor = input.cursor ? decodeCursor(input.cursor) : null
 
-  const pinnedRows = await fetchPinned(input.rootPostId)
-  const pinnedIds = pinnedRows.map((r) => r.post.id)
+  // 置頂不再把貼文獨立搬到另一個區塊——它照樣走一般的排序／分頁查詢，
+  // 只是多一個「已置頂」的標記（EntryBody 上的徽章）。
+  const pinnedIds = await fetchPinnedIds(input.rootPostId)
 
   const candidateRows =
     input.sort === "top"
-      ? await fetchTopCandidates(input.rootPostId, pinnedIds, cursor, limit)
-      : await fetchLatestCandidates(input.rootPostId, pinnedIds, cursor, limit)
+      ? await fetchTopCandidates(input.rootPostId, cursor, limit)
+      : await fetchLatestCandidates(input.rootPostId, cursor, limit)
 
   const hasMore = candidateRows.length > limit
   const pageRows = candidateRows.slice(0, limit)
 
-  // pinned 跟 page 合成一次 enrichRows：featured child／poll／like
-  // 這幾批查詢對兩邊是共用的批次操作，分開呼叫兩次等於白白多打一輪。
-  const pinnedIdSet = new Set(pinnedIds)
-  const enrichedAll = await enrichRows([...pinnedRows, ...pageRows], input.viewerId, pinnedIdSet)
-  const enrichedPinned = enrichedAll.slice(0, pinnedRows.length)
-  const enrichedPage = enrichedAll.slice(pinnedRows.length)
+  const enrichedPage = await enrichRows(pageRows, input.viewerId, pinnedIds)
 
   const last = pageRows[pageRows.length - 1]
   const nextCursor =
@@ -324,7 +298,6 @@ export async function getDiscussionPage(input: GetDiscussionPageInput): Promise<
       : null
 
   return {
-    pinnedReplies: enrichedPinned,
     replies: enrichedPage,
     nextCursor,
     hasMore,
@@ -513,11 +486,7 @@ export async function getPostContext(postId: string): Promise<DiscussionPostCont
   }
 }
 
-// --- 小工具：keyset pagination 的比較條件、IN/NOT IN ---
-
-function sqlNotIn(column: AnyPgColumn, ids: string[]): SQL {
-  return notInArray(column, ids)
-}
+// --- 小工具：keyset pagination 的比較條件 ---
 
 // ORDER BY primary DESC, secondary DESC 的下一頁條件：
 // (primary < cursorPrimary) OR (primary = cursorPrimary AND secondary < cursorSecondary)

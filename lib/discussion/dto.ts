@@ -33,7 +33,6 @@ export type DiscussionItem = DiscussionEntry & {
 }
 
 export type DiscussionResponse = {
-  pinnedReplies: DiscussionItem[]
   replies: DiscussionItem[]
   nextCursor: string | null
   hasMore: boolean

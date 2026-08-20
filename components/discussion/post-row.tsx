@@ -12,7 +12,6 @@ export type PostRowController = {
   viewerId: string
   viewerRole: "attendee" | "staff" | "admin"
   isDiscussionAdmin: boolean
-  onOpenComposer: (entry: DiscussionEntry) => void
   onLike: (entry: DiscussionEntry) => void
   onPollChange: (postId: string, next: Pick<PollDTO, "options" | "viewerOptionIds">) => void
   onPin: (postId: string) => void
@@ -129,18 +128,24 @@ function EntryBody({
           最底部——下一則緊接著開始（串起來的 container 不留 gap），線就會是
           連續的，不會每則之間斷一截。 */}
       <div className={cn("flex min-w-0 flex-1 flex-col gap-2", hasRail && "pb-3")}>
-        <div className="flex flex-wrap items-baseline gap-x-2">
-          <span className={cn("text-sm font-semibold", post.isDeleted && "text-muted-foreground")}>
-            {post.isDeleted ? "已刪除的貼文" : (post.authorName ?? "匿名")}
-          </span>
-          <span className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</span>
-          {post.authorRole && post.authorRole !== "attendee" && !post.isDeleted && (
-            <span className="text-xs text-muted-foreground">工作人員</span>
-          )}
-          {post.isPinned && <span className="text-xs text-primary">已置頂</span>}
-        </div>
+        {/* 按下貼文本身（作者／時間／內文）＝開啟它的討論串頁（有返回鍵），
+            不是直接跳出全螢幕回覆框——要先看到上下文，回覆要在那一頁裡
+            另外按（規則 5）。投票／按讚／回覆／置頂／刪除有自己的互動，
+            刻意留在這個連結範圍外面，不然點讚會被連結吃掉變成導頁。 */}
+        <Link href={`/discussion/${post.id}`} className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            <span className={cn("text-sm font-semibold", post.isDeleted && "text-muted-foreground")}>
+              {post.isDeleted ? "已刪除的貼文" : (post.authorName ?? "匿名")}
+            </span>
+            <span className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</span>
+            {post.authorRole && post.authorRole !== "attendee" && !post.isDeleted && (
+              <span className="text-xs text-muted-foreground">工作人員</span>
+            )}
+            {post.isPinned && <span className="text-xs text-primary">已置頂</span>}
+          </div>
 
-        {!post.isDeleted && <p className="whitespace-pre-wrap text-sm">{post.content}</p>}
+          {!post.isDeleted && <p className="whitespace-pre-wrap text-sm">{post.content}</p>}
+        </Link>
 
         {entry.poll && !post.isDeleted && (
           <PollView poll={entry.poll} onChange={(next) => controller.onPollChange(post.id, next)} />
@@ -161,19 +166,14 @@ function EntryBody({
               {stats.likeCount > 0 && <span className="text-xs">{stats.likeCount}</span>}
             </button>
 
-            {/* icon 開回覆框、數字連到這則的討論串頁（規則 5）。刻意分成兩個
-                觸控目標：同一顆按鈕不能既是「我要回覆」又是「我要看別人的
-                回覆」，那是兩件事。 */}
+            {/* icon 跟數字都連到這則的討論串頁（規則 5）：要回覆一定要先進去
+                那一頁，看到完整的上下文，回覆框才會在那裡另外開——這裡
+                不直接跳全螢幕回覆框。 */}
             <div className="flex items-center gap-1.5">
               {depth < 6 && (
-                <button
-                  type="button"
-                  onClick={() => controller.onOpenComposer(entry)}
-                  aria-label="回覆"
-                  className="text-muted-foreground hover:text-foreground"
-                >
+                <Link href={`/discussion/${post.id}`} aria-label="查看討論串" className="text-muted-foreground hover:text-foreground">
                   <MessageCircle className="size-[18px]" strokeWidth={1.75} />
-                </button>
+                </Link>
               )}
               {stats.directReplyCount > 0 && (
                 <Link

@@ -6,17 +6,26 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { MAX_CONTENT_LENGTH, MAX_POLL_OPTIONS, MIN_POLL_OPTIONS } from "@/lib/discussion/constants"
 
+// 要回覆的貼文，以及它上面完整的祖先鏈（root 端在最前面）。全部顯示、
+// 不裁切——按下回覆之後應該看得到一路往上的完整脈絡，不是只有正上方那則
+// 的三行預覽（仿 Threads 的回覆畫面：往上一路排到最上層）。
+export type ComposerContextItem = {
+  id: string
+  authorName: string | null
+  content: string
+  isDeleted: boolean
+}
+
 export type ComposerTarget = {
   parentId: string
-  replyingToName: string | null
-  replyingToContent: string | null
+  context: ComposerContextItem[]
   allowPoll: boolean
 }
 
 type ComposerOverlayProps = {
   target: ComposerTarget | null
   pending: boolean
-  onSubmit: (parentId: string, content: string, poll?: { allowMultiple: boolean; options: string[] }) => void
+  onSubmit: (content: string, poll?: { allowMultiple: boolean; options: string[] }) => void
   onClose: () => void
 }
 
@@ -38,10 +47,11 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
 
   const trimmedOptions = pollOptions.map((o) => o.trim()).filter(Boolean)
   const canSubmit = content.trim().length > 0 && (!pollOpen || trimmedOptions.length >= MIN_POLL_OPTIONS) && !pending
+  const replyingTo = target.context[target.context.length - 1]
 
   function handleSubmit() {
-    if (!canSubmit || !target) return
-    onSubmit(target.parentId, content.trim(), pollOpen ? { allowMultiple: pollAllowMultiple, options: trimmedOptions } : undefined)
+    if (!canSubmit) return
+    onSubmit(content.trim(), pollOpen ? { allowMultiple: pollAllowMultiple, options: trimmedOptions } : undefined)
   }
 
   return (
@@ -50,7 +60,7 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
         <button type="button" onClick={onClose} disabled={pending} className="text-sm text-muted-foreground hover:text-foreground">
           取消
         </button>
-        <p className="text-sm font-semibold">{target.replyingToName ? `回覆 ${target.replyingToName}` : "發布"}</p>
+        <p className="text-sm font-semibold">{replyingTo ? `回覆 ${replyingTo.isDeleted ? "已刪除的貼文" : (replyingTo.authorName ?? "匿名")}` : "發布"}</p>
         <button
           type="button"
           onClick={handleSubmit}
@@ -62,10 +72,16 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-4">
-        {target.replyingToContent !== null && (
-          <div className="border-l-2 border-border pl-3 text-sm text-muted-foreground">
-            <p className="font-medium text-foreground">{target.replyingToName ?? "匿名"}</p>
-            <p className="line-clamp-3 whitespace-pre-wrap">{target.replyingToContent}</p>
+        {/* 完整的祖先鏈，一路排到最上層（不裁切）——按下回覆要看得到整段
+            脈絡，不是只有正上方那則的三行預覽。 */}
+        {target.context.length > 0 && (
+          <div className="flex flex-col gap-3 border-b border-border pb-4">
+            {target.context.map((item) => (
+              <div key={item.id} className="border-l-2 border-border pl-3 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">{item.isDeleted ? "已刪除的貼文" : (item.authorName ?? "匿名")}</p>
+                {!item.isDeleted && <p className="whitespace-pre-wrap">{item.content}</p>}
+              </div>
+            ))}
           </div>
         )}
 
@@ -73,7 +89,7 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
           autoFocus
           value={content}
           onChange={(e) => setContent(e.target.value.slice(0, MAX_CONTENT_LENGTH))}
-          placeholder={target.replyingToName ? "寫下回覆..." : "分享你的心得、筆記，或提出問題..."}
+          placeholder={replyingTo ? "寫下回覆..." : "分享你的心得、筆記，或提出問題..."}
           className="min-h-32 w-full flex-1 resize-none bg-transparent text-base outline-none placeholder:text-muted-foreground"
         />
 

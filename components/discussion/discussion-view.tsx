@@ -22,7 +22,6 @@ import { PostRow, SiblingList, renderChain, type PostRowController } from "./pos
 import { buildPendingItem, patchList, patchChildrenMap, type ViewerInfo } from "./tree-utils"
 
 type DiscussionData = {
-  pinned: DiscussionItem[]
   replies: DiscussionItem[]
   childrenByParentId: Record<string, DiscussionItem[]>
 }
@@ -30,51 +29,16 @@ type DiscussionData = {
 type Action =
   | { kind: "patch"; postId: string; changes: Partial<DiscussionEntry> }
   | { kind: "insertTopLevel"; item: DiscussionItem }
-  | { kind: "insertChild"; parentId: string; item: DiscussionItem }
-  | { kind: "pin"; postId: string }
-  | { kind: "unpin"; postId: string }
 
 function reduce(state: DiscussionData, action: Action): DiscussionData {
   switch (action.kind) {
     case "patch":
       return {
-        pinned: patchList(state.pinned, action.postId, action.changes),
         replies: patchList(state.replies, action.postId, action.changes),
         childrenByParentId: patchChildrenMap(state.childrenByParentId, action.postId, action.changes),
       }
     case "insertTopLevel":
       return { ...state, replies: [action.item, ...state.replies] }
-    case "insertChild":
-      // 放在最前面：新回覆是 parent 的「直接」子回覆，位置跟主幹的第一節
-      // 同一層。接在最後面的話，它會被畫成主幹鏈尾的子節點——那是別人的
-      // 回覆，不是它的 parent。
-      return {
-        ...state,
-        childrenByParentId: {
-          ...state.childrenByParentId,
-          [action.parentId]: [action.item, ...(state.childrenByParentId[action.parentId] ?? [])],
-        },
-      }
-    case "pin": {
-      const target = state.replies.find((r) => r.post.id === action.postId)
-      if (!target) return state
-      const pinned = { ...target, post: { ...target.post, isPinned: true } }
-      return {
-        ...state,
-        replies: state.replies.filter((r) => r.post.id !== action.postId),
-        pinned: [...state.pinned, pinned],
-      }
-    }
-    case "unpin": {
-      const target = state.pinned.find((r) => r.post.id === action.postId)
-      if (!target) return state
-      const unpinned = { ...target, post: { ...target.post, isPinned: false } }
-      return {
-        ...state,
-        pinned: state.pinned.filter((r) => r.post.id !== action.postId),
-        replies: [unpinned, ...state.replies],
-      }
-    }
   }
 }
 
@@ -93,7 +57,6 @@ export function DiscussionView({
 }) {
   const [sort, setSort] = useState<SortMode>("top")
   const [base, setBase] = useState<DiscussionData>({
-    pinned: initial.pinnedReplies,
     replies: initial.replies,
     childrenByParentId: {},
   })
@@ -112,7 +75,7 @@ export function DiscussionView({
   const [sortPending, setSortPending] = useState(false)
 
   function findEntry(postId: string): DiscussionEntry | undefined {
-    const all = [...optimistic.pinned, ...optimistic.replies, ...Object.values(optimistic.childrenByParentId).flat()]
+    const all = [...optimistic.replies, ...Object.values(optimistic.childrenByParentId).flat()]
     const direct = all.find((i) => i.post.id === postId)
     if (direct) return direct
     return all.find((i) => i.featuredChild?.post.id === postId)?.featuredChild
@@ -146,43 +109,25 @@ export function DiscussionView({
     setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { poll: merged } }))
   }
 
-  function handleOpenComposer(entry: DiscussionEntry) {
-    setComposerTarget({
-      parentId: entry.post.id,
-      replyingToName: entry.post.authorName,
-      replyingToContent: entry.post.content,
-      allowPoll: true,
-    })
-  }
-
+  // 回覆一律先進到某則貼文自己的討論串頁（有返回鍵可以回來），全螢幕的
+  // 回覆框只在那一頁裡才會出現——這裡（root 層級的討論列表）只有「在這則
+  // 討論中留言」這個入口，直接回覆 root，不會有針對某一則貼文另外開框的
+  // 情況（見 post-row.tsx：貼文本身跟回覆 icon 都改成連到討論串頁）。
   function handleOpenRootComposer() {
-    setComposerTarget({ parentId: rootPostId, replyingToName: null, replyingToContent: null, allowPoll: true })
+    setComposerTarget({ parentId: rootPostId, context: [], allowPoll: true })
   }
 
-  function handleSubmitReply(parentId: string, content: string, poll?: { allowMultiple: boolean; options: string[] }) {
+  function handleSubmitReply(content: string, poll?: { allowMultiple: boolean; options: string[] }) {
     const tempId = `pending-${crypto.randomUUID()}`
     const pendingItem = buildPendingItem(tempId, content, viewer, poll)
-    const isRootParent = parentId === rootPostId
     setReplyPending(true)
 
     startTransition(async () => {
-      addOptimistic(
-        isRootParent
-          ? { kind: "insertTopLevel", item: pendingItem }
-          : { kind: "insertChild", parentId, item: pendingItem }
-      )
-      const result = await submitReply(parentId, content, poll)
+      addOptimistic({ kind: "insertTopLevel", item: pendingItem })
+      const result = await submitReply(rootPostId, content, poll)
       if (result.ok) {
-        setBase((prev) =>
-          reduce(
-            prev,
-            isRootParent
-              ? { kind: "insertTopLevel", item: result.data }
-              : { kind: "insertChild", parentId, item: result.data }
-          )
-        )
+        setBase((prev) => reduce(prev, { kind: "insertTopLevel", item: result.data }))
         setComposerTarget(null)
-        if (!isRootParent) setLoadedChildParents((prev) => new Set(prev).add(parentId))
       }
       setReplyPending(false)
     })
@@ -202,19 +147,29 @@ export function DiscussionView({
     })
   }
 
+  // 置頂／取消置頂只是切換 isPinned 這個標記（EntryBody 上的「已置頂」
+  // 徽章），貼文留在原本排序的位置，不會被搬到另一個區塊。
   function handlePin(postId: string) {
+    const entry = findEntry(postId)
+    if (!entry) return
+    const pinnedPost: PostDTO = { ...entry.post, isPinned: true }
+
     startTransition(async () => {
-      addOptimistic({ kind: "pin", postId })
+      addOptimistic({ kind: "patch", postId, changes: { post: pinnedPost } })
       const result = await submitPin(rootPostId, postId)
-      if (result.ok) setBase((prev) => reduce(prev, { kind: "pin", postId }))
+      if (result.ok) setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: pinnedPost } }))
     })
   }
 
   function handleUnpin(postId: string) {
+    const entry = findEntry(postId)
+    if (!entry) return
+    const unpinnedPost: PostDTO = { ...entry.post, isPinned: false }
+
     startTransition(async () => {
-      addOptimistic({ kind: "unpin", postId })
+      addOptimistic({ kind: "patch", postId, changes: { post: unpinnedPost } })
       const result = await submitUnpin(rootPostId, postId)
-      if (result.ok) setBase((prev) => reduce(prev, { kind: "unpin", postId }))
+      if (result.ok) setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: unpinnedPost } }))
     })
   }
 
@@ -255,7 +210,7 @@ export function DiscussionView({
     setSortPending(true)
     const result = await loadDiscussion(rootKey, nextSort, null)
     if (result.ok) {
-      setBase({ pinned: result.data.pinnedReplies, replies: result.data.replies, childrenByParentId: {} })
+      setBase({ replies: result.data.replies, childrenByParentId: {} })
       setCursor(result.data.nextCursor)
       setHasMore(result.data.hasMore)
       setLoadedChildParents(new Set())
@@ -271,7 +226,6 @@ export function DiscussionView({
     viewerId: viewer.id,
     viewerRole: viewer.role,
     isDiscussionAdmin,
-    onOpenComposer: handleOpenComposer,
     onLike: commitLikeToggle,
     onPollChange: handlePollChange,
     onPin: handlePin,
@@ -287,14 +241,6 @@ export function DiscussionView({
 
   return (
     <div className="flex flex-col gap-8 pb-20">
-      {optimistic.pinned.length > 0 && (
-        <SiblingList
-          items={optimistic.pinned}
-          getKey={(item) => item.post.id}
-          render={(item) => <PostRow item={item} controller={controller} depth={0} />}
-        />
-      )}
-
       <div className="flex items-center border-t border-border pt-4">
         <select
           value={sort}
@@ -307,9 +253,11 @@ export function DiscussionView({
         </select>
       </div>
 
-      {/* root 的直接回覆彼此不隸屬，用水平分隔線區隔（規則 3）。 */}
+      {/* root 的直接回覆彼此不隸屬，用水平分隔線區隔（規則 3）。置頂的貼文
+          留在原本排序的位置，只是多一個「已置頂」徽章，不會被搬到另一個
+          區塊——所以這裡就是單一份 replies 列表，沒有另外的 pinned 區塊。 */}
       <div className={cn(sortPending && "opacity-60")}>
-        {optimistic.replies.length === 0 && optimistic.pinned.length === 0 ? (
+        {optimistic.replies.length === 0 ? (
           <p className="text-sm text-muted-foreground">還沒有人分享，成為第一個留言的人吧。</p>
         ) : (
           <SiblingList

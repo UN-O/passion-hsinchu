@@ -12,7 +12,7 @@ type BottomComposerBarProps = {
 // 那個展開圖示——手機上大範圍的點擊區域比較不會按不到。
 export function BottomComposerBar({ placeholder, onOpen }: BottomComposerBarProps) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background pb-[env(safe-area-inset-bottom)]">
+    <div className="fixed inset-x-0 bottom-0 z-40 rounded-t-3xl border-t border-border bg-background pb-[env(safe-area-inset-bottom)]">
       <button
         type="button"
         onClick={onOpen}
