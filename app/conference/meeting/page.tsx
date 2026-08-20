@@ -27,8 +27,10 @@ export default async function ConferenceMeetingPage({
   searchParams: Promise<{ session?: string }>
 }) {
   const session = await requireFlowAccess("conference")
+  // 工作人員不受「場次還沒輪到不能選」的限制，跟靈修內容公布時間限制同一套邏輯。
+  const isStaff = session.user.role !== "attendee"
   const { session: sessionParam } = await searchParams
-  const unlockedSessions = getUnlockedConferenceSessions()
+  const unlockedSessions = getUnlockedConferenceSessions(new Date(), isStaff)
   const nextSession =
     unlockedSessions.find((s) => s.id === sessionParam) ?? getNextConferenceSession()
 

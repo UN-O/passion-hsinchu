@@ -300,7 +300,10 @@ export function getConferenceSession(id: string): ConferenceSession | undefined 
 
 // 聚會內容頁的場次切換選單只能選「已經輪到過」的場次：目前這場（下一場聚會）
 // 跟在它之前的場次，還沒開始顯示的場次不能提前用網址參數跳過去看。
-export function getUnlockedConferenceSessions(now: Date = new Date()): ConferenceSession[] {
+// unlockAll：工作人員帳號不受這個限制，跟靈修內容公布時間限制同一套邏輯，
+// 方便工作人員隨時切換查看任何場次的資訊備稿。
+export function getUnlockedConferenceSessions(now: Date = new Date(), unlockAll = false): ConferenceSession[] {
+  if (unlockAll) return conferenceSessions
   const next = getNextConferenceSession(now)
   const nextIndex = conferenceSessions.findIndex((session) => session.id === next.id)
   return conferenceSessions.slice(0, nextIndex + 1)
