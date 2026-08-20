@@ -84,17 +84,20 @@ export function ConferenceMissionHome({
         aria-hidden
       />
       <ConferenceLiquidGlassFilter filterId="conf-liquid-glass-filter" />
-      <div className="mx-auto max-w-2xl">
-        {/* 主視覺四邊留空間，跟下面工作坊／聚會場次同一層 px 內距，不貼齊螢幕邊緣。
-            上方額外加 env(safe-area-inset-top)：App 化後全螢幕沒有網址列，
-            iPhone 瀏海／動態島或 Android 狀態列不然會直接疊在主視覺上面。
-            z-20（比下面聚會卡片文字的 z-10 高一階）：sticky 定位本身不會自動
-            疊在後面的內容上面，兩邊 z-index 打平時是看 DOM 順序決定，聚會卡片
-            在主視覺後面反而會贏，往上捲動時卡片文字會透出來蓋在主視覺上，
-            所以主視覺一定要明確比任何會捲到它下面的內容都高一階。改成小的
-            PASSION LOGO 之後尺寸維持固定，不再隨捲動縮放。 */}
+
+      {/* sticky 這條 PASSION LOGO 列的藍底刻意脫離 max-w-2xl 置中容器、
+          左右貼齊螢幕邊緣（寬螢幕時才不會兩側露出背景照片，看起來像沒
+          裁乾淨），LOGO 本身還是用內層 max-w-2xl + px 內距置中，尺寸跟
+          位置維持原本樣子。上方額外加 env(safe-area-inset-top)：App 化後
+          全螢幕沒有網址列，iPhone 瀏海／動態島或 Android 狀態列不然會直接
+          疊在主視覺上面。z-20（比下面聚會卡片文字的 z-10 高一階）：sticky
+          定位本身不會自動疊在後面的內容上面，兩邊 z-index 打平時是看 DOM
+          順序決定，聚會卡片在主視覺後面反而會贏，往上捲動時卡片文字會
+          透出來蓋在主視覺上，所以主視覺一定要明確比任何會捲到它下面的
+          內容都高一階。 */}
+      <div className="sticky top-0 z-20 bg-[#0458e2]">
         <div
-          className="sticky top-0 z-20 bg-[#0458e2] px-[6%] pb-4 sm:px-8"
+          className="mx-auto max-w-2xl px-[6%] pb-4 sm:px-8"
           style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
         >
           <Link href="https://www.passion-hsinchu.com/" target="_blank" rel="noopener noreferrer">
@@ -108,7 +111,9 @@ export function ConferenceMissionHome({
             />
           </Link>
         </div>
+      </div>
 
+      <div className="mx-auto max-w-2xl">
         <div className="px-[6%] pt-6 sm:px-8">
           {/* 主視覺標題圖（THE COURAGE GENERATIONS! 勇者世代＋
               WORSHIP / RELATION / EXPERIENCE 標語）跟上面 sticky 的 PASSION
