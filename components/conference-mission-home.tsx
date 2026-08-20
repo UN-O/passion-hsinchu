@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Check, X } from "lucide-react"
@@ -37,12 +37,6 @@ function breakAfterFirstComma(text: string) {
   )
 }
 
-// 主視覺 sticky 釘在頂部，但尺寸跟著捲動距離縮小，不然新的正方形大圖
-// 會一直佔掉大半螢幕。捲動 HERO_SHRINK_DISTANCE px 之內寬度從 100% 線性
-// 縮到 HERO_MIN_SCALE，超過就維持最小尺寸。
-const HERO_SHRINK_DISTANCE = 280
-const HERO_MIN_SCALE = 0.32
-
 export function ConferenceMissionHome({
   meetingHref = "/conference/meeting",
 }: {
@@ -51,24 +45,6 @@ export function ConferenceMissionHome({
   const [activeWorkshopId, setActiveWorkshopId] = useState<string | null>(null)
   const activeWorkshop = activeWorkshopId ? getConferenceWorkshop(activeWorkshopId) : undefined
   const [nextMeetingVisualOpen, setNextMeetingVisualOpen] = useState(false)
-  const [heroScale, setHeroScale] = useState(1)
-
-  useEffect(() => {
-    let ticking = false
-    const updateScale = () => {
-      const progress = Math.min(Math.max(window.scrollY / HERO_SHRINK_DISTANCE, 0), 1)
-      setHeroScale(1 - progress * (1 - HERO_MIN_SCALE))
-      ticking = false
-    }
-    const onScroll = () => {
-      if (ticking) return
-      ticking = true
-      requestAnimationFrame(updateScale)
-    }
-    updateScale()
-    window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
-  }, [])
   // 下一場還沒開始的聚會。場次資料是小時等級的固定時間表，不像倒數計時每秒都變，
   // 伺服器算出來的跟瀏覽器 hydrate 那一刻幾乎不會跨到下一場，直接算不用另外處理
   // hydration mismatch。
@@ -110,9 +86,8 @@ export function ConferenceMissionHome({
             z-20（比下面聚會卡片文字的 z-10 高一階）：sticky 定位本身不會自動
             疊在後面的內容上面，兩邊 z-index 打平時是看 DOM 順序決定，聚會卡片
             在主視覺後面反而會贏，往上捲動時卡片文字會透出來蓋在主視覺上，
-            所以主視覺一定要明確比任何會捲到它下面的內容都高一階。圖片本身寬度
-            用 heroScale 隨捲動距離縮小（見上面 useEffect），維持 sticky 釘頂
-            的同時不會一直佔掉大半螢幕。 */}
+            所以主視覺一定要明確比任何會捲到它下面的內容都高一階。改成小的
+            PASSION LOGO 之後尺寸維持固定，不再隨捲動縮放。 */}
         <div
           className="sticky top-0 z-20 bg-[#0458e2] px-[6%] pb-4 sm:px-8"
           style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
@@ -124,8 +99,7 @@ export function ConferenceMissionHome({
               width={1400}
               height={263}
               priority
-              className="mx-auto h-auto"
-              style={{ width: `${heroScale * 100}%` }}
+              className="mx-auto h-auto w-full"
             />
           </Link>
         </div>
