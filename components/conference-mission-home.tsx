@@ -66,25 +66,30 @@ export function ConferenceMissionHome({
             className="h-auto w-[70%]"
           />
 
-          {/* 工作坊主視覺尚未提供圖片，先用純色塊佔位。點卡片彈出視窗顯示介紹，不跳頁。
+          {/* 工作坊主視覺是活動組提供的正式海報，4:5 直式跟卡片比例完全吻合，
+              不用裁切。點卡片彈出視窗顯示介紹，不跳頁。
               overscroll-x-contain：滑到這排的頭尾邊界時，捲動不會「溢出」去觸發
               App 外層的返回手勢（iOS／Android 邊緣滑動＝返回），滑動效果留在這排裡面。 */}
           <div
             className="mt-6 flex gap-4 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{ scrollSnapType: "x mandatory" }}
           >
-            {conferenceWorkshops.map((workshop, index) => (
+            {conferenceWorkshops.map((workshop) => (
               <button
                 key={workshop.id}
                 type="button"
                 onClick={() => setActiveWorkshopId(workshop.id)}
                 aria-label={workshop.topic || workshop.speaker}
-                className="flex aspect-[4/5] w-[118px] shrink-0 items-end rounded-3xl bg-[#3B82F6] p-3 sm:w-[151px] sm:p-4"
+                className="relative aspect-[4/5] w-[118px] shrink-0 overflow-hidden rounded-3xl sm:w-[151px]"
                 style={{ scrollSnapAlign: "start" }}
               >
-                <span className="text-xs font-semibold text-white/70">
-                  {(index + 1).toString().padStart(2, "0")}
-                </span>
+                <Image
+                  src={workshop.image}
+                  alt=""
+                  fill
+                  sizes="151px"
+                  className="object-cover"
+                />
               </button>
             ))}
           </div>
@@ -166,8 +171,20 @@ export function ConferenceMissionHome({
             <span className="sr-only">關閉</span>
           </DialogClose>
 
-          {/* 工作坊主視覺尚未提供圖片，先用色塊佔位 */}
-          <div className="aspect-video w-full bg-[#3B82F6]" />
+          {/* 工作坊主視覺是 4:5 直式海報，彈窗頭圖是 16:9 橫式，裁切只留中段
+              （講員臉部＋主題文字開頭那一段），跟卡片縮圖用同一張原圖。 */}
+          <div className="relative aspect-video w-full">
+            {activeWorkshop && (
+              <Image
+                src={activeWorkshop.image}
+                alt=""
+                fill
+                sizes="(min-width: 640px) 448px, 100vw"
+                className="object-cover"
+                style={{ objectPosition: "50% 35%" }}
+              />
+            )}
+          </div>
 
           <div className="flex flex-col gap-2 p-6">
             <div className="flex items-center justify-between">

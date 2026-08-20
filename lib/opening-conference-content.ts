@@ -181,17 +181,48 @@ export const workshopDateLabel = "8/29（六）"
 export type ConferenceWorkshop = {
   id: string
   speaker: string
-  // TODO: A（陳懷之牧師 Pastor Adriana）的主題使用者說之後補上，先留空。
   topic: string
   location: string
   rounds: ConferenceWorkshopRound[]
+  // 活動組提供的正式工作坊主視覺，4:5 直式，跟橫向捲動卡片的比例完全吻合
+  // 不用裁切；主題文字取自視覺上印的正式文案（跟先前使用者口頭給的用詞
+  // 略有出入，以視覺上印的為準）。
+  image: string
 }
 
 export const conferenceWorkshops: ConferenceWorkshop[] = [
-  { id: "workshop-a", speaker: "陳懷之牧師 Pastor Adriana", topic: "", location: "地點待公布", rounds: ["R1"] },
-  { id: "workshop-b", speaker: "張佩琪姐妹", topic: "面對關係很需要勇氣", location: "地點待公布", rounds: ["R1", "R2"] },
-  { id: "workshop-c", speaker: "歐震弟兄", topic: "在職場傳福音很需要勇氣", location: "地點待公布", rounds: ["R1", "R2"] },
-  { id: "workshop-d", speaker: "孫旭昌弟兄", topic: "面對自己的不完美很需要勇氣", location: "地點待公布", rounds: ["R1", "R2"] },
+  {
+    id: "workshop-a",
+    speaker: "陳懷之牧師 Pastor Adriana",
+    topic: "預備自己成為對的人，其實很需要勇氣！",
+    location: "地點待公布",
+    rounds: ["R1"],
+    image: "/images/conference-workshop-a.jpg",
+  },
+  {
+    id: "workshop-b",
+    speaker: "張佩琪姐妹",
+    topic: "人生要做出選擇，其實很需要勇氣！",
+    location: "地點待公布",
+    rounds: ["R1", "R2"],
+    image: "/images/conference-workshop-b.jpg",
+  },
+  {
+    id: "workshop-c",
+    speaker: "歐震弟兄",
+    topic: "要在職場中傳福音，其實很需要勇氣！",
+    location: "地點待公布",
+    rounds: ["R1", "R2"],
+    image: "/images/conference-workshop-c.jpg",
+  },
+  {
+    id: "workshop-d",
+    speaker: "孫旭昌弟兄",
+    topic: "面對自己的不完美，其實很需要勇氣！",
+    location: "地點待公布",
+    rounds: ["R1", "R2"],
+    image: "/images/conference-workshop-d.jpg",
+  },
 ]
 
 export function getConferenceWorkshop(id: string): ConferenceWorkshop | undefined {
