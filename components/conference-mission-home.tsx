@@ -63,22 +63,21 @@ export function ConferenceMissionHome({
         {/* 主視覺四邊留空間，跟下面工作坊／聚會場次同一層 px 內距，不貼齊螢幕邊緣。
             上方額外加 env(safe-area-inset-top)：App 化後全螢幕沒有網址列，
             iPhone 瀏海／動態島或 Android 狀態列不然會直接疊在主視覺上面。
-            z-20（比下面聚會卡片文字的 z-10 高一階）：sticky 定位本身不會自動
-            疊在後面的內容上面，兩邊 z-index 打平時是看 DOM 順序決定，聚會卡片
-            在主視覺後面反而會贏，往上捲動時卡片文字會透出來蓋在主視覺上，
-            所以主視覺一定要明確比任何會捲到它下面的內容都高一階。 */}
+            主視覺換成正方形大圖後改成正常捲動（不再 sticky）：sticky 會讓這張
+            比例高很多的圖一直黏在畫面最上面佔掉大半螢幕，不像原本的橫式
+            LOGO 那麼輕巧。 */}
         <div
-          className="sticky top-0 z-20 bg-[#0458e2] px-[6%] pb-4 sm:px-8"
+          className="px-[6%] pb-4 sm:px-8"
           style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
         >
           <Link href="https://www.passion-hsinchu.com/" target="_blank" rel="noopener noreferrer">
             <Image
-              src="/images/conference-hero-wordmark.png"
-              alt="THE COURAGE GENERATIONS 勇者世代"
-              width={2000}
-              height={302}
+              src="/images/conference-hero-visual.png"
+              alt="PASSION THE COURAGE GENERATIONS 勇者世代"
+              width={1400}
+              height={1400}
               priority
-              className="h-auto w-full"
+              className="h-auto w-full rounded-3xl"
             />
           </Link>
         </div>
