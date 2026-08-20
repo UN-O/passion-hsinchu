@@ -303,7 +303,18 @@ export function DiscussionView({
 
   function renderChildrenList(postId: string, depth: number) {
     const children = optimistic.childrenByParentId[postId] ?? []
-    return children.map((child) => <PostRow key={child.post.id} item={child} controller={controller} depth={depth} />)
+    const hasMore = childHasMoreMap[postId] ?? false
+    return children.map((child, index) => (
+      <PostRow
+        key={child.post.id}
+        item={child}
+        controller={controller}
+        depth={depth}
+        // 後面還有兄弟（或還有「載入更多」那顆按鈕）就繼續往下畫線，
+        // 整串才會連在一起。
+        hasFollowingSibling={index < children.length - 1 || hasMore}
+      />
+    ))
   }
 
   const controller: PostRowController = {

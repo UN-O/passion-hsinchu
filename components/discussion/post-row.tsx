@@ -1,9 +1,8 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
-import { Heart, MessageCircle, Pin, PinOff, Trash2 } from "lucide-react"
+import { ChevronDown, Heart, MessageCircle, Pin, PinOff, Trash2 } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { DiscussionEntry, DiscussionItem, PollDTO } from "@/lib/discussion/dto"
 import { PollView } from "./poll-view"
@@ -27,6 +26,16 @@ export type PostRowController = {
   canPin: (item: DiscussionItem, depth: number) => boolean
 }
 
+// 版面尺寸集中在這裡。連接線的幾何（曲線起訖點、縮排）全部從這幾個數字算
+// 出來，不是量畫面湊的——之後改頭貼大小或間距，線還是會接在對的位置。
+const AVATAR_TOP = 32 // 第一層頭貼
+const AVATAR_NESTED = 24 // 巢狀回覆的頭貼，要比第一層小
+const RAIL_GAP = 12 // 頭貼跟內文之間的間距
+const LINE_WIDTH = 2 // 所有連接線統一這個粗細，不會有粗細不一或重疊
+// 巢狀區塊的縮排：對齊第一層的內文起點（頭貼右緣 + 間距），這樣巢狀頭貼
+// 的中心剛好落在上一層「愛心」那排 icon 的區域，視覺上對得起來。
+const NEST_INDENT = AVATAR_TOP + RAIL_GAP
+
 const absoluteTimeFormatter = new Intl.DateTimeFormat("zh-TW", {
   timeZone: "Asia/Taipei",
   month: "2-digit",
@@ -47,26 +56,35 @@ function formatAbsoluteTime(iso: string): string {
   return `${get("month")}/${get("day")} ${get("hour")}:${get("minute")}`
 }
 
-// 「多久以前」，仿 Threads 用英文縮寫（30 m、2 h、3 d）。分鐘/小時/天級距
-// 不會因為 SSR、hydrate 兩次呼叫 Date.now() 之間的幾百毫秒落差而顯示不同
-// 字串，超過 6 天就直接退回絕對時間，避免「N 週前」這種不夠精確的說法。
+// 「多久以前」，仿 Threads 用英文縮寫（30m、2h、3d，數字跟單位之間不留空白）。
+// 分鐘/小時/天級距不會因為 SSR、hydrate 兩次呼叫 Date.now() 之間的幾百毫秒
+// 落差而顯示不同字串，超過 6 天就退回絕對時間，避免「N 週前」這種不夠精確
+// 的說法。
 function formatRelativeTime(iso: string): string {
   const diffSeconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000)
   if (diffSeconds < 60) return "now"
-  if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)} m`
-  if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)} h`
-  if (diffSeconds < 86400 * 6) return `${Math.floor(diffSeconds / 86400)} d`
+  if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m`
+  if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}h`
+  if (diffSeconds < 86400 * 6) return `${Math.floor(diffSeconds / 86400)}d`
   return formatAbsoluteTime(iso)
 }
 
 // 頭貼先用姓名的第一個字當佔位，之後如果有真的大頭貼圖檔案再換掉這裡。
-function Avatar({ name }: { name: string | null }) {
+function Avatar({ name, size }: { name: string | null; size: number }) {
   const initial = name?.trim().slice(0, 1) || "?"
   return (
-    <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-sm font-semibold text-foreground">
+    <div
+      className="flex shrink-0 items-center justify-center rounded-full border border-border bg-muted font-semibold text-foreground"
+      style={{ width: size, height: size, fontSize: size <= AVATAR_NESTED ? 11 : 13 }}
+    >
       {initial}
     </div>
   )
+}
+
+// 頭貼底下自動長高的直線。兩端圓角、寬度統一，第一層跟巢狀共用同一個元件。
+function RailLine() {
+  return <div className="mt-1.5 flex-1 rounded-full bg-border" style={{ width: LINE_WIDTH, minHeight: 8 }} />
 }
 
 function EntryBody({
@@ -74,28 +92,31 @@ function EntryBody({
   controller,
   depth,
   canPin,
-  hasConnector,
+  hasRail,
+  avatarSize,
 }: {
   entry: DiscussionEntry
   controller: PostRowController
   depth: number
   canPin?: boolean
-  // 底下接著一則用曲線連起來的精選回覆——頭貼下面要留一條會長高的線，
-  // 長度自動吃滿這則貼文本身的高度（不管內容幾行），曲線的部分另外畫在
-  // 緊接著的 wrapper 裡（見 PostRow），兩段接起來才會像 Threads 那樣。
-  hasConnector?: boolean
+  // 底下還有東西（精選回覆／展開的子回覆／查看更多）時，頭貼下面接一條線。
+  hasRail?: boolean
+  avatarSize: number
 }) {
   const { post, stats, viewer } = entry
   const canDelete = !post.isDeleted && (post.authorId === controller.viewerId || controller.isDiscussionAdmin)
 
   return (
-    <div className="flex gap-3">
-      <div className="flex flex-col items-center">
-        <Avatar name={post.isDeleted ? null : post.authorName} />
-        {hasConnector && <div className="mt-1 w-px flex-1 bg-border" />}
+    <div className="flex" style={{ gap: RAIL_GAP }}>
+      <div className="flex flex-col items-center" style={{ width: avatarSize }}>
+        <Avatar name={post.isDeleted ? null : post.authorName} size={avatarSize} />
+        {hasRail && <RailLine />}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
+      {/* 有 rail 時內文下面留一段 padding，讓 flex-1 的線一路長到這則貼文的
+          最底部——下一則緊接著開始（串起來的 container 不留 gap），線就會是
+          連續的，不會每則之間斷一截。 */}
+      <div className={cn("flex min-w-0 flex-1 flex-col gap-2", hasRail && "pb-3")}>
         <div className="flex flex-wrap items-baseline gap-x-2">
           <span className={cn("text-sm font-semibold", post.isDeleted && "text-muted-foreground")}>
             {post.isDeleted ? "已刪除的貼文" : (post.authorName ?? "匿名")}
@@ -114,7 +135,7 @@ function EntryBody({
         )}
 
         {!post.isDeleted && (
-          <div className="mt-1 flex items-center gap-4">
+          <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => controller.onLike(entry)}
@@ -178,70 +199,120 @@ function EntryBody({
   )
 }
 
-export function PostRow({ item, controller, depth = 0 }: { item: DiscussionItem; controller: PostRowController; depth?: number }) {
+function ShowMoreButton({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+    >
+      <ChevronDown className="size-4" strokeWidth={1.75} />
+      {label}
+    </button>
+  )
+}
+
+export function PostRow({
+  item,
+  controller,
+  depth = 0,
+  hasFollowingSibling,
+}: {
+  item: DiscussionItem
+  controller: PostRowController
+  depth?: number
+  // 在展開的回覆串裡，後面還有兄弟節點的話要繼續往下畫線，這樣一整串
+  // 才會像圖三那樣連在一起，而不是每則各自斷開。
+  hasFollowingSibling?: boolean
+}) {
   const [showChildren, setShowChildren] = useState(false)
+
+  const avatarSize = depth === 0 ? AVATAR_TOP : AVATAR_NESTED
+  const railCenter = avatarSize / 2
+
   const hasFeatured = !!item.featuredChild
   const remainingCount = item.hiddenReplyCount
+  // 展開之後子回覆是完整清單，精選那則已經在裡面（getMoreReplies 有排除，
+  // 見 queries.ts），不需要再單獨預覽一次。
+  const showFeatured = !showChildren && hasFeatured
+  const showCollapsedMore = !showChildren && remainingCount > 0
 
   function handleExpand() {
     setShowChildren(true)
     if (!controller.childHasLoaded(item.post.id)) controller.onLoadMoreChildren(item.post.id, item.featuredChild?.post.id)
   }
 
-  return (
-    <div className={cn("flex flex-col gap-3", depth > 0 && "border-l border-border pl-4")}>
-      <div className="flex flex-col">
-        <EntryBody
-          entry={item}
-          controller={controller}
-          depth={depth}
-          canPin={controller.canPin(item, depth)}
-          hasConnector={hasFeatured}
+  // 曲線：從自己的 rail 中心往下、轉彎接到巢狀頭貼的中心。起訖點都是從上面
+  // 的常數推出來的。stroke 有寬度，所以左右各留半個線寬避免被裁掉。
+  const half = LINE_WIDTH / 2
+  const curveEndX = NEST_INDENT + AVATAR_NESTED / 2 - railCenter
+  const curveHeight = 12 + AVATAR_NESTED / 2 // pt-3 的 12px + 巢狀頭貼半徑
+  const corner = 12 // 轉角半徑
+
+  function renderCurve() {
+    return (
+      <svg
+        className="pointer-events-none absolute top-0 text-border"
+        style={{ left: railCenter - half, width: curveEndX + half, height: curveHeight }}
+        viewBox={`0 0 ${curveEndX + half} ${curveHeight}`}
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d={`M${half} 0 V${curveHeight - corner} Q${half} ${curveHeight - half} ${half + corner} ${curveHeight - half} H${curveEndX}`}
+          stroke="currentColor"
+          strokeWidth={LINE_WIDTH}
+          strokeLinecap="round"
         />
+      </svg>
+    )
+  }
 
-        {hasFeatured && item.featuredChild && (
-          <div className="relative pt-2 pl-11">
-            {/* 頭貼底下那條線在 EntryBody 裡用 flex-1 撐滿貼文本身的高度，
-                這裡接著畫最後那段轉彎的曲線，一路連到下面精選回覆的頭貼。
-                寬度／高度都是照 32px 頭貼 + gap-3(12px) 的固定間距算出來的，
-                不用量畫面，兩段線接起來的位置就是對的。 */}
-            <svg
-              className="pointer-events-none absolute top-0 left-4 h-[26px] w-11 text-border"
-              viewBox="0 0 44 26"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path d="M1 0 V12 Q1 24 13 24 H44" stroke="currentColor" strokeWidth="2" />
-            </svg>
-            <EntryBody entry={item.featuredChild} controller={controller} depth={depth + 1} />
-          </div>
-        )}
-      </div>
+  return (
+    <div className="flex flex-col">
+      <EntryBody
+        entry={item}
+        controller={controller}
+        depth={depth}
+        canPin={controller.canPin(item, depth)}
+        hasRail={showFeatured || showChildren || showCollapsedMore || !!hasFollowingSibling}
+        avatarSize={avatarSize}
+      />
 
-      {!showChildren && remainingCount > 0 && (
-        <button
-          type="button"
-          onClick={handleExpand}
-          className="self-start text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
-        >
-          查看更多回覆（{remainingCount}）
-        </button>
+      {/* 收合：預覽一則精選回覆，用曲線從上面的 rail 接過來 */}
+      {showFeatured && item.featuredChild && (
+        <div className="relative pt-3" style={{ paddingLeft: NEST_INDENT }}>
+          {renderCurve()}
+          <EntryBody entry={item.featuredChild} controller={controller} depth={depth + 1} avatarSize={AVATAR_NESTED} />
+        </div>
       )}
 
+      {/* 收合狀態的「查看更多」：貼齊連接線正下方。有精選回覆時線已經轉彎到
+          巢狀縮排，就跟著縮排；沒有的話還在第一層的 rail 上，對齊 rail 中心。 */}
+      {showCollapsedMore && (
+        <div className="pt-2" style={{ paddingLeft: showFeatured ? NEST_INDENT : railCenter }}>
+          <ShowMoreButton label={`查看更多（${remainingCount}）`} onClick={handleExpand} />
+        </div>
+      )}
+
+      {/* 展開：子回覆是一條連續的串，全部同一個縮排、線接在一起；
+          「載入更多」也在轉彎後的右邊，跟收合狀態那顆刻意不同位置。 */}
       {showChildren && (
-        <div className="flex flex-col gap-4">
-          {controller.renderChildren(item.post.id, depth + 1)}
-          {controller.childHasMore(item.post.id) && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="self-start"
-              disabled={controller.childLoading(item.post.id)}
-              onClick={() => controller.onLoadMoreChildren(item.post.id, item.featuredChild?.post.id)}
-            >
-              載入更多
-            </Button>
-          )}
+        <div className="relative pt-3" style={{ paddingLeft: NEST_INDENT }}>
+          {renderCurve()}
+          {/* 不留 gap：每則的線靠自己的 pb-3 一路長到底，下一則緊接著開始，
+              線才會連續。 */}
+          <div className="flex flex-col">
+            {controller.renderChildren(item.post.id, depth + 1)}
+            {controller.childHasMore(item.post.id) && (
+              <ShowMoreButton
+                label="載入更多"
+                disabled={controller.childLoading(item.post.id)}
+                onClick={() => controller.onLoadMoreChildren(item.post.id, item.featuredChild?.post.id)}
+              />
+            )}
+          </div>
         </div>
       )}
     </div>
