@@ -15,6 +15,8 @@ import {
   conferenceWorkshops,
   getConferenceSession,
   getConferenceWorkshop,
+  getNextConferenceCountdownTarget,
+  getNextConferenceSession,
   getRegisteredWorkshopRounds,
   workshopDateLabel,
   workshopRoundLabels,
@@ -47,10 +49,14 @@ export function ConferenceMissionHome({
   // 報名通知要照場次顯示「已報名場次一」「已報名場次二」，不是單純顯示
   // 「已報名」，所以要知道具體報了哪幾場，不只是報名與否。
   const registeredRounds = activeWorkshop ? getRegisteredWorkshopRounds(activeWorkshop.id) : []
-  // 三場聚會現在都各自顯示一個卡片＋倒數區塊（不是只挑「下一場」），所以彈窗
-  // 用場次 id 記住點的是哪一張卡片，跟上面 activeWorkshopId 同一個做法。
+  // 三場聚會都各自顯示卡片，但彈窗仍然可能點到任何一張，所以用場次 id 記住
+  // 點的是哪一張卡片，跟上面 activeWorkshopId 同一個做法。
   const [activeMeetingSessionId, setActiveMeetingSessionId] = useState<string | null>(null)
   const activeMeetingSession = activeMeetingSessionId ? getConferenceSession(activeMeetingSessionId) : undefined
+  // 倒數計時只留一個、獨立放在最上面，不是每場聚會卡片各自一個：下一場還沒
+  // 開始的聚會＋跟它相關的倒數目標（比「下一場聚會」更細，還包含工作坊場次）。
+  const nextSession = getNextConferenceSession()
+  const nextCountdownTarget = getNextConferenceCountdownTarget()
 
   // App 化之後，讓系統返回鍵／手勢可以先關掉彈窗，而不是直接離開頁面
   useDialogBackClose(activeWorkshop !== undefined, () => setActiveWorkshopId(null))
@@ -135,6 +141,36 @@ export function ConferenceMissionHome({
             className="h-auto w-full"
           />
 
+          {/* 倒數計時只留一個、放在最上面（不是每場聚會卡片各自一個）。視覺圖
+              用下一場還沒開始的聚會（nextSession.image），倒數目標比「下一場
+              聚會」更細，還包含工作坊場次（nextCountdownTarget）。點縮圖彈出
+              下一場聚會的 16:9 大圖預覽，跟下面聚會卡片共用同一個彈窗。 */}
+          <div className="mt-6 rounded-3xl bg-slate-300 p-6">
+            <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-black/70">
+              距離{nextCountdownTarget.label}開始，還剩...
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setActiveMeetingSessionId(nextSession.id)}
+              aria-label={`${nextSession.typeLabel}視覺預覽`}
+              className="relative mt-3 aspect-video w-full overflow-hidden rounded-2xl bg-white/70"
+            >
+              <Image
+                src={nextSession.image}
+                alt={`${nextSession.typeLabel}視覺`}
+                fill
+                sizes="(min-width: 640px) 640px, 100vw"
+                className="object-cover"
+                style={{ objectPosition: "50% 30%" }}
+              />
+              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/50 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
+                <ConferenceCountdown targetISO={nextCountdownTarget.startISO} />
+              </div>
+            </button>
+          </div>
+
           {/* 工作坊方框底是真正的液態玻璃折射（.conf-glass-surface，SVG
               feDisplacementMap 讓背景真的扭曲，不是單純模糊；濾鏡定義掛在
               上面的 ConferenceLiquidGlassFilter，這裡直接引用同一個 id），
@@ -161,65 +197,35 @@ export function ConferenceMissionHome({
             ))}
           </div>
 
-          {/* 三場聚會（同一批 session 也是聚會流程表印的三場）各自一組卡片＋
-              倒數區塊，不是只挑「下一場」顯示。左右邊跟工作坊那排卡片切齊
-              （同一層 px 內距），不是貼齊螢幕邊緣。視覺圖依場次換成
-              session.image（還沒拿到真圖的場次先共用佔位圖，見
-              lib/opening-conference-content.ts）；疊一層由下往上的黑色漸層，
-              確保文字在任何圖片上都維持可讀。底色拿掉改透明：圖片還沒載入
-              完成的瞬間會先看到這層底色，紅色跟頁面本身的藍色背景反差太大，
-              載入時會很明顯地閃一下紅色；透明的話載入中直接透出頁面底色，
-              比較不突兀。點卡片連去聚會內容頁對應的場次（?session=），點
-              倒數縮圖彈出這場的 16:9 大圖預覽。 */}
+          {/* 三場聚會（同一批 session 也是聚會流程表印的三場）各自一張卡片，
+              左右邊跟工作坊那排卡片切齊（同一層 px 內距），不是貼齊螢幕邊緣。
+              視覺圖依場次換成 session.image（還沒拿到真圖的場次先共用佔位圖，
+              見 lib/opening-conference-content.ts）；疊一層由下往上的黑色
+              漸層，確保文字在任何圖片上都維持可讀。底色拿掉改透明：圖片還
+              沒載入完成的瞬間會先看到這層底色，紅色跟頁面本身的藍色背景
+              反差太大，載入時會很明顯地閃一下紅色；透明的話載入中直接透出
+              頁面底色，比較不突兀。點卡片連去聚會內容頁對應的場次
+              （?session=）。倒數計時只有最上面那一個，卡片本身不重複顯示。 */}
           {conferenceSessions.map((session) => (
-            <div key={session.id}>
-              <Link
-                href={`${meetingHref}?session=${session.id}`}
-                className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
-              >
-                <Image
-                  src={session.image}
-                  alt=""
-                  fill
-                  sizes="(min-width: 640px) 640px, 100vw"
-                  className="object-cover"
-                  style={{ objectPosition: "50% 30%" }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                <p className="relative z-10 text-sm text-white/80">
-                  {session.dateLabel}・{session.sessionLabel}
-                </p>
-                <p className="relative z-10 mt-2 text-2xl font-bold text-white">{session.typeLabel}</p>
-              </Link>
-
-              <div className="mt-6 rounded-3xl bg-slate-300 p-6">
-                <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-black/70">
-                  距離{session.typeLabel}開始，還剩...
-                </p>
-
-                {/* 倒數計時疊在照片下緣，底下加一層黑色漸層墊底，讓霧化玻璃
-                    數字框在任何照片內容上都維持穩定的可讀度。 */}
-                <button
-                  type="button"
-                  onClick={() => setActiveMeetingSessionId(session.id)}
-                  aria-label={`${session.typeLabel}視覺預覽`}
-                  className="relative mt-3 aspect-video w-full overflow-hidden rounded-2xl bg-white/70"
-                >
-                  <Image
-                    src={session.image}
-                    alt={`${session.typeLabel}視覺`}
-                    fill
-                    sizes="(min-width: 640px) 640px, 100vw"
-                    className="object-cover"
-                    style={{ objectPosition: "50% 30%" }}
-                  />
-                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/50 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
-                    <ConferenceCountdown targetISO={session.startISO} />
-                  </div>
-                </button>
-              </div>
-            </div>
+            <Link
+              key={session.id}
+              href={`${meetingHref}?session=${session.id}`}
+              className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
+            >
+              <Image
+                src={session.image}
+                alt=""
+                fill
+                sizes="(min-width: 640px) 640px, 100vw"
+                className="object-cover"
+                style={{ objectPosition: "50% 30%" }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+              <p className="relative z-10 text-sm text-white/80">
+                {session.dateLabel}・{session.sessionLabel}
+              </p>
+              <p className="relative z-10 mt-2 text-2xl font-bold text-white">{session.typeLabel}</p>
+            </Link>
           ))}
         </div>
       </div>
