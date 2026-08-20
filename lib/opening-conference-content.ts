@@ -188,8 +188,8 @@ export type ConferenceWorkshop = {
   // 完全吻合不用裁切；主題文字取自視覺上印的正式文案（跟先前使用者口頭
   // 給的用詞略有出入，以視覺上印的為準）。
   image: string
-  // 彈窗裡「工作坊資訊欄」上方的頭圖，跟上面卡片用的 image 是不同兩張圖。
-  // 使用者說之後會另外上傳，先留 undefined，畫面上用色塊佔位。
+  // 彈窗裡「工作坊資訊欄」上方的 16:9 頭圖，跟上面卡片用的 image 是不同兩張圖
+  // （活動組 PPT 素材，本身就是 16:9，不用裁切）。
   infoImage?: string
 }
 
@@ -201,6 +201,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1"],
     image: "/images/conference-workshop-a.png",
+    infoImage: "/images/conference-workshop-info-a.jpg",
   },
   {
     id: "workshop-b",
@@ -209,6 +210,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-b.png",
+    infoImage: "/images/conference-workshop-info-b.jpg",
   },
   {
     id: "workshop-c",
@@ -217,6 +219,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-c.png",
+    infoImage: "/images/conference-workshop-info-c.jpg",
   },
   {
     id: "workshop-d",
@@ -225,6 +228,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-d.png",
+    infoImage: "/images/conference-workshop-info-d.jpg",
   },
 ]
 
