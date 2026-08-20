@@ -86,10 +86,20 @@ export function ConferenceMissionHome({
           漸層融合成跟 bg-[#0458e2] 一樣的純藍色，蓋到 100svh 之後直接接回
           main 本身的純色底，銜接處不會看出接縫。-z-10：這個背景層是
           position:absolute 且在 DOM 最前面，不特別給負的 z-index 的話，
-          瀏覽器的疊層順序會讓它蓋在後面正常排版的內容上面，不是被蓋住。 */}
+          瀏覽器的疊層順序會讓它蓋在後面正常排版的內容上面，不是被蓋住。
+          backgroundSize 刻意寫死 "auto 100%"（不是 cover）：cover 會依螢幕
+          比例自己選裁切的軸，寬螢幕時反而會裁到上下；auto 100% 強制高度
+          永遠等於容器高度（上下永遠滿版、不裁切），寬度依圖片比例等比縮放，
+          比容器寬的部分才裁左右，比容器窄時兩側露出 main 的純色底（跟圖片
+          本身的藍色調很接近，不會突兀）。圖片直接用原始解析度，沒有另外
+          壓縮，避免裁到最寬的機型時因為放大而模糊。 */}
       <div
-        className="absolute inset-x-0 top-0 -z-10 h-[100svh] bg-cover bg-top bg-no-repeat"
-        style={{ backgroundImage: "url('/images/conference-background.jpg')" }}
+        className="absolute inset-x-0 top-0 -z-10 h-[100svh] bg-no-repeat"
+        style={{
+          backgroundImage: "url('/images/conference-background.jpg')",
+          backgroundSize: "auto 100%",
+          backgroundPosition: "center",
+        }}
         aria-hidden
       />
       <ConferenceLiquidGlassFilter filterId="conf-liquid-glass-filter" />
