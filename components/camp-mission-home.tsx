@@ -128,14 +128,23 @@ export async function CampMissionHome({
         <ZoneScoreChart zones={zoneScores} />
       </SectionCard>
 
-      {/* 跟 CONF 那邊的下場聚會卡片一樣拿掉紅色底：CAMP 這裡也還沒有真的聚會
-          視覺照片，紅色純色塊比較突兀，改用跟其他卡片一致的液態玻璃質感。 */}
+      {/* 下場聚會視覺依場次換成 nextSession.image，跟 CONF 首頁聚會卡片
+          同一個排版：滿版照片＋由下往上的黑色漸層，文字疊在上面維持可讀度。 */}
       <Link
         href={meetingHref}
-        className="camp-glass-card mt-6 flex aspect-[5/4] w-full flex-col justify-end rounded-3xl border-2 border-white/50 bg-[radial-gradient(120%_100%_at_25%_15%,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.06)_35%,rgba(191,219,254,0.05)_70%,rgba(255,255,255,0.08)_100%)] p-6 shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),inset_0_-3px_4px_rgba(30,64,124,0.14),0_16px_40px_rgba(0,0,0,0.22)]"
+        className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
       >
-        <p className="text-sm text-muted-foreground">{MEETING_CARD_LABEL}</p>
-        <p className="mt-2 text-2xl font-bold text-foreground">{nextSession.label}</p>
+        <Image
+          src={nextSession.image}
+          alt=""
+          fill
+          sizes="(min-width: 640px) 640px, 100vw"
+          className="object-cover"
+          style={{ objectPosition: "50% 30%" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+        <p className="relative z-10 text-sm text-white/80">{MEETING_CARD_LABEL}</p>
+        <p className="relative z-10 mt-2 text-2xl font-bold text-white">{nextSession.label}</p>
       </Link>
 
       <CampCountdownCard />

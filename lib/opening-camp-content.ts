@@ -153,16 +153,54 @@ export type CampSession = {
   id: string
   label: string
   startISO: string
+  // 16:9 視覺圖（聚會卡片、倒數計時縮圖、大圖預覽共用），跟 ConferenceSession.image
+  // 同一個用法。
+  image: string
 }
 
 export const campSessions: CampSession[] = [
-  { id: "day1-opening", label: "開場聚會", startISO: "2026-08-25T14:00:00+08:00" },
-  { id: "day1-evening", label: "晚場聚會", startISO: "2026-08-25T19:00:00+08:00" },
-  { id: "day2-game", label: "大地競賽", startISO: "2026-08-26T09:20:00+08:00" },
-  { id: "day2-debate", label: "勇者辯論場", startISO: "2026-08-26T14:00:00+08:00" },
-  { id: "day2-evening", label: "晚場聚會", startISO: "2026-08-26T19:00:00+08:00" },
-  { id: "day3-podcast", label: "Live Podcast", startISO: "2026-08-27T09:20:00+08:00" },
-  { id: "day3-closing", label: "閉幕聚會", startISO: "2026-08-27T13:30:00+08:00" },
+  {
+    id: "day1-opening",
+    label: "開場聚會",
+    startISO: "2026-08-25T14:00:00+08:00",
+    image: "/images/camp-session-day1-opening.jpg",
+  },
+  {
+    id: "day1-evening",
+    label: "晚場聚會",
+    startISO: "2026-08-25T19:00:00+08:00",
+    image: "/images/camp-session-day1-evening.jpg",
+  },
+  {
+    id: "day2-game",
+    label: "大地競賽",
+    startISO: "2026-08-26T09:20:00+08:00",
+    image: "/images/camp-session-day2-game.jpg",
+  },
+  {
+    id: "day2-debate",
+    label: "勇者辯論場",
+    startISO: "2026-08-26T14:00:00+08:00",
+    image: "/images/camp-session-day2-debate.jpg",
+  },
+  {
+    id: "day2-evening",
+    label: "晚場聚會",
+    startISO: "2026-08-26T19:00:00+08:00",
+    image: "/images/camp-session-day2-evening.jpg",
+  },
+  {
+    id: "day3-podcast",
+    label: "Live Podcast",
+    startISO: "2026-08-27T09:20:00+08:00",
+    image: "/images/camp-session-day3-podcast.jpg",
+  },
+  {
+    id: "day3-closing",
+    label: "閉幕聚會",
+    startISO: "2026-08-27T13:30:00+08:00",
+    image: "/images/camp-session-day3-closing.jpg",
+  },
 ]
 
 // 下一場還沒開始的聚會。場次資料是小時等級的固定時間表，不像倒數計時每秒都變，
