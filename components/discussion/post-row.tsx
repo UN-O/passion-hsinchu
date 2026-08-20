@@ -74,18 +74,26 @@ function EntryBody({
   controller,
   depth,
   canPin,
+  hasConnector,
 }: {
   entry: DiscussionEntry
   controller: PostRowController
   depth: number
   canPin?: boolean
+  // 底下接著一則用曲線連起來的精選回覆——頭貼下面要留一條會長高的線，
+  // 長度自動吃滿這則貼文本身的高度（不管內容幾行），曲線的部分另外畫在
+  // 緊接著的 wrapper 裡（見 PostRow），兩段接起來才會像 Threads 那樣。
+  hasConnector?: boolean
 }) {
   const { post, stats, viewer } = entry
   const canDelete = !post.isDeleted && (post.authorId === controller.viewerId || controller.isDiscussionAdmin)
 
   return (
     <div className="flex gap-3">
-      <Avatar name={post.isDeleted ? null : post.authorName} />
+      <div className="flex flex-col items-center">
+        <Avatar name={post.isDeleted ? null : post.authorName} />
+        {hasConnector && <div className="mt-1 w-px flex-1 bg-border" />}
+      </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-baseline gap-x-2">
@@ -182,13 +190,33 @@ export function PostRow({ item, controller, depth = 0 }: { item: DiscussionItem;
 
   return (
     <div className={cn("flex flex-col gap-3", depth > 0 && "border-l border-border pl-4")}>
-      <EntryBody entry={item} controller={controller} depth={depth} canPin={controller.canPin(item, depth)} />
+      <div className="flex flex-col">
+        <EntryBody
+          entry={item}
+          controller={controller}
+          depth={depth}
+          canPin={controller.canPin(item, depth)}
+          hasConnector={hasFeatured}
+        />
 
-      {hasFeatured && item.featuredChild && (
-        <div className="border-l border-border pl-4">
-          <EntryBody entry={item.featuredChild} controller={controller} depth={depth + 1} />
-        </div>
-      )}
+        {hasFeatured && item.featuredChild && (
+          <div className="relative pt-2 pl-11">
+            {/* 頭貼底下那條線在 EntryBody 裡用 flex-1 撐滿貼文本身的高度，
+                這裡接著畫最後那段轉彎的曲線，一路連到下面精選回覆的頭貼。
+                寬度／高度都是照 32px 頭貼 + gap-3(12px) 的固定間距算出來的，
+                不用量畫面，兩段線接起來的位置就是對的。 */}
+            <svg
+              className="pointer-events-none absolute top-0 left-4 h-[26px] w-11 text-border"
+              viewBox="0 0 44 26"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path d="M1 0 V12 Q1 24 13 24 H44" stroke="currentColor" strokeWidth="2" />
+            </svg>
+            <EntryBody entry={item.featuredChild} controller={controller} depth={depth + 1} />
+          </div>
+        )}
+      </div>
 
       {!showChildren && remainingCount > 0 && (
         <button
