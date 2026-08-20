@@ -146,3 +146,30 @@ export const campZoneScreens: CampZoneScreen[] = [
   { title: "小丑魚區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-2.png" },
   { title: "熊蜂區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-3.png" },
 ]
+
+// 首頁倒數卡片用的逐場聚會時間表，跟 lib/opening-conference-content.ts 的
+// conferenceSessions／getNextConferenceSession 同一套邏輯。時間來自營會流程表。
+export type CampSession = {
+  id: string
+  label: string
+  startISO: string
+}
+
+export const campSessions: CampSession[] = [
+  { id: "day1-opening", label: "開場聚會", startISO: "2026-08-25T14:00:00+08:00" },
+  { id: "day1-evening", label: "晚場聚會", startISO: "2026-08-25T19:00:00+08:00" },
+  { id: "day2-game", label: "大地競賽", startISO: "2026-08-26T09:20:00+08:00" },
+  { id: "day2-debate", label: "勇者辯論場", startISO: "2026-08-26T14:00:00+08:00" },
+  { id: "day2-evening", label: "晚場聚會", startISO: "2026-08-26T19:00:00+08:00" },
+  { id: "day3-podcast", label: "Live Podcast", startISO: "2026-08-27T09:20:00+08:00" },
+  { id: "day3-closing", label: "閉幕聚會", startISO: "2026-08-27T13:30:00+08:00" },
+]
+
+// 下一場還沒開始的聚會。場次資料是小時等級的固定時間表，不像倒數計時每秒都變，
+// 伺服器算出來的跟瀏覽器 hydrate 那一刻幾乎不會跨到下一場，直接算不用另外處理
+// hydration mismatch（跟 getNextConferenceSession 同樣的考量）。
+export function getNextCampSession(now: Date = new Date()): CampSession {
+  const nowMs = now.getTime()
+  const upcoming = campSessions.find((session) => new Date(session.startISO).getTime() > nowMs)
+  return upcoming ?? campSessions[campSessions.length - 1]
+}
