@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, notInArray, sql, type SQL } from "drizzle-orm"
+import { and, desc, eq, inArray, isNull, ne, notInArray, sql, type SQL } from "drizzle-orm"
 import type { AnyPgColumn } from "drizzle-orm/pg-core"
 
 import { db } from "@/db"
@@ -330,6 +330,9 @@ export type GetMoreRepliesInput = {
   viewerId: string | null
   cursor?: string | null
   limit?: number
+  // 該 parent 目前的 featured child——已經在上一層 UI 顯示過了，這裡要排除
+  // 掉，不然「查看更多回覆」展開之後會看到同一則貼文出現兩次。
+  excludePostId?: string
 }
 
 // Root 跟 nested reply 共用同一個 retrieval service：都是「某個 parent
@@ -340,6 +343,9 @@ export async function getMoreReplies(input: GetMoreRepliesInput): Promise<MoreRe
   const cursor = input.cursor ? decodeCursor(input.cursor) : null
 
   const conditions = [eq(posts.replyToId, input.parentPostId), isNull(posts.deletedAt)]
+  if (input.excludePostId) {
+    conditions.push(ne(posts.id, input.excludePostId))
+  }
   if (cursor?.createdAt !== undefined) {
     conditions.push(cursorAfter(posts.createdAt, posts.id, new Date(cursor.createdAt), cursor.id))
   }

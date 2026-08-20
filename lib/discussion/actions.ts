@@ -60,12 +60,13 @@ export async function loadDiscussion(
 
 export async function loadMoreReplies(
   parentPostId: string,
-  cursor?: string | null
+  cursor?: string | null,
+  excludePostId?: string
 ): Promise<ActionResult<MoreRepliesResponse>> {
   return toResult(
     (async () => {
       const session = await requireClaimedSession()
-      return getMoreReplies({ parentPostId, viewerId: session.user.id, cursor })
+      return getMoreReplies({ parentPostId, viewerId: session.user.id, cursor, excludePostId })
     })()
   )
 }

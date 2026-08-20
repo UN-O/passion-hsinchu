@@ -70,13 +70,11 @@ export default async function ConferenceMeetingPage({
         </div>
 
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">主要大綱、PPT</p>
           <p className="text-base">{PLACEHOLDER_OUTLINE}</p>
         </div>
 
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">討論與心得</p>
-          <div className="mt-4">
+          <div>
             <DiscussionRoot rootKey={conferenceSessionRootKey(nextSession.id)} session={session} />
           </div>
         </div>

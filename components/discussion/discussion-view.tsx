@@ -257,10 +257,10 @@ export function DiscussionView({
     })
   }
 
-  async function handleLoadMoreChildren(postId: string) {
+  async function handleLoadMoreChildren(postId: string, excludeId?: string) {
     setChildLoadingMap((prev) => ({ ...prev, [postId]: true }))
     const cursorForChild = childCursor[postId] ?? null
-    const result = await loadMoreReplies(postId, cursorForChild)
+    const result = await loadMoreReplies(postId, cursorForChild, excludeId)
     if (result.ok) {
       setBase((prev) => ({
         ...prev,
@@ -335,21 +335,16 @@ export function DiscussionView({
         </div>
       )}
 
-      <div className="flex items-center gap-4 border-t border-border pt-4 text-sm">
-        <button
-          type="button"
-          onClick={() => handleSortChange("top")}
-          className={cn("font-medium", sort === "top" ? "text-primary" : "text-muted-foreground hover:text-foreground")}
+      <div className="flex items-center border-t border-border pt-4">
+        <select
+          value={sort}
+          onChange={(e) => handleSortChange(e.target.value as SortMode)}
+          aria-label="排序方式"
+          className="rounded-full border border-border bg-transparent px-3 py-1.5 text-sm outline-none"
         >
-          熱門
-        </button>
-        <button
-          type="button"
-          onClick={() => handleSortChange("latest")}
-          className={cn("font-medium", sort === "latest" ? "text-primary" : "text-muted-foreground hover:text-foreground")}
-        >
-          最新
-        </button>
+          <option value="top">熱門</option>
+          <option value="latest">最新</option>
+        </select>
       </div>
 
       <div className={cn("flex flex-col gap-6", sortPending && "opacity-60")}>

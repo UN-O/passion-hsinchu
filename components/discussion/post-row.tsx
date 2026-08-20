@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
-import { Heart, MessageCircle } from "lucide-react"
+import { Heart, MessageCircle, Pin, PinOff, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -18,7 +18,7 @@ export type PostRowController = {
   onPin: (postId: string) => void
   onUnpin: (postId: string) => void
   onDelete: (postId: string) => void
-  onLoadMoreChildren: (postId: string) => void
+  onLoadMoreChildren: (postId: string, excludeId?: string) => void
   childLoading: (postId: string) => boolean
   childHasLoaded: (postId: string) => boolean
   childHasMore: (postId: string) => boolean
@@ -51,12 +51,10 @@ function EntryBody({
   entry,
   controller,
   depth,
-  featured,
 }: {
   entry: DiscussionEntry
   controller: PostRowController
   depth: number
-  featured?: boolean
 }) {
   const { post, stats, viewer } = entry
   const canDelete = !post.isDeleted && (post.authorId === controller.viewerId || controller.isDiscussionAdmin)
@@ -72,7 +70,6 @@ function EntryBody({
             <span className="text-xs text-muted-foreground">工作人員</span>
           )}
           {post.isPinned && <span className="text-xs text-primary">已置頂</span>}
-          {featured && <span className="text-xs text-muted-foreground">精選回覆</span>}
         </div>
         <span className="text-xs text-muted-foreground">{formatTime(post.createdAt)}</span>
       </div>
@@ -114,9 +111,10 @@ function EntryBody({
             <button
               type="button"
               onClick={() => controller.onDelete(post.id)}
-              className="text-xs text-muted-foreground hover:text-foreground"
+              aria-label="刪除"
+              className="text-muted-foreground hover:text-foreground"
             >
-              刪除
+              <Trash2 className="size-[18px]" strokeWidth={1.75} />
             </button>
           )}
         </div>
@@ -132,7 +130,7 @@ export function PostRow({ item, controller, depth = 0 }: { item: DiscussionItem;
 
   function handleExpand() {
     setShowChildren(true)
-    if (!controller.childHasLoaded(item.post.id)) controller.onLoadMoreChildren(item.post.id)
+    if (!controller.childHasLoaded(item.post.id)) controller.onLoadMoreChildren(item.post.id, item.featuredChild?.post.id)
   }
 
   return (
@@ -145,17 +143,19 @@ export function PostRow({ item, controller, depth = 0 }: { item: DiscussionItem;
             <button
               type="button"
               onClick={() => controller.onUnpin(item.post.id)}
-              className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              aria-label="取消置頂"
+              className="text-muted-foreground hover:text-foreground"
             >
-              取消置頂
+              <PinOff className="size-[18px]" strokeWidth={1.75} />
             </button>
           ) : (
             <button
               type="button"
               onClick={() => controller.onPin(item.post.id)}
-              className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              aria-label="置頂這則回覆"
+              className="text-muted-foreground hover:text-foreground"
             >
-              置頂這則回覆
+              <Pin className="size-[18px]" strokeWidth={1.75} />
             </button>
           )}
         </div>
@@ -163,7 +163,7 @@ export function PostRow({ item, controller, depth = 0 }: { item: DiscussionItem;
 
       {hasFeatured && item.featuredChild && (
         <div className="border-l border-border pl-4">
-          <EntryBody entry={item.featuredChild} controller={controller} depth={depth + 1} featured />
+          <EntryBody entry={item.featuredChild} controller={controller} depth={depth + 1} />
         </div>
       )}
 
@@ -186,7 +186,7 @@ export function PostRow({ item, controller, depth = 0 }: { item: DiscussionItem;
               size="sm"
               className="self-start"
               disabled={controller.childLoading(item.post.id)}
-              onClick={() => controller.onLoadMoreChildren(item.post.id)}
+              onClick={() => controller.onLoadMoreChildren(item.post.id, item.featuredChild?.post.id)}
             >
               載入更多
             </Button>

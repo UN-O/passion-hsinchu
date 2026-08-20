@@ -38,18 +38,15 @@ export default async function CampMeetingPage() {
 
       <div className="mt-10 flex flex-col gap-10">
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">聚會場次、名稱</p>
           <p className="text-2xl font-bold">{nextSession.label}</p>
         </div>
 
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">主要大綱、PPT</p>
           <p className="text-base">{PLACEHOLDER_OUTLINE}</p>
         </div>
 
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">討論與心得</p>
-          <div className="mt-4">
+          <div>
             <DiscussionRoot rootKey={campMeetingRootKey()} session={session} />
           </div>
         </div>
