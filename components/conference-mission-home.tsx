@@ -66,9 +66,9 @@ export function ConferenceMissionHome({
             className="h-auto w-[70%]"
           />
 
-          {/* 工作坊方框先做成液態玻璃質感（半透明底＋backdrop-blur＋內緣高光），
-              照片去背後會疊在玻璃上面，玻璃本身要先能在任何背景上都看起來
-              通透，所以這裡不放海報圖。點卡片彈出視窗顯示介紹，不跳頁。
+          {/* 工作坊方框是液態玻璃質感（半透明底＋backdrop-blur＋內緣高光）當畫框，
+              去背後的照片（白／淺紫底）疊在中間，畫框留一圈玻璃邊框透出來。
+              點卡片彈出視窗顯示介紹，不跳頁。
               overscroll-x-contain：滑到這排的頭尾邊界時，捲動不會「溢出」去觸發
               App 外層的返回手勢（iOS／Android 邊緣滑動＝返回），滑動效果留在這排裡面。 */}
           <div
@@ -81,9 +81,13 @@ export function ConferenceMissionHome({
                 type="button"
                 onClick={() => setActiveWorkshopId(workshop.id)}
                 aria-label={workshop.topic || workshop.speaker}
-                className="relative aspect-[4/5] w-[118px] shrink-0 overflow-hidden rounded-3xl border border-white/50 bg-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] backdrop-blur-md sm:w-[151px]"
+                className="aspect-[4/5] w-[118px] shrink-0 rounded-3xl border border-white/50 bg-white/20 p-2 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] backdrop-blur-md sm:w-[151px]"
                 style={{ scrollSnapAlign: "start" }}
-              />
+              >
+                <div className="relative h-full w-full overflow-hidden rounded-2xl">
+                  <Image src={workshop.image} alt="" fill sizes="151px" className="object-cover" />
+                </div>
+              </button>
             ))}
           </div>
 
