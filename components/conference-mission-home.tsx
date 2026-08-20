@@ -102,8 +102,9 @@ export function ConferenceMissionHome({
           relative 沒有搭配 z-index 的話不會建立新的 stacking context，
           子層的 -z-10 就不是相對 main 局部計算，而是直接跳到更外層
           （body）的疊層順序裡競爭，結果整張背景圖沉到 main 自己的純色底
-          下面、完全被蓋住看不見。 */}
-      <div className="sticky top-0 z-20 bg-[#0458e2]">
+          下面、完全被蓋住看不見。底色改成上藍下透明的漸層，跟後面的
+          背景照片融合得更柔和，不是一條硬邊的實色色塊。 */}
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#0458e2] to-transparent">
         <div
           className="mx-auto max-w-2xl px-[6%] pb-2 sm:px-8"
           style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)" }}
@@ -140,7 +141,7 @@ export function ConferenceMissionHome({
             alt="我們相信，每個人都會在這裡遇見神。WE BELIEVE EVERYONE WILL EXPERIENCE GOD'S PRESENCE HERE."
             width={1200}
             height={126}
-            className="mt-6 h-auto w-[70%]"
+            className="mx-auto mt-6 h-auto w-[70%]"
           />
 
           {/* 工作坊方框底是真正的液態玻璃折射（.conf-glass-surface，SVG
