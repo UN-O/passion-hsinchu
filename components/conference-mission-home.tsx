@@ -80,7 +80,7 @@ export function ConferenceMissionHome({
                 type="button"
                 onClick={() => setActiveWorkshopId(workshop.id)}
                 aria-label={workshop.topic || workshop.speaker}
-                className="relative aspect-[4/5] w-[118px] shrink-0 overflow-hidden rounded-3xl sm:w-[151px]"
+                className="relative aspect-[4/5] w-[118px] shrink-0 overflow-hidden rounded-3xl shadow-[0_18px_32px_-4px_rgba(255,255,255,0.75)] sm:w-[151px]"
                 style={{ scrollSnapAlign: "start" }}
               >
                 <Image
