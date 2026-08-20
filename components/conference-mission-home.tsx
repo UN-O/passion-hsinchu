@@ -14,6 +14,7 @@ import {
   getConferenceWorkshop,
   getNextConferenceSession,
   isWorkshopRegistered,
+  workshopRoundTimeLabels,
 } from "@/lib/opening-conference-content"
 import { siteConfig } from "@/lib/site-config"
 
@@ -75,7 +76,7 @@ export function ConferenceMissionHome({
                 key={workshop.id}
                 type="button"
                 onClick={() => setActiveWorkshopId(workshop.id)}
-                aria-label={workshop.title}
+                aria-label={workshop.topic || workshop.speaker}
                 className="flex aspect-[4/5] w-[118px] shrink-0 items-end rounded-3xl bg-[#3B82F6] p-3 sm:w-[151px] sm:p-4"
                 style={{ scrollSnapAlign: "start" }}
               >
@@ -157,7 +158,7 @@ export function ConferenceMissionHome({
           showCloseButton={false}
           className="max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl border-none bg-card p-0 sm:max-w-md"
         >
-          <DialogTitle className="sr-only">{activeWorkshop?.title}</DialogTitle>
+          <DialogTitle className="sr-only">{activeWorkshop?.topic || activeWorkshop?.speaker}</DialogTitle>
           <DialogClose className="absolute top-4 right-4 z-10 text-white/80 hover:text-white">
             <X className="size-5" />
             <span className="sr-only">關閉</span>
@@ -179,8 +180,17 @@ export function ConferenceMissionHome({
                 </span>
               )}
             </div>
-            <p className="text-xl font-bold">{activeWorkshop?.title}</p>
-            <p className="text-base">{activeWorkshop?.body}</p>
+            <p className="text-xl font-bold">
+              {activeWorkshop?.topic || activeWorkshop?.speaker}
+            </p>
+            {activeWorkshop?.topic && (
+              <p className="text-base text-muted-foreground">{activeWorkshop.speaker}</p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              {activeWorkshop?.rounds
+                .map((round) => `${round}｜${workshopRoundTimeLabels[round]}`)
+                .join("、")}
+            </p>
           </div>
         </DialogContent>
       </Dialog>

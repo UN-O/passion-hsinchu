@@ -159,31 +159,41 @@ export function getCategoryForItem(itemId: string): ConferenceCategory | undefin
   return conferenceCategories.find((category) => category.items.some((item) => item.id === itemId))
 }
 
-// TODO: 使用者尚未提供實際工作坊清單，先放合理佔位文案
+// 工作坊分兩個時段（R1、R2），一人固定報名兩場——每個時段各選一場。
+// B、C、D 兩個時段都開放同一位講員／同一個主題，A（陳懷之牧師）只在 R1 開放。
 // 工作坊地點跟聚會不同棟，不能直接套用 siteConfig.venueShortName（築聖館），
 // 使用者說之後會另外提供每個工作坊各自的地點，先放「地點待公布」佔位。
+export type ConferenceWorkshopRound = "R1" | "R2"
+
+export const workshopRoundTimeLabels: Record<ConferenceWorkshopRound, string> = {
+  R1: "8/29（六）15:15",
+  R2: "8/29（六）16:35",
+}
+
 export type ConferenceWorkshop = {
   id: string
-  title: string
-  body: string
+  speaker: string
+  // TODO: A（陳懷之牧師 Pastor Adriana）的主題使用者說之後補上，先留空。
+  topic: string
   location: string
+  rounds: ConferenceWorkshopRound[]
 }
 
 export const conferenceWorkshops: ConferenceWorkshop[] = [
-  { id: "workshop-1", title: "工作坊一", body: "工作坊詳細內容尚待補充。", location: "地點待公布" },
-  { id: "workshop-2", title: "工作坊二", body: "工作坊詳細內容尚待補充。", location: "地點待公布" },
-  { id: "workshop-3", title: "工作坊三", body: "工作坊詳細內容尚待補充。", location: "地點待公布" },
-  { id: "workshop-4", title: "工作坊四", body: "工作坊詳細內容尚待補充。", location: "地點待公布" },
+  { id: "workshop-a", speaker: "陳懷之牧師 Pastor Adriana", topic: "", location: "地點待公布", rounds: ["R1"] },
+  { id: "workshop-b", speaker: "張佩琪姐妹", topic: "面對關係很需要勇氣", location: "地點待公布", rounds: ["R1", "R2"] },
+  { id: "workshop-c", speaker: "歐震弟兄", topic: "在職場傳福音很需要勇氣", location: "地點待公布", rounds: ["R1", "R2"] },
+  { id: "workshop-d", speaker: "孫旭昌弟兄", topic: "面對自己的不完美很需要勇氣", location: "地點待公布", rounds: ["R1", "R2"] },
 ]
 
 export function getConferenceWorkshop(id: string): ConferenceWorkshop | undefined {
   return conferenceWorkshops.find((workshop) => workshop.id === id)
 }
 
-// TODO: 工作坊報名資料之後會從後台上傳（一人固定報名兩場），目前還沒有真正的
-// 報名資料表，先用假資料佔位（固定顯示某人報名了工作坊二、工作坊三），等資料
-// 確定後改成依登入者查詢真正的報名結果。
-const MOCK_REGISTERED_WORKSHOP_IDS: string[] = ["workshop-1", "workshop-2"]
+// TODO: 工作坊報名資料之後會從後台上傳，目前還沒有真正的報名資料表，先用假
+// 資料佔位（固定顯示某人報名了工作坊 A、B），等資料確定後改成依登入者查詢
+// 真正的報名結果。
+const MOCK_REGISTERED_WORKSHOP_IDS: string[] = ["workshop-a", "workshop-b"]
 
 export function isWorkshopRegistered(id: string): boolean {
   return MOCK_REGISTERED_WORKSHOP_IDS.includes(id)

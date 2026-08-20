@@ -22,8 +22,10 @@ function OnboardingContent() {
       <p className="text-sm tracking-[0.2em] text-white/60">
         {index + 1} / {conferenceWorkshops.length}
       </p>
-      <h2 className="font-heading text-2xl font-bold sm:text-3xl">{workshop.title}</h2>
-      <p className="max-w-sm text-white/80">{workshop.body}</p>
+      <h2 className="font-heading text-2xl font-bold sm:text-3xl">
+        {workshop.topic || workshop.speaker}
+      </h2>
+      {workshop.topic && <p className="max-w-sm text-white/80">{workshop.speaker}</p>}
       {isLast ? (
         <form action={completeOpening}>
           <input type="hidden" name="flow" value="conference" />
