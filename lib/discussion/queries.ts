@@ -235,11 +235,17 @@ async function fetchPollsByPostIds(postIds: string[], viewerId: string | null): 
 async function enrichRows(
   rows: CandidateRow[],
   viewerId: string | null,
-  pinnedIds: Set<string>
+  pinnedIds: Set<string>,
+  // 拉平顯示的主幹鏈不需要再各自預覽 featured child（鏈本身就是往下的預覽），
+  // 這時候跳過那一輪批次查詢，省掉一次不必要的往返。
+  options?: { withFeaturedChild?: boolean }
 ): Promise<DiscussionItem[]> {
   if (rows.length === 0) return []
 
-  const featuredChildIds = [...new Set(rows.map((r) => r.bestDirectChildId).filter((id): id is string => id !== null))]
+  const withFeaturedChild = options?.withFeaturedChild ?? true
+  const featuredChildIds = withFeaturedChild
+    ? [...new Set(rows.map((r) => r.bestDirectChildId).filter((id): id is string => id !== null))]
+    : []
   const featuredRows = await fetchByIds(featuredChildIds)
 
   const allRows = [...rows, ...featuredRows]
@@ -383,6 +389,88 @@ export async function getMoreReplies(input: GetMoreRepliesInput): Promise<MoreRe
   const nextCursor = hasMore && last ? encodeCursor({ id: last.post.id, createdAt: last.post.createdAt.toISOString() }) : null
 
   return { replies: enriched, nextCursor, hasMore }
+}
+
+// 某個節點往下的「主幹」：順著 reply_rank.best_direct_child_id 這條已經在
+// 寫入時 O(1) 維護好的指標往下走，最多走 limit 步。
+//
+// ⚠ 刻意「不」用「列舉整個子樹再挑最深的那條」的寫法：那種 recursive CTE
+// 必須掃過每一個後代才知道誰最深，等於每點一次「查看更多」就是 O(子樹大小)
+// 的掃描，違反規格第 72/73 點的複雜度目標，活動現場一堆人同時滑會把資料庫
+// 流量打爆。這裡每一步都是 reply_rank 的主鍵查找，總共只碰 limit 列。
+//
+// 代價：走的是「分數最高」而不是嚴格「層數最多」的鏈。實務上兩者多半一致，
+// 因為 reply_score 裡的 directReplyCount 訊號會讓「底下還有回覆」的節點分數
+// 比較高，自然往深處長。真的需要嚴格深度優先的話，要在 reply_rank 另外加
+// subtree_depth 欄位、寫入時往上更新 O(深度) 列（見 Implementation Report
+// 的技術債）。
+export async function getReplyChain(
+  parentPostId: string,
+  viewerId: string | null,
+  limit?: number
+): Promise<DiscussionItem[]> {
+  const max = clampLimit(limit)
+
+  // 種子刻意用 (parent_id, reply_score DESC) 這個索引直接挑出 parent 的最佳
+  // 子節點，而不是讀 parent 自己那列的 best_direct_child_id——因為 root 沒有
+  // reply_rank 列，用後者的話從 root 展開會直接拿到空結果。
+  const result = await db.execute<{ post_id: string; lvl: number }>(sql`
+    WITH RECURSIVE spine AS (
+      SELECT rr.post_id, rr.best_direct_child_id AS next_id, 1 AS lvl
+      FROM reply_rank rr
+      WHERE rr.post_id = (
+        SELECT r2.post_id
+        FROM reply_rank r2
+        JOIN posts p2 ON p2.id = r2.post_id
+        WHERE r2.parent_id = ${parentPostId} AND p2.deleted_at IS NULL
+        ORDER BY r2.reply_score DESC, r2.post_id DESC
+        LIMIT 1
+      )
+      UNION ALL
+      SELECT r.post_id, r.best_direct_child_id, s.lvl + 1
+      FROM reply_rank r
+      JOIN spine s ON r.post_id = s.next_id
+      WHERE s.lvl < ${max}
+    )
+    SELECT post_id, lvl FROM spine ORDER BY lvl
+  `)
+
+  const rows = (result as unknown as { rows?: { post_id: string }[] }).rows ?? (result as unknown as { post_id: string }[])
+  const orderedIds = rows.map((r) => r.post_id)
+  if (orderedIds.length === 0) return []
+
+  const fetched = await fetchByIds(orderedIds)
+  const byId = new Map(fetched.map((r) => [r.post.id, r]))
+  const ordered = orderedIds.map((id) => byId.get(id)).filter((r): r is CandidateRow => !!r && r.post.deletedAt === null)
+
+  return enrichRows(ordered, viewerId, new Set(), { withFeaturedChild: false })
+}
+
+// 從某則貼文往上撈到 root 的完整祖先鏈（root 在最前面，焦點貼文在最後面）。
+// 走 reply_to_id，複雜度 O(深度)——討論串深度本來就很淺，不是掃描。
+export async function getAncestorChain(postId: string, viewerId: string | null): Promise<DiscussionItem[]> {
+  const result = await db.execute<{ id: string; lvl: number }>(sql`
+    WITH RECURSIVE chain AS (
+      SELECT ${posts.id} AS id, ${posts.replyToId} AS parent_id, 0 AS lvl
+      FROM ${posts}
+      WHERE ${posts.id} = ${postId}
+      UNION ALL
+      SELECT p.id, p.reply_to_id, c.lvl + 1
+      FROM posts p
+      JOIN chain c ON p.id = c.parent_id
+    )
+    SELECT id, lvl FROM chain ORDER BY lvl DESC
+  `)
+
+  const rows = (result as unknown as { rows?: { id: string }[] }).rows ?? (result as unknown as { id: string }[])
+  const orderedIds = rows.map((r) => r.id)
+  if (orderedIds.length === 0) return []
+
+  const fetched = await fetchByIds(orderedIds)
+  const byId = new Map(fetched.map((r) => [r.post.id, r]))
+  const ordered = orderedIds.map((id) => byId.get(id)).filter((r): r is CandidateRow => !!r)
+
+  return enrichRows(ordered, viewerId, new Set(), { withFeaturedChild: false })
 }
 
 // --- 小工具：keyset pagination 的比較條件、IN/NOT IN ---

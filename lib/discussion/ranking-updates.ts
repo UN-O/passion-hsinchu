@@ -127,6 +127,8 @@ export async function applyRankingForNewReply(
         updatedAt: now,
       })
       .where(eq(replyRank.postId, parent.id))
+
+    await refreshGrandparentBestChild(tx, parent)
     return
   }
 
@@ -170,6 +172,20 @@ export async function applyRankingForNewReply(
       updatedAt: now,
     })
     .where(eq(replyRank.postId, branchHeadId))
+
+  await refreshGrandparentBestChild(tx, parent)
+}
+
+// 新增一則回覆會讓「直接 parent」的 replyScore 改變（directReplyCount +1），
+// 而 parent 的分數正是「祖父母挑 best direct child」的依據——所以祖父母那層
+// 要重挑一次，不然會卡在舊的選擇（例如祖父母一直指向比較淺、但當初比較新
+// 的那個兄弟，主幹就永遠鑽不下去）。
+//
+// 只需要往上一層：這則新回覆並沒有改變 parent 自己的 directReplyCount，
+// 所以祖父母的 replyScore 沒變，再上一層的 best child 不受影響。O(1)。
+async function refreshGrandparentBestChild(tx: Tx, parent: ParentForRanking): Promise<void> {
+  if (!parent.replyToId) return // parent 是 root 的直接子節點，root 不參與排序
+  await recomputeBestDirectChild(tx, parent.replyToId)
 }
 
 // Like / Unlike 之後：likeCount 已經在呼叫端用 canonical 的
