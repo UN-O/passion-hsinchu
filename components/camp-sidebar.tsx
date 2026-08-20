@@ -99,7 +99,7 @@ export function CampSidebar() {
             />
           )}
           {activeItem?.type === "content" && activeItem.key === "lodging" && (
-            <div className="px-2 pb-2">
+            <div className="min-w-0 px-2 pb-2">
               <CampLodgingInfo />
             </div>
           )}

@@ -29,7 +29,7 @@ export default async function CampPointsPage() {
   const max = Math.max(...ranked.map((region) => region.total), 0)
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
+    <main className="mx-auto max-w-2xl px-[6%] py-16 sm:px-8 sm:py-24">
       <p className="text-sm tracking-[0.2em] text-muted-foreground">CAMP</p>
       <h1 className="font-heading mt-3 text-3xl font-bold tracking-tight sm:text-4xl">分區積分</h1>
 

@@ -68,7 +68,7 @@ export function ConferenceMissionHome({
             在主視覺後面反而會贏，往上捲動時卡片文字會透出來蓋在主視覺上，
             所以主視覺一定要明確比任何會捲到它下面的內容都高一階。 */}
         <div
-          className="sticky top-0 z-20 bg-[#0458e2] px-4 pb-4 sm:px-6"
+          className="sticky top-0 z-20 bg-[#0458e2] px-[6%] pb-4 sm:px-8"
           style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
         >
           <Link href="https://www.passion-hsinchu.com/" target="_blank" rel="noopener noreferrer">
@@ -83,7 +83,7 @@ export function ConferenceMissionHome({
           </Link>
         </div>
 
-        <div className="px-4 pt-6 sm:px-6">
+        <div className="px-[6%] pt-6 sm:px-8">
           <Image
             src="/images/conference-slogan.png"
             alt="我們相信，每個人都會在這裡遇見神。WE BELIEVE EVERYONE WILL EXPERIENCE GOD'S PRESENCE HERE."

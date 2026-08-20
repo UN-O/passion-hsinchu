@@ -13,10 +13,12 @@ export const metadata: Metadata = {
 }
 
 export default async function CampDevotionPage() {
-  await requireFlowAccess("camp")
+  const session = await requireFlowAccess("camp")
+  // 工作人員不受 DAY2／DAY3 公布時間限制，隨時能看到完整靈修內容方便備稿確認。
+  const isStaff = session.user.role !== "attendee"
 
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
+    <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
       <PassionLogoHeader
         logoTone="dark"
         leftSlot={
@@ -31,7 +33,7 @@ export default async function CampDevotionPage() {
       <div className="mt-10">
         <p className="text-sm text-muted-foreground">靈修內容</p>
         <div className="mt-4">
-          <CampDevotionContent />
+          <CampDevotionContent isStaff={isStaff} />
         </div>
       </div>
     </main>

@@ -15,7 +15,7 @@ export default async function OpeningChooserPage() {
   const done = session.completedFlows
 
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center px-4 py-16 sm:px-6">
+    <main className="flex min-h-svh flex-col items-center justify-center px-[6%] py-16 sm:px-8">
       <div className="w-full max-w-sm">
         <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">你報名了兩個場次</h1>
         <p className="mt-3 text-sm text-muted-foreground">選擇要開始哪一個。</p>

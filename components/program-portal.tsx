@@ -18,7 +18,7 @@ export function ProgramPortal({ flow, program, session }: ProgramPortalProps) {
   const completed = session.completedFlows.includes(flow)
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
+    <main className="mx-auto max-w-2xl px-[6%] py-16 sm:px-8 sm:py-24">
       {isStaff && !enrolled && (
         <p className="mb-10 border-b border-border pb-4 text-sm text-muted-foreground">
           你以工作人員身分檢視這個頁面，你本人沒有報名這個場次。

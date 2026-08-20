@@ -24,7 +24,7 @@ export default async function CampProfilePage() {
   const heroName = session.campQuizResult?.heroName || session.user.name
 
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
+    <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
       <PassionLogoHeader
         logoTone="dark"
         leftSlot={

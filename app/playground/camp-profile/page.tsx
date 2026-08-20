@@ -8,7 +8,7 @@ import { HERO_AVATAR_PLACEHOLDER_URI } from "@/lib/hero-card-visuals"
 
 export default function CampProfilePlaygroundPage() {
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
+    <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
       <PassionLogoHeader
         leftSlot={
           <Button asChild size="icon-sm" variant="outline" aria-label="返回" className="rounded-full">

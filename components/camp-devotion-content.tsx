@@ -1,6 +1,6 @@
 "use client"
 
-import { useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { YouVersionProvider, BibleCard } from "@youversion/platform-react-ui"
 
 import { MeetingNotes } from "@/components/meeting-notes"
@@ -23,7 +23,39 @@ function dayTabLabel(day: string): string {
   return digit ? `DAY${digit}` : day
 }
 
-function DevotionEntryCard({ entry, passage }: { entry: DevotionEntry; passage: React.ReactNode }) {
+function DevotionEntryCard({
+  entry,
+  passage,
+  bypassGate,
+}: {
+  entry: DevotionEntry
+  passage: React.ReactNode
+  bypassGate: boolean
+}) {
+  const [revealed, setRevealed] = useState(bypassGate)
+
+  useEffect(() => {
+    if (bypassGate) return
+    // 公布時間是固定的未來時刻，伺服器跟瀏覽器 hydrate 那一刻幾乎不會剛好跨過
+    // 這個邊界，先一律 SSR 成「尚未公布」，掛載後才用瀏覽器當下時間判斷——
+    // 跟 squad-courage-card.tsx 的徽章判斷同一個考量。
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRevealed(Date.now() >= new Date(entry.revealISO).getTime())
+  }, [entry.revealISO, bypassGate])
+
+  if (!revealed) {
+    return (
+      <div className="flex min-h-[50vh] flex-col">
+        <p className="text-sm text-muted-foreground">{entry.day}</p>
+        <div className="flex flex-1 items-center justify-center">
+          <p className={`${genRyuMin.className} text-2xl`} style={{ transform: "skewX(-5deg)" }}>
+            尚未公布
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
@@ -69,7 +101,7 @@ function DevotionEntryCard({ entry, passage }: { entry: DevotionEntry; passage: 
   )
 }
 
-export function CampDevotionContent() {
+export function CampDevotionContent({ isStaff = false }: { isStaff?: boolean } = {}) {
   const [current, setCurrent] = useState(0)
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [indicator, setIndicator] = useState<{ left: number; width: number } | null>(null)
@@ -119,6 +151,7 @@ export function CampDevotionContent() {
         <div key={entry.reference} className={current === index ? undefined : "hidden"}>
           <DevotionEntryCard
             entry={entry}
+            bypassGate={isStaff}
             passage={
               APP_KEY ? (
                 <BibleCard

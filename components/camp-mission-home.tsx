@@ -88,7 +88,7 @@ export async function CampMissionHome({
   )
 
   return (
-    <main className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24">
+    <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
       <CampLiquidGlassFilter filterId="camp-liquid-glass-filter" />
       <PassionLogoHeader
         logoTone="dark"
