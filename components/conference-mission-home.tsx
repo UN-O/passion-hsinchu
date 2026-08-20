@@ -11,10 +11,10 @@ import { LocationPinIcon } from "@/components/location-pin-icon"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useDialogBackClose } from "@/hooks/use-dialog-back-close"
 import {
+  conferenceSessions,
   conferenceWorkshops,
+  getConferenceSession,
   getConferenceWorkshop,
-  getNextConferenceCountdownTarget,
-  getNextConferenceSession,
   getRegisteredWorkshopRounds,
   workshopDateLabel,
   workshopRoundLabels,
@@ -47,17 +47,14 @@ export function ConferenceMissionHome({
   // 報名通知要照場次顯示「已報名場次一」「已報名場次二」，不是單純顯示
   // 「已報名」，所以要知道具體報了哪幾場，不只是報名與否。
   const registeredRounds = activeWorkshop ? getRegisteredWorkshopRounds(activeWorkshop.id) : []
-  const [nextMeetingVisualOpen, setNextMeetingVisualOpen] = useState(false)
-  // 下一場還沒開始的聚會。場次資料是小時等級的固定時間表，不像倒數計時每秒都變，
-  // 伺服器算出來的跟瀏覽器 hydrate 那一刻幾乎不會跨到下一場，直接算不用另外處理
-  // hydration mismatch。
-  const nextSession = getNextConferenceSession()
-  // 倒數計時的對象比「下一場聚會」卡片更細，還要包含工作坊場次，所以另外算。
-  const nextCountdownTarget = getNextConferenceCountdownTarget()
+  // 三場聚會現在都各自顯示一個卡片＋倒數區塊（不是只挑「下一場」），所以彈窗
+  // 用場次 id 記住點的是哪一張卡片，跟上面 activeWorkshopId 同一個做法。
+  const [activeMeetingSessionId, setActiveMeetingSessionId] = useState<string | null>(null)
+  const activeMeetingSession = activeMeetingSessionId ? getConferenceSession(activeMeetingSessionId) : undefined
 
   // App 化之後，讓系統返回鍵／手勢可以先關掉彈窗，而不是直接離開頁面
   useDialogBackClose(activeWorkshop !== undefined, () => setActiveWorkshopId(null))
-  useDialogBackClose(nextMeetingVisualOpen, () => setNextMeetingVisualOpen(false))
+  useDialogBackClose(activeMeetingSession !== undefined, () => setActiveMeetingSessionId(null))
 
   return (
     <main className="relative z-0 min-h-svh bg-[#0458e2]">
@@ -164,61 +161,66 @@ export function ConferenceMissionHome({
             ))}
           </div>
 
-          {/* 下一場還沒開始的聚會（同一個 session 也是聚會流程表印的三場）。
-              左右邊跟工作坊那排卡片切齊（同一層 px 內距），不是貼齊螢幕邊緣。
-              視覺圖依場次換成 nextSession.image（還沒拿到真圖的場次先共用
-              佔位圖，見 lib/opening-conference-content.ts）；疊一層由下往上
-              的黑色漸層，確保文字在任何圖片上都維持可讀。底色拿掉改透明：
-              圖片還沒載入完成的瞬間會先看到這層底色，紅色跟頁面本身的藍色
-              背景反差太大，載入時會很明顯地閃一下紅色；透明的話載入中直接
-              透出頁面底色，比較不突兀。 */}
-          <Link
-            href={meetingHref}
-            className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
-          >
-            <Image
-              src={nextSession.image}
-              alt=""
-              fill
-              sizes="(min-width: 640px) 640px, 100vw"
-              className="object-cover"
-              style={{ objectPosition: "50% 30%" }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-            <p className="relative z-10 text-sm text-white/80">
-              {nextSession.dateLabel}・{nextSession.sessionLabel}
-            </p>
-            <p className="relative z-10 mt-2 text-2xl font-bold text-white">{nextSession.typeLabel}</p>
-          </Link>
+          {/* 三場聚會（同一批 session 也是聚會流程表印的三場）各自一組卡片＋
+              倒數區塊，不是只挑「下一場」顯示。左右邊跟工作坊那排卡片切齊
+              （同一層 px 內距），不是貼齊螢幕邊緣。視覺圖依場次換成
+              session.image（還沒拿到真圖的場次先共用佔位圖，見
+              lib/opening-conference-content.ts）；疊一層由下往上的黑色漸層，
+              確保文字在任何圖片上都維持可讀。底色拿掉改透明：圖片還沒載入
+              完成的瞬間會先看到這層底色，紅色跟頁面本身的藍色背景反差太大，
+              載入時會很明顯地閃一下紅色；透明的話載入中直接透出頁面底色，
+              比較不突兀。點卡片連去聚會內容頁對應的場次（?session=），點
+              倒數縮圖彈出這場的 16:9 大圖預覽。 */}
+          {conferenceSessions.map((session) => (
+            <div key={session.id}>
+              <Link
+                href={`${meetingHref}?session=${session.id}`}
+                className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
+              >
+                <Image
+                  src={session.image}
+                  alt=""
+                  fill
+                  sizes="(min-width: 640px) 640px, 100vw"
+                  className="object-cover"
+                  style={{ objectPosition: "50% 30%" }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                <p className="relative z-10 text-sm text-white/80">
+                  {session.dateLabel}・{session.sessionLabel}
+                </p>
+                <p className="relative z-10 mt-2 text-2xl font-bold text-white">{session.typeLabel}</p>
+              </Link>
 
-          <div className="mt-6 rounded-3xl bg-slate-300 p-6">
-            <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-black/70">
-              距離{nextCountdownTarget.label}開始，還剩...
-            </p>
+              <div className="mt-6 rounded-3xl bg-slate-300 p-6">
+                <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-black/70">
+                  距離{session.typeLabel}開始，還剩...
+                </p>
 
-            {/* 下場聚會視覺依場次換成 nextSession.image，點下去彈出 16:9
-                大圖預覽。倒數計時疊在照片下緣，底下加一層黑色漸層墊底，
-                讓霧化玻璃數字框在任何照片內容上都維持穩定的可讀度。 */}
-            <button
-              type="button"
-              onClick={() => setNextMeetingVisualOpen(true)}
-              aria-label="下場聚會視覺預覽"
-              className="relative mt-3 aspect-video w-full overflow-hidden rounded-2xl bg-white/70"
-            >
-              <Image
-                src={nextSession.image}
-                alt={`${nextSession.typeLabel}視覺`}
-                fill
-                sizes="(min-width: 640px) 640px, 100vw"
-                className="object-cover"
-                style={{ objectPosition: "50% 30%" }}
-              />
-              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/50 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
-                <ConferenceCountdown targetISO={nextCountdownTarget.startISO} />
+                {/* 倒數計時疊在照片下緣，底下加一層黑色漸層墊底，讓霧化玻璃
+                    數字框在任何照片內容上都維持穩定的可讀度。 */}
+                <button
+                  type="button"
+                  onClick={() => setActiveMeetingSessionId(session.id)}
+                  aria-label={`${session.typeLabel}視覺預覽`}
+                  className="relative mt-3 aspect-video w-full overflow-hidden rounded-2xl bg-white/70"
+                >
+                  <Image
+                    src={session.image}
+                    alt={`${session.typeLabel}視覺`}
+                    fill
+                    sizes="(min-width: 640px) 640px, 100vw"
+                    className="object-cover"
+                    style={{ objectPosition: "50% 30%" }}
+                  />
+                  <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
+                    <ConferenceCountdown targetISO={session.startISO} />
+                  </div>
+                </button>
               </div>
-            </button>
-          </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -292,28 +294,34 @@ export function ConferenceMissionHome({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={nextMeetingVisualOpen} onOpenChange={setNextMeetingVisualOpen}>
+      <Dialog
+        open={activeMeetingSession !== undefined}
+        onOpenChange={(next) => !next && setActiveMeetingSessionId(null)}
+      >
         <DialogContent
           showCloseButton={false}
           className="flex max-w-[calc(100%-2rem)] flex-col gap-0 rounded-3xl border-none bg-card p-0 sm:max-w-md"
         >
-          <DialogTitle className="sr-only">下場聚會視覺</DialogTitle>
+          <DialogTitle className="sr-only">{activeMeetingSession?.typeLabel}視覺</DialogTitle>
           <DialogClose className="absolute top-4 right-4 z-10 text-white/80 hover:text-white">
             <X className="size-5" />
             <span className="sr-only">關閉</span>
           </DialogClose>
 
-          {/* 下場聚會視覺依場次換成 nextSession.image。overflow-hidden 放在
-              這裡裁圖片圓角，外層 DialogContent 保留可捲動。 */}
+          {/* 聚會視覺依點的是哪張卡片換成 activeMeetingSession.image。
+              overflow-hidden 放在這裡裁圖片圓角，外層 DialogContent 保留
+              可捲動。 */}
           <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-t-3xl">
-            <Image
-              src={nextSession.image}
-              alt={`${nextSession.typeLabel}視覺`}
-              fill
-              sizes="(min-width: 640px) 448px, 100vw"
-              className="object-cover"
-              style={{ objectPosition: "50% 30%" }}
-            />
+            {activeMeetingSession && (
+              <Image
+                src={activeMeetingSession.image}
+                alt={`${activeMeetingSession.typeLabel}視覺`}
+                fill
+                sizes="(min-width: 640px) 448px, 100vw"
+                className="object-cover"
+                style={{ objectPosition: "50% 30%" }}
+              />
+            )}
           </div>
 
           {/* 圖片下面放聚會資訊，跟工作坊彈窗同樣的排版方式 */}
@@ -322,15 +330,15 @@ export function ConferenceMissionHome({
               <LocationPinIcon className="size-4" />
               {siteConfig.venueShortName}
             </span>
-            <p className="text-xl font-bold">{nextSession.typeLabel}</p>
+            <p className="text-xl font-bold">{activeMeetingSession?.typeLabel}</p>
             <p className="text-base">
-              {nextSession.dateLabel}・{nextSession.sessionLabel}
+              {activeMeetingSession?.dateLabel}・{activeMeetingSession?.sessionLabel}
             </p>
             <p className="text-sm text-muted-foreground">
-              {nextSession.doorsOpenTime} 開放入場
+              {activeMeetingSession?.doorsOpenTime} 開放入場
               <span className="hidden sm:inline">・</span>
               <br className="sm:hidden" />
-              {nextSession.startTime} 聚會開始
+              {activeMeetingSession?.startTime} 聚會開始
             </p>
           </div>
         </DialogContent>
