@@ -17,8 +17,11 @@ function OnboardingContent() {
   const workshop = conferenceWorkshops[index]
   const isLast = index === conferenceWorkshops.length - 1
 
+  // min-h-full（不是 h-full）：避免長主題文字換行變多行時，justify-center
+  // 讓溢出的內容往上超出捲動容器可視範圍最上緣（見 conference-welcome-step.tsx
+  // 的完整說明），看起來像文字被切掉。
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-6 px-6 text-center">
+    <div className="flex min-h-full flex-col items-center justify-center gap-6 px-6 py-8 text-center">
       <p className="text-sm tracking-[0.2em] text-white/60">
         {index + 1} / {conferenceWorkshops.length}
       </p>

@@ -12,8 +12,13 @@ import { conferenceStepFromPath, type ConferenceStep } from "@/lib/opening-steps
 function WelcomeContent() {
   const advance = useOpeningStepAdvance("/opening/conference/heart-select")
 
+  // min-h-full（不是 h-full）：文字換行變多行時，容器可以長高裝下內容，
+  // justify-center 才會在「有多餘空間」時才置中；用 h-full 固定死高度的話，
+  // 超出的內容因為 justify-center 會上下對稱溢出，上半段超出可視範圍最上緣
+  // （ImmersiveScreen 外層的捲動容器預設從最上面開始看，不會主動往上捲），
+  // 使用者看起來就像文字最上面被切掉了。
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-8 px-6 text-center">
+    <div className="flex min-h-full flex-col items-center justify-center gap-8 px-6 py-8 text-center">
       <div>
         <p className="text-sm tracking-[0.2em] text-white/60">旅程的開始</p>
         <h1 className="font-heading mt-3 text-3xl font-bold sm:text-4xl">歡迎來到 PASSION 系統</h1>

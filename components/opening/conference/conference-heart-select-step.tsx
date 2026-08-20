@@ -22,8 +22,10 @@ function HeartSelectContent() {
     navigate("/opening/conference/verse-and-prayer")
   }
 
+  // min-h-full（不是 h-full）：標題換行變兩行時容器可以長高，不會把下面的
+  // 選項清單／按鈕硬擠出可視範圍（見 conference-welcome-step.tsx 的完整說明）。
   return (
-    <div className="flex h-full flex-col gap-6 px-6 py-8 text-center">
+    <div className="flex min-h-full flex-col gap-6 px-6 py-8 text-center">
       <h2 className="font-heading text-2xl font-bold sm:text-3xl">什麼事情，是你最需要勇氣去面對的？</h2>
 
       <div className="min-h-0 flex-1">

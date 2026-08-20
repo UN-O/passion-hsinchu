@@ -35,8 +35,13 @@ function VersePrayerContent({
   const label = isVersePage ? "經文" : "這是我們給你的禱告"
   const bodyText = isVersePage ? content.verse : prayerText
 
+  // min-h-full（不是 h-full）：經文／禱告文字通常比較長，換行變多行時
+  // justify-center 溢出的部分不會被藏到捲動容器最上緣（見
+  // conference-welcome-step.tsx 的完整說明）。原本這裡自己另外加了一層
+  // overflow-y-auto，其實是同一個問題硬用捲動蓋過去，現在容器會直接長高，
+  // 交給 ImmersiveScreen 外層那個既有的捲動容器處理就好，不用疊兩層。
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-8 overflow-y-auto px-6 py-10 text-center">
+    <div className="flex min-h-full flex-col items-center justify-center gap-8 px-6 py-10 text-center">
       <p className="text-sm tracking-[0.2em] text-white/60">{label}</p>
       <p className="max-w-md text-xl leading-loose sm:text-2xl">{bodyText}</p>
       {isVersePage && <p className="text-base text-white/70">（{content.verseRef}）</p>}
