@@ -17,20 +17,19 @@ export async function DiscussionRoot({
   rootKey: string
   session: AppSession
   // root 自己的顯示內容（大綱文字、靈修導言＋經文）跟討論串放在同一塊
-  // 深色面板裡，不是頁面本身淺色主題底下的另一段——呼叫端把這塊內容當
-  // header 傳進來，而不是自己在外面另外包一層（見 CAMP 逐場聚會頁／靈修頁）。
+  // 區塊裡，不是頁面本身另外一段——呼叫端把這塊內容當 header 傳進來，
+  // 而不是自己在外面另外包一層（見 CAMP 逐場聚會頁／靈修頁）。
   header?: ReactNode
 }) {
   const root = await getOrCreateDiscussionRoot(rootKey)
   const initial = await getDiscussionPage({ rootPostId: root.id, viewerId: session.user.id, sort: "top" })
 
-  // 討論串一律深色主題，不管外層頁面是 CAMP 的淺黃 camp-theme 還是
-  // CONFERENCE 的預設深色——用 globals.css 既有的 .dark 覆寫同一套語意化
-  // token（bg-background、text-foreground...），不用元件各自改色。水平
-  // padding 刻意比外層頁面窄（px-4 而非 p-6）：外層 <main> 本身已經有
-  // px-[6%]/px-8，兩層 padding 疊起來在手機上會把內容擠得太窄。
+  // 顏色跟著外層頁面的主題走（CAMP 的淺黃 camp-theme／CONFERENCE 的深色），
+  // 不強制切成深色。不用圓角、不加水平 margin/padding——不希望討論串跟
+  // 外層 <main> 的其他區塊之間有縮排，看起來要像是同一個版面自然往下接，
+  // 不是另外框出來的一塊。
   return (
-    <div className="dark flex flex-col gap-6 rounded-3xl bg-background px-4 py-6 text-foreground sm:px-5">
+    <div className="flex flex-col gap-6 bg-background py-6 text-foreground">
       {header}
       <DiscussionView
         rootKey={rootKey}

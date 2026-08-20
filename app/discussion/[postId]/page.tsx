@@ -74,10 +74,10 @@ export default async function DiscussionThreadPage({ params }: { params: Promise
           </Link>
         )}
 
-        {/* 討論串一律深色主題，跟 DiscussionRoot 自己包的那層同一套 class
-            （這裡沒有經過 DiscussionRoot，是 DiscussionThread 直接掛在頁面
-            上，所以外層自己包一次）。 */}
-        <div className="dark rounded-3xl bg-background px-4 py-6 text-foreground sm:px-5">
+        {/* 顏色跟著頁面主題走、不加圓角／水平 padding，跟 DiscussionRoot
+            自己包的那層同一套 class（這裡沒有經過 DiscussionRoot，是
+            DiscussionThread 直接掛在頁面上，所以外層自己包一次）。 */}
+        <div className="flex flex-col bg-background py-6 text-foreground">
           <DiscussionThread
             ancestors={ancestors}
             focus={focus}
