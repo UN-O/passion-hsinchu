@@ -191,6 +191,9 @@ export type ConferenceWorkshop = {
   // 彈窗裡「工作坊資訊欄」上方的頭圖，跟上面卡片用的 image 是不同兩張圖。
   // 使用者說之後會另外上傳，先留 undefined，畫面上用色塊佔位。
   infoImage?: string
+  // 開場引導流程「工作坊介紹」那一頁用的去背人像圖，取代原本的講員／主題
+  // 文字介紹。跟 image（卡片縮圖）、infoImage（彈窗頭圖）又是不同的第三張圖。
+  introImage: string
 }
 
 export const conferenceWorkshops: ConferenceWorkshop[] = [
@@ -201,6 +204,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1"],
     image: "/images/conference-workshop-a.png",
+    introImage: "/images/conference-workshop-intro-a.png",
   },
   {
     id: "workshop-b",
@@ -209,6 +213,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-b.png",
+    introImage: "/images/conference-workshop-intro-b.png",
   },
   {
     id: "workshop-c",
@@ -217,6 +222,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-c.png",
+    introImage: "/images/conference-workshop-intro-c.png",
   },
   {
     id: "workshop-d",
@@ -225,6 +231,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-d.png",
+    introImage: "/images/conference-workshop-intro-d.png",
   },
 ]
 

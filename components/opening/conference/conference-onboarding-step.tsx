@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
 import { Button } from "@/components/ui/button"
@@ -17,18 +18,24 @@ function OnboardingContent() {
   const workshop = conferenceWorkshops[index]
   const isLast = index === conferenceWorkshops.length - 1
 
-  // min-h-full（不是 h-full）：避免長主題文字換行變多行時，justify-center
-  // 讓溢出的內容往上超出捲動容器可視範圍最上緣（見 conference-welcome-step.tsx
-  // 的完整說明），看起來像文字被切掉。
+  // min-h-full（不是 h-full）：見 conference-welcome-step.tsx 的完整說明。
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-6 px-6 py-8 text-center">
       <p className="text-sm tracking-[0.2em] text-white/60">
         {index + 1} / {conferenceWorkshops.length}
       </p>
-      <h2 className="font-heading w-full text-2xl font-bold sm:text-3xl">
-        {workshop.topic || workshop.speaker}
-      </h2>
-      {workshop.topic && <p className="max-w-sm text-white/80">{workshop.speaker}</p>}
+      {/* 講員／主題文字改成去背人像圖，寬度跟著螢幕縮放（w-full 頂到 max-w-xs
+          就不再放大），高度用 aspect-[4/5] 跟著寬度等比例算，不同尺寸的手機
+          或平板都能完整顯示、不會裁切變形。 */}
+      <div className="relative aspect-[4/5] w-full max-w-xs">
+        <Image
+          src={workshop.introImage}
+          alt={workshop.topic || workshop.speaker}
+          fill
+          sizes="(min-width: 640px) 320px, 70vw"
+          className="object-contain"
+        />
+      </div>
       {isLast ? (
         <form action={completeOpening}>
           <input type="hidden" name="flow" value="conference" />
