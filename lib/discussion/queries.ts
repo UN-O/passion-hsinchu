@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, isNull, ne, notInArray, sql, type SQL } from "drizzle-orm"
-import type { AnyPgColumn } from "drizzle-orm/pg-core"
+import { alias, type AnyPgColumn } from "drizzle-orm/pg-core"
 
 import { db } from "@/db"
 import { user } from "@/db/schema/auth"
@@ -471,6 +471,46 @@ export async function getAncestorChain(postId: string, viewerId: string | null):
   const ordered = orderedIds.map((id) => byId.get(id)).filter((r): r is CandidateRow => !!r)
 
   return enrichRows(ordered, viewerId, new Set(), { withFeaturedChild: false })
+}
+
+// 一則貼文屬於哪個討論 root。/discussion/[postId] 是通用路由，網址上只有
+// post id，沒有任何活動資訊——要判斷「這個人有沒有資格看這則貼文」只能先
+// 從貼文反查它的 root，再由 root_key 對應回 flow。這支查詢刻意只回傳
+// 權限判斷需要的欄位，不吐任何貼文內容。
+export type DiscussionPostContext = {
+  postId: string
+  rootPostId: string
+  rootKey: string | null
+  isRoot: boolean
+}
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export async function getPostContext(postId: string): Promise<DiscussionPostContext | null> {
+  // post id 直接來自網址。非 UUID 的字串丟給 Postgres 的 uuid 欄位會噴
+  // invalid input syntax 例外（變成 500 而不是 404），先自己擋掉。
+  if (!UUID_PATTERN.test(postId)) return null
+
+  const rootPost = alias(posts, "root_post")
+  const [row] = await db
+    .select({
+      postId: posts.id,
+      rootPostId: posts.rootPostId,
+      rootKey: rootPost.rootKey,
+      deletedAt: posts.deletedAt,
+    })
+    .from(posts)
+    .innerJoin(rootPost, eq(rootPost.id, posts.rootPostId))
+    .where(eq(posts.id, postId))
+    .limit(1)
+
+  if (!row) return null
+  return {
+    postId: row.postId,
+    rootPostId: row.rootPostId,
+    rootKey: row.rootKey,
+    isRoot: row.postId === row.rootPostId,
+  }
 }
 
 // --- 小工具：keyset pagination 的比較條件、IN/NOT IN ---

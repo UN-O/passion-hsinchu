@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
+import Link from "next/link"
 import { ChevronDown, Heart, MessageCircle, Pin, PinOff, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -17,10 +18,11 @@ export type PostRowController = {
   onPin: (postId: string) => void
   onUnpin: (postId: string) => void
   onDelete: (postId: string) => void
-  onLoadMoreChildren: (postId: string, excludeId?: string) => void
+  // 展開這則底下的主幹。沒有游標參數：主幹查詢就是從這個節點順著
+  // best_direct_child 指標往下走，鏈太長時由鏈尾那則自己再展開一段。
+  onLoadMoreChildren: (postId: string) => void
   childLoading: (postId: string) => boolean
   childHasLoaded: (postId: string) => boolean
-  childHasMore: (postId: string) => boolean
   renderChildren: (postId: string, depth: number) => ReactNode
   // 只有 root 的 direct reply（depth 0）才能被 pin（見規格第 12 點）。
   canPin: (item: DiscussionItem, depth: number) => boolean
@@ -35,6 +37,16 @@ const LINE_WIDTH = 2 // 所有連接線統一這個粗細，不會有粗細不�
 // 巢狀區塊的縮排：對齊第一層的內文起點（頭貼右緣 + 間距），這樣巢狀頭貼
 // 的中心剛好落在上一層「愛心」那排 icon 的區域，視覺上對得起來。
 const NEST_INDENT = AVATAR_TOP + RAIL_GAP
+
+// 這份版面的三條規則（仿 Threads，實際截圖歸納出來的）：
+//
+//   1. 真實的回覆樹可以無限深，但縮排只做一層。第一層回覆縮排一次，再深的
+//      全部拉平到同一個 x——不然一條長討論串滑到後面內文只剩兩三個字寬。
+//   2. 垂直線代表「有回覆關係」。從第一層鑽進縮排時轉一次彎（曲線只出現
+//      這一次），進到拉平區之後同一條鏈往下都是直線。
+//   3. 水平分隔線代表「彼此不隸屬」。平行的兄弟回覆之間畫水平線，而且刻意
+//      不畫垂直線——垂直線在這套語言裡只有「隸屬」一個意思，兩種線同時出現
+//      會讓人分不清楚誰回覆誰。
 
 const absoluteTimeFormatter = new Intl.DateTimeFormat("zh-TW", {
   timeZone: "Asia/Taipei",
@@ -149,17 +161,30 @@ function EntryBody({
               {stats.likeCount > 0 && <span className="text-xs">{stats.likeCount}</span>}
             </button>
 
-            {depth < 6 && (
-              <button
-                type="button"
-                onClick={() => controller.onOpenComposer(entry)}
-                aria-label="回覆"
-                className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
-              >
-                <MessageCircle className="size-[18px]" strokeWidth={1.75} />
-                {stats.directReplyCount > 0 && <span className="text-xs">{stats.directReplyCount}</span>}
-              </button>
-            )}
+            {/* icon 開回覆框、數字連到這則的討論串頁（規則 5）。刻意分成兩個
+                觸控目標：同一顆按鈕不能既是「我要回覆」又是「我要看別人的
+                回覆」，那是兩件事。 */}
+            <div className="flex items-center gap-1.5">
+              {depth < 6 && (
+                <button
+                  type="button"
+                  onClick={() => controller.onOpenComposer(entry)}
+                  aria-label="回覆"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <MessageCircle className="size-[18px]" strokeWidth={1.75} />
+                </button>
+              )}
+              {stats.directReplyCount > 0 && (
+                <Link
+                  href={`/discussion/${post.id}`}
+                  aria-label={`查看這則的 ${stats.directReplyCount} 則回覆`}
+                  className="-mx-1 px-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {stats.directReplyCount}
+                </Link>
+              )}
+            </div>
 
             {canPin &&
               (post.isPinned ? (
@@ -199,13 +224,12 @@ function EntryBody({
   )
 }
 
-function ShowMoreButton({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
+function ShowMoreButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
-      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
     >
       <ChevronDown className="size-4" strokeWidth={1.75} />
       {label}
@@ -222,8 +246,9 @@ export function PostRow({
   item: DiscussionItem
   controller: PostRowController
   depth?: number
-  // 在展開的回覆串裡，後面還有兄弟節點的話要繼續往下畫線，這樣一整串
-  // 才會像圖三那樣連在一起，而不是每則各自斷開。
+  // 在展開的主幹裡，後面還接著下一節的話要繼續往下畫線，一整條鏈才會連在
+  // 一起，而不是每則各自斷開。注意這裡的「sibling」是渲染上的下一則，在
+  // 主幹裡它其實是這一則的子節點——所以畫垂直線是對的（規則 2）。
   hasFollowingSibling?: boolean
 }) {
   const [showChildren, setShowChildren] = useState(false)
@@ -231,22 +256,30 @@ export function PostRow({
   const avatarSize = depth === 0 ? AVATAR_TOP : AVATAR_NESTED
   const railCenter = avatarSize / 2
 
+  // 規則 1：縮排只在 depth 0 → 1 發生一次。depth ≥ 1 的子孫全部拉平，
+  // 沿用上一層已經套過的 NEST_INDENT，自己不再往右加。
+  const isFlattened = depth >= 1
+
   const hasFeatured = !!item.featuredChild
   const remainingCount = item.hiddenReplyCount
-  // 展開之後子回覆是完整清單，精選那則已經在裡面（getMoreReplies 有排除，
-  // 見 queries.ts），不需要再單獨預覽一次。
+  // 展開之後顯示的是往下的主幹，主幹的第一節就是原本預覽的那則精選回覆
+  // （兩邊都走 best_direct_child／reply_score 這條指標），不需要再預覽一次。
   const showFeatured = !showChildren && hasFeatured
   const showCollapsedMore = !showChildren && remainingCount > 0
 
   function handleExpand() {
     setShowChildren(true)
-    if (!controller.childHasLoaded(item.post.id)) controller.onLoadMoreChildren(item.post.id, item.featuredChild?.post.id)
+    if (!controller.childHasLoaded(item.post.id)) controller.onLoadMoreChildren(item.post.id)
   }
 
-  // 曲線：從自己的 rail 中心往下、轉彎接到巢狀頭貼的中心。起訖點都是從上面
-  // 的常數推出來的。stroke 有寬度，所以左右各留半個線寬避免被裁掉。
+  // 曲線：從自己的 rail 中心往下、轉彎過去接巢狀頭貼。
+  //
+  // 水平段停在巢狀頭貼的**左緣**（NEST_INDENT），跟頭貼相切而不是穿進去。
+  // 早期版本把終點算在頭貼中心（+ AVATAR_NESTED / 2），線會壓過圓形頭貼的
+  // 左半邊；「終點落在頭貼正中心」是錯的驗收標準，正確的是「svg 的右緣 ≈
+  // 頭貼的左緣」。
   const half = LINE_WIDTH / 2
-  const curveEndX = NEST_INDENT + AVATAR_NESTED / 2 - railCenter
+  const curveEndX = NEST_INDENT - railCenter
   const curveHeight = 12 + AVATAR_NESTED / 2 // pt-3 的 12px + 巢狀頭貼半徑
   const corner = 12 // 轉角半徑
 
@@ -269,6 +302,26 @@ export function PostRow({
     )
   }
 
+  // 包住底下那一段的容器。這不是 React component（不能是，不然每次 render
+  // 都會產生新的 component type，底下每一則 PostRow 的展開狀態會被重置），
+  // 只是個回傳 JSX 的小工廠。
+  //
+  //   - depth 0：往右縮排一次，並用曲線把自己的 rail 轉彎接到巢狀頭貼左緣。
+  //   - depth ≥ 1：不縮排、不轉彎，連上面的間距都不留——自己的 rail
+  //     （EntryBody 的 pb-3 撐出來的那段）一路長到這個容器的頂端，下一則
+  //     的頭貼緊接著開始，垂直線才會是連續的一條直線（規則 2）。
+  function nestedBlock(children: ReactNode) {
+    if (isFlattened) return <div className="flex flex-col">{children}</div>
+    return (
+      <div className="relative pt-3" style={{ paddingLeft: NEST_INDENT }}>
+        {renderCurve()}
+        {/* 不留 gap：每則的線靠自己的 pb-3 一路長到底，下一則緊接著開始，
+            線才會連續。 */}
+        <div className="flex flex-col">{children}</div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col">
       <EntryBody
@@ -280,41 +333,75 @@ export function PostRow({
         avatarSize={avatarSize}
       />
 
-      {/* 收合：預覽一則精選回覆，用曲線從上面的 rail 接過來 */}
-      {showFeatured && item.featuredChild && (
-        <div className="relative pt-3" style={{ paddingLeft: NEST_INDENT }}>
-          {renderCurve()}
+      {/* 收合：預覽主幹的第一節 */}
+      {showFeatured &&
+        item.featuredChild &&
+        nestedBlock(
           <EntryBody entry={item.featuredChild} controller={controller} depth={depth + 1} avatarSize={AVATAR_NESTED} />
-        </div>
-      )}
+        )}
 
-      {/* 收合狀態的「查看更多」：貼齊連接線正下方。有精選回覆時線已經轉彎到
-          巢狀縮排，就跟著縮排；沒有的話還在第一層的 rail 上，對齊 rail 中心。 */}
+      {/* 收合狀態的「查看更多」：貼齊連接線正下方。只有在 depth 0 且已經有
+          精選回覆時，線才轉彎到巢狀縮排，按鈕跟著縮排；其他情況線還是直的
+          停在 rail 上，就對齊 rail 中心。 */}
       {showCollapsedMore && (
-        <div className="pt-2" style={{ paddingLeft: showFeatured ? NEST_INDENT : railCenter }}>
+        <div className="pt-2" style={{ paddingLeft: showFeatured && !isFlattened ? NEST_INDENT : railCenter }}>
           <ShowMoreButton label={`查看更多（${remainingCount}）`} onClick={handleExpand} />
         </div>
       )}
 
-      {/* 展開：子回覆是一條連續的串，全部同一個縮排、線接在一起；
-          「載入更多」也在轉彎後的右邊，跟收合狀態那顆刻意不同位置。 */}
-      {showChildren && (
-        <div className="relative pt-3" style={{ paddingLeft: NEST_INDENT }}>
-          {renderCurve()}
-          {/* 不留 gap：每則的線靠自己的 pb-3 一路長到底，下一則緊接著開始，
-              線才會連續。 */}
-          <div className="flex flex-col">
+      {/* 展開：往下的主幹是一條連續的鏈，全部同一個 x、線接在一起。
+          鏈的尾巴如果底下還有回覆，它自己就會長出一顆「查看更多」繼續往下
+          接——所以這裡不需要再放一顆 parent 層級的「載入更多」，那會變成
+          兩顆按鈕做同一件事。 */}
+      {showChildren &&
+        nestedBlock(
+          <>
             {controller.renderChildren(item.post.id, depth + 1)}
-            {controller.childHasMore(item.post.id) && (
-              <ShowMoreButton
-                label="載入更多"
-                disabled={controller.childLoading(item.post.id)}
-                onClick={() => controller.onLoadMoreChildren(item.post.id, item.featuredChild?.post.id)}
-              />
-            )}
-          </div>
+            {controller.childLoading(item.post.id) && <p className="text-xs text-muted-foreground">載入中…</p>}
+          </>
+        )}
+    </div>
+  )
+}
+
+// 把一條主幹畫成連續的一串。傳進來的每一則都是前一則的最佳子節點
+// （getReplyChain 的定義），所以相鄰兩則之間畫的是代表「隸屬」的垂直線。
+export function renderChain(chain: DiscussionItem[], depth: number, controller: PostRowController): ReactNode {
+  return chain.map((child, index) => {
+    const isLast = index === chain.length - 1
+    return (
+      <PostRow
+        key={child.post.id}
+        // 不是鏈尾的那幾則，它底下那一則就是自己的其中一個子回覆、已經顯示
+        // 在畫面上了，「還沒展開的回覆數」要扣掉那一則。不扣的話每一節都會
+        // 多長一顆「查看更多（1）」出來，把本來該連續的垂直線切斷。
+        item={isLast ? child : { ...child, hiddenReplyCount: Math.max(0, child.hiddenReplyCount - 1) }}
+        controller={controller}
+        depth={depth}
+        hasFollowingSibling={!isLast}
+      />
+    )
+  })
+}
+
+// 規則 3：平行的兄弟回覆之間用水平分隔線區隔，而且不畫垂直線。用在
+// root 的直接回覆列表、以及討論串頁裡焦點貼文的直接子回覆。
+export function SiblingList<T>({
+  items,
+  getKey,
+  render,
+}: {
+  items: T[]
+  getKey: (item: T) => string
+  render: (item: T, index: number) => ReactNode
+}) {
+  return (
+    <div className="flex flex-col">
+      {items.map((item, index) => (
+        <div key={getKey(item)} className={cn("pb-5", index > 0 && "border-t border-border pt-5")}>
+          {render(item, index)}
         </div>
-      )}
+      ))}
     </div>
   )
 }

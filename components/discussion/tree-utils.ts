@@ -1,4 +1,46 @@
-import type { DiscussionEntry, DiscussionItem } from "@/lib/discussion/dto"
+import type { DiscussionEntry, DiscussionItem, UserRole } from "@/lib/discussion/dto"
+
+export type ViewerInfo = {
+  id: string
+  name: string
+  role: UserRole
+}
+
+// 送出回覆時先放進畫面的暫時項目（樂觀更新）。server action 回來之後會被
+// 真正的那筆取代。討論串頁跟討論主頁共用同一份，兩邊的樂觀更新才會長一樣。
+export function buildPendingItem(
+  tempId: string,
+  content: string,
+  author: ViewerInfo,
+  poll?: { allowMultiple: boolean; options: string[] }
+): DiscussionItem {
+  const now = new Date().toISOString()
+  return {
+    post: {
+      id: tempId,
+      authorId: author.id,
+      authorName: author.name,
+      authorRole: author.role,
+      content,
+      createdAt: now,
+      updatedAt: now,
+      isDeleted: false,
+      isPinned: false,
+    },
+    stats: { likeCount: 0, directReplyCount: 0 },
+    viewer: { hasLiked: false },
+    hiddenReplyCount: 0,
+    poll: poll
+      ? {
+          postId: tempId,
+          allowMultiple: poll.allowMultiple,
+          closed: false,
+          options: poll.options.map((label, i) => ({ id: `${tempId}-${i}`, label, voteCount: 0 })),
+          viewerOptionIds: [],
+        }
+      : undefined,
+  }
+}
 
 // 這個檔案只做「在本地 state 樹裡找到某個 post 並套用 patch」，不碰網路。
 // mutation 完成後永遠是 local patch，不是整包 DiscussionResponse 替換掉

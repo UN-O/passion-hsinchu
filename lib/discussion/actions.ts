@@ -2,9 +2,10 @@
 
 import { unstable_rethrow } from "next/navigation"
 
-import { requireClaimedSession } from "@/lib/session"
+import { assertFlowAccess, requireClaimedSession, type AppSession } from "@/lib/session"
 import type { DiscussionResponse, DiscussionItem, MoreRepliesResponse, PollDTO } from "./dto"
-import { getDiscussionPage, getMoreReplies, type SortMode } from "./queries"
+import { getDiscussionPage, getMoreReplies, getPostContext, getReplyChain, type SortMode } from "./queries"
+import { flowForRootKey } from "./root-registry"
 import {
   createReply,
   editReply,
@@ -43,6 +44,21 @@ function toResult<T>(promise: Promise<T>): Promise<ActionResult<T>> {
     })
 }
 
+// 用 post id 指定要讀哪一段討論的端點，除了 session 之外還要確認呼叫者有
+// 資格看那則貼文所屬的活動。
+//
+// loadDiscussion 走的是 rootKey，rootKey 只能是註冊表裡的白名單，呼叫端頁面
+// 已經被 requireFlowAccess 擋過；但吃 post id 的端點沒有這層保護——只擋
+// requireClaimedSession() 的話，只報名 CONFERENCE 的人拿到一個 CAMP 的
+// post id 就能把整串討論讀出來（見 CLAUDE.md：API 本身沒擋就等於沒擋）。
+async function requirePostFlowAccess(session: AppSession, postId: string): Promise<void> {
+  const context = await getPostContext(postId)
+  const flow = context ? flowForRootKey(context.rootKey) : null
+  // 查不到、或 root_key 沒註冊過，一律當成不存在，不可以 fallback 成放行。
+  if (!flow) throw new DiscussionError("找不到這則討論")
+  assertFlowAccess(session, flow)
+}
+
 export async function loadDiscussion(
   rootKey: string,
   sort: SortMode,
@@ -66,7 +82,39 @@ export async function loadMoreReplies(
   return toResult(
     (async () => {
       const session = await requireClaimedSession()
+      await requirePostFlowAccess(session, parentPostId)
       return getMoreReplies({ parentPostId, viewerId: session.user.id, cursor, excludePostId })
+    })()
+  )
+}
+
+// 展開某則貼文底下的「主幹」（規則 4：展開只顯示一條往下的鏈，不是攤開
+// 整層子回覆）。要再往下接的時候，呼叫端把鏈尾那則的 id 當 parentPostId
+// 再叫一次就好——查詢本身沒有游標，因為它每次都只走 best_direct_child_id
+// 這條 O(K) 的指標鏈。
+export async function loadReplyChain(parentPostId: string): Promise<ActionResult<DiscussionItem[]>> {
+  return toResult(
+    (async () => {
+      const session = await requireClaimedSession()
+      await requirePostFlowAccess(session, parentPostId)
+      return getReplyChain(parentPostId, session.user.id)
+    })()
+  )
+}
+
+// 討論串頁（/discussion/[postId]）的直接子回覆，支援熱門／最新排序與分頁。
+// getDiscussionPage 的 rootPostId 參數實際上就是「要列出誰底下的直接子回覆」，
+// 對一般貼文一樣成立——置頂只有 root 會有，非 root 查出來本來就是空的。
+export async function loadThreadReplies(
+  parentPostId: string,
+  sort: SortMode,
+  cursor?: string | null
+): Promise<ActionResult<DiscussionResponse>> {
+  return toResult(
+    (async () => {
+      const session = await requireClaimedSession()
+      await requirePostFlowAccess(session, parentPostId)
+      return getDiscussionPage({ rootPostId: parentPostId, viewerId: session.user.id, sort, cursor })
     })()
   )
 }

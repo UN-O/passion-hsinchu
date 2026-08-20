@@ -126,16 +126,16 @@ export async function requireClaimedSession(): Promise<AppSession> {
   return session
 }
 
-// opening flow 的閘門。放在 layout 裡而不是 proxy.ts：
-// proxy 只做 cookie 存在性的樂觀導向，不是安全邊界。
-export async function requireFlowAccess(flow: Flow): Promise<AppSession> {
-  const session = await requireClaimedSession()
-
+// 「這個已經認領過的 session 能不能看這個 flow」的唯一判斷邏輯。
+// 抽出來是因為有些頁面（例如 /discussion/[postId]）要先讀資料庫才知道該用
+// 哪個 flow 擋，這時已經拿過 session 了，不該為了套規則再抓一次 session。
+// 規則本身只有這一份，兩個入口不會走偏。
+export function assertFlowAccess(session: AppSession, flow: Flow): void {
   // 工作人員兩邊都能看（首頁的「查看 CAMP／Conference 頁面」），不需要自己報名。
   // 一樣要求 verified，否則 CAMP 那條無驗證的路就能繞進來。
   if (session.user.role !== "attendee") {
     if (!session.isVerified) redirect("/signin?need=google")
-    return session
+    return
   }
 
   const enrolled = flow === "camp" ? session.enrollment?.camp : session.enrollment?.conference
@@ -143,7 +143,13 @@ export async function requireFlowAccess(flow: Flow): Promise<AppSession> {
 
   // CONFERENCE 需要證明過 Google 帳號所有權；CAMP 不需要
   if (flow === "conference" && !session.isVerified) redirect("/signin?need=google")
+}
 
+// opening flow 的閘門。放在 layout 裡而不是 proxy.ts：
+// proxy 只做 cookie 存在性的樂觀導向，不是安全邊界。
+export async function requireFlowAccess(flow: Flow): Promise<AppSession> {
+  const session = await requireClaimedSession()
+  assertFlowAccess(session, flow)
   return session
 }
 
