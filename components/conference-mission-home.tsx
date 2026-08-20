@@ -53,14 +53,16 @@ export function ConferenceMissionHome({
           className="sticky top-0 z-20 bg-[#0458e2] px-4 pb-4 sm:px-6"
           style={{ paddingTop: "calc(env(safe-area-inset-top) + 1rem)" }}
         >
-          <Image
-            src="/images/conference-hero-wordmark.png"
-            alt="THE COURAGE GENERATIONS 勇者世代"
-            width={2000}
-            height={302}
-            priority
-            className="h-auto w-full"
-          />
+          <Link href="https://www.passion-hsinchu.com/" target="_blank" rel="noopener noreferrer">
+            <Image
+              src="/images/conference-hero-wordmark.png"
+              alt="THE COURAGE GENERATIONS 勇者世代"
+              width={2000}
+              height={302}
+              priority
+              className="h-auto w-full"
+            />
+          </Link>
         </div>
 
         <div className="px-4 pt-6 sm:px-6">
