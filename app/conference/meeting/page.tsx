@@ -40,7 +40,9 @@ export default async function ConferenceMeetingPage() {
             {siteConfig.venueShortName}
           </span>
           <p className="mt-1 text-2xl font-bold">
-            {nextSession.dateLabel}・{nextSession.sessionLabel}・{nextSession.typeLabel}
+            {nextSession.dateLabel}・{nextSession.sessionLabel}・
+            <br />
+            {nextSession.typeLabel}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             {nextSession.doorsOpenTime} 開放入場・{nextSession.startTime} 聚會開始
