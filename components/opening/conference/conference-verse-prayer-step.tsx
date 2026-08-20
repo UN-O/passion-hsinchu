@@ -12,6 +12,7 @@ import { downloadNodeAsImage } from "@/lib/export-image"
 import { Button } from "@/components/ui/button"
 import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
 import { conferenceStepFromPath, type ConferenceStep } from "@/lib/opening-steps"
+import { completeOpening } from "@/app/opening/actions"
 
 function VersePrayerContent({
   name,
@@ -23,7 +24,10 @@ function VersePrayerContent({
   categoryKey?: "A" | "B" | "C" | "D"
 }) {
   const { index } = useImmersiveNav()
-  const advance = useOpeningStepAdvance("/opening/conference/onboarding")
+  // 經文禱告卡結束後直接完成開場（不再進工作坊介紹頁），所以這裡不需要
+  // nextRoute——最後一頁改用下面的「完成」表單直接送出，不是靠 advance()
+  // 導頁過去。
+  const advance = useOpeningStepAdvance(null)
   const exportRef = useRef<HTMLDivElement>(null)
   const content = getVersePrayerContent(selectedItemId)
 
@@ -59,9 +63,18 @@ function VersePrayerContent({
             儲存圖片
           </Button>
         )}
-        <Button size="lg" onClick={advance}>
-          下一步
-        </Button>
+        {isVersePage ? (
+          <Button size="lg" onClick={advance}>
+            下一步
+          </Button>
+        ) : (
+          <form action={completeOpening}>
+            <input type="hidden" name="flow" value="conference" />
+            <Button size="lg" type="submit">
+              完成
+            </Button>
+          </form>
+        )}
       </div>
 
       {/* 用 opacity-0 而不是移到畫面外：手機瀏覽器（尤其 iOS Safari）會把定位在可視範圍外的 canvas 內容釋放掉，

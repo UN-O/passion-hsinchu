@@ -12,7 +12,7 @@ export function campStepFromPath(path: string): CampStep {
   return (CAMP_STEPS as readonly string[]).includes(segment ?? "") ? (segment as CampStep) : "welcome"
 }
 
-export const CONFERENCE_STEPS = ["welcome", "heart-select", "verse-and-prayer", "onboarding"] as const
+export const CONFERENCE_STEPS = ["welcome", "heart-select", "verse-and-prayer"] as const
 export type ConferenceStep = (typeof CONFERENCE_STEPS)[number]
 
 export function resolveConferenceStep(slug: string[] | undefined): ConferenceStep | null {
