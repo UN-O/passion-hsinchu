@@ -28,22 +28,26 @@ export function SquadCourageCard({ squadName, total }: { squadName: string; tota
 
   return (
     <>
-      <div className="flex items-start justify-between gap-4">
-        <p className="text-sm text-muted-foreground">勇氣值</p>
-        {gain > 0 && (
+      {gain > 0 && (
+        <div className="flex justify-end">
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-sm font-bold text-emerald-400">
             <ArrowUp className="size-3.5" />
             {gain.toLocaleString("en-US")}
           </span>
-        )}
-      </div>
-      <div className="mt-1 flex items-end justify-between gap-4">
-        <p
-          className={`${dinEngschrift.className} text-5xl font-bold text-primary sm:text-6xl`}
-          style={{ transform: "skewX(-5deg)" }}
-        >
-          {total.toLocaleString("en-US")}
-        </p>
+        </div>
+      )}
+      {/* 「勇氣值」標籤改成貼在數字右下角、跟數字同一條基線，不是獨立
+          一行的標題文字。 */}
+      <div className="flex items-end justify-between gap-4">
+        <div className="flex items-end gap-1.5">
+          <p
+            className={`${dinEngschrift.className} text-5xl font-bold text-primary sm:text-6xl`}
+            style={{ transform: "skewX(-5deg)" }}
+          >
+            {total.toLocaleString("en-US")}
+          </p>
+          <span className="pb-1 text-sm text-muted-foreground sm:pb-1.5">勇氣值</span>
+        </div>
         <p
           className={`${mantouSans.className} shrink-0 text-2xl tracking-wide sm:text-3xl`}
           style={{ color: "#ffffff", WebkitTextStroke: "1px #000000" }}
