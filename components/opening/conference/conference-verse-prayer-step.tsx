@@ -6,6 +6,7 @@ import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
 import { useConferenceFlow } from "@/components/opening/conference-flow-context"
 import { getCategoryForItem, getVersePrayerContent } from "@/lib/opening-conference-content"
+import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 import { versePrayerCategoryDraw } from "@/lib/opening-gradients"
 import { ExportCard } from "@/components/opening/export-card"
 import { downloadNodeAsImage } from "@/lib/export-image"
@@ -47,11 +48,20 @@ function VersePrayerContent({
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-8 px-6 py-10 text-center">
       <p className="text-sm tracking-[0.2em] text-white/60">{label}</p>
-      {/* w-full：flex-col + items-center 下，子元素預設用內容本身需要的寬度
-          算大小、不是照容器實際寬度撐開，長文字會整行不換行、左右對稱溢出
-          畫面外。break-all 是額外保險：這段是純中文長句，逗號句號之間常常
-          沒有半形空格，用 break-all 讓每個中文字都可以是斷行點。 */}
-      <p className="w-full max-w-md text-xl leading-loose break-all sm:text-2xl">{bodyText}</p>
+      {/* w-[min(74%,28rem)]：跟 camp-mission-home.tsx／camp-devotion-content.tsx
+          同一個做法，佔容器寬度的 74%、但不超過 28rem，比單純 w-full 更貼近
+          內文本身的視覺重量。字體用源流明體 Bold（genRyuMin），字型檔已經
+          用 fonttools 重新跑過 subset，涵蓋這裡全部經文／禱告文範本的字
+          （見 app/fonts/gen-ryu-min.ts 的說明）；範本裡 {"{}"} 代入的使用者
+          姓名是動態內容、字沒辦法預先收進字型檔，缺字的字元會自動退回
+          瀏覽器預設的備援字型，不影響其餘文字正常顯示源流明體。break-all
+          是額外保險：這段是純中文長句，逗號句號之間常常沒有半形空格，用
+          break-all 讓每個中文字都可以是斷行點。 */}
+      <p
+        className={`${genRyuMin.className} w-[min(74%,28rem)] text-xl leading-loose break-all sm:text-2xl`}
+      >
+        {bodyText}
+      </p>
       {isVersePage && <p className="text-base text-white/70">（{content.verseRef}）</p>}
 
       <div className="flex gap-3">

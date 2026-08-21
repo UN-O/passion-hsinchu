@@ -3,6 +3,7 @@
 import { forwardRef, useMemo } from "react"
 import { CanvasBackground } from "@/components/immersive/backgrounds/canvas-background"
 import { versePrayerCategoryDraw } from "@/lib/opening-gradients"
+import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 type ExportCardProps = {
   label: string
@@ -37,12 +38,15 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(function E
       </div>
       <div className="relative flex h-full flex-col items-center justify-center gap-4 p-12 text-center text-white">
         <p className="text-sm tracking-[0.2em] text-white/70">{label}</p>
-        {/* w-full：flex-col + items-center 下，子元素預設用內容本身需要的寬度
-            算大小、不是照容器實際寬度撐開，長文字會整行不換行、左右對稱溢出
-            （跟 conference-verse-prayer-step.tsx 同一段文字、同一個問題）。
+        {/* w-[min(74%,28rem)]＋源流明體：跟畫面上 conference-verse-prayer-step.tsx
+            的經文／禱告文同一套處理，存出來的圖片字體才會跟畫面上看到的一致。
             break-all 是額外保險：這段是純中文長句，中間逗號句號之間常常沒有
             半形空格，用 break-all 讓每個中文字都可以是斷行點。 */}
-        <p className="w-full text-2xl leading-relaxed break-all">{verse}</p>
+        <p
+          className={`${genRyuMin.className} w-[min(74%,28rem)] text-2xl leading-relaxed break-all`}
+        >
+          {verse}
+        </p>
         {verseRef && <p className="text-base text-white/70">（{verseRef}）</p>}
       </div>
     </div>
