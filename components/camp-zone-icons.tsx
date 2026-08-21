@@ -71,10 +71,10 @@ export function CampZoneIcons({ zones }: { zones: CampZoneScreen[] }) {
               <div className="flex flex-col gap-2 p-6">
                 <p className="text-sm text-muted-foreground">區長：{activeZone.leaderName}</p>
                 <p className="text-base">{activeZone.body}</p>
-                <p
-                  className={`${genRyuMin.className} w-[min(74%,28rem)] text-base`}
-                  style={{ transform: "skewX(-5deg)" }}
-                >
+                {/* 這裡是完整一句話（不是「早晨靈修」那種短標題），寬度
+                    卡在 74% 在手機窄螢幕會斷得很難看，改用滿版寬度，讓
+                    換行點跟著螢幕寬度自動跑，不同裝置都能自然換行。 */}
+                <p className={`${genRyuMin.className} w-full text-base`} style={{ transform: "skewX(-5deg)" }}>
                   「{activeZone.quote}」
                 </p>
               </div>
