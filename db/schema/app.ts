@@ -110,3 +110,36 @@ export const expRecord = pgTable(
     index("exp_record_created_at_idx").on(table.createdAt),
   ]
 )
+
+// 分隊名單（隊員／隊輔的分區、隊名、房號等）。跟 enrollment 分開一張表，
+// 是因為資料來源與更新頻率不同：enrollment 是報名時 Google Form 匯出的
+// 名冊，分隊結果是活動前另外整理、定案後才匯入，而且分隊調整（換隊、換房）
+// 之後可能還會再更新，不想把這種變動混進報名資料本身。
+export const campTeamMember = pgTable(
+  "camp_team_member",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    enrollmentId: uuid("enrollment_id")
+      .notNull()
+      .references(() => enrollment.id, { onDelete: "cascade" }),
+    // 沿用跟 exp_record.region 一樣的三區 enum（CAMP 加分系統用的分區，
+    // 見 lib/exp-regions.ts 的 EXP_REGIONS）；不另外做分區表——理由跟
+    // EXP_REGIONS 刻意不進資料庫一樣，三區是固定的，不會執行期才決定。
+    zone: text("zone", { enum: ["bee", "clownfish", "groundhog"] }).notNull(),
+    // 10 個固定隊名（例如土撥天際、鼠命必達）。跟 EXP_REGIONS 一樣是固定
+    // 小清單，不特別拆一張 team 表。
+    teamName: text("team_name").notNull(),
+    role: text("role", { enum: ["member", "co_leader", "leader"] }).notNull(), // 隊員／副隊輔／主隊輔
+    room: text("room"), // 房號，例如 "501"
+    shirtSize: text("shirt_size"),
+    memberNumber: integer("member_number"), // 隊員編號；工作人員／隊輔通常沒有編號，所以 nullable
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    // 一個人只會在一隊，enrollment 對這張表是 1:1
+    uniqueIndex("camp_team_member_enrollment_id_idx").on(table.enrollmentId),
+    // 依隊伍列名單／篩選是主要讀取模式，比照 exp_record_region_idx
+    index("camp_team_member_zone_team_name_idx").on(table.zone, table.teamName),
+  ]
+)
