@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampDevotionContent } from "@/components/camp-devotion-content"
 import { DiscussionRoot } from "@/components/discussion/discussion-root"
+import { SessionSelect } from "@/components/session-select"
 import { DEVOTION_ENTRIES } from "@/lib/devotion-content"
 import { campDevotionRootKey } from "@/lib/discussion/root-registry"
 import { getOrCreateDevotionRoot } from "@/lib/discussion/root"
@@ -45,6 +46,15 @@ export default async function CampDevotionDayPage({ params }: { params: Promise<
       />
 
       <div className="mt-10 flex flex-col gap-10">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">靈修內容</p>
+          <SessionSelect
+            items={DEVOTION_ENTRIES.map((e) => ({ id: e.id, label: e.day }))}
+            activeId={entry.id}
+            basePath="/camp/devotion"
+          />
+        </div>
+
         <DiscussionRoot rootKey={rootKey} session={session} header={<CampDevotionContent entry={entry} isStaff={isStaff} />} />
       </div>
     </main>

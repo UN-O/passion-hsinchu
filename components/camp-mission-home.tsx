@@ -13,7 +13,6 @@ import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { getRegionTotals } from "@/lib/exp"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
 import { getNextCampMeetingSession } from "@/lib/opening-camp-content"
-import { DEVOTION_ENTRIES } from "@/lib/devotion-content"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 // 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
@@ -186,19 +185,16 @@ export async function CampMissionHome({
         </p>
       </Link>
 
-      {/* 早晨靈修：直接在首頁放兩個按鈕，取代原本只能從側邊欄「靈修內容」
-          進去的路徑（側邊欄那個連結還留著，兩邊都能到）。沒有現成的靈修
-          視覺圖，先用素卡片頂著，不硬套不相關的照片。 */}
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        {DEVOTION_ENTRIES.map((entry) => (
-          <Link key={entry.id} href={`/camp/devotion/${entry.id}`}>
-            <SectionCard variant="glass" className="flex h-full flex-col justify-end gap-1">
-              <p className={`${genRyuMin.className} text-lg`}>{entry.id === "day2" ? "Day 2" : "Day 3"}</p>
-              <p className="text-sm text-muted-foreground">早晨靈修</p>
-            </SectionCard>
-          </Link>
-        ))}
-      </div>
+      {/* 早晨靈修：首頁只留一個入口，進去之後用頁面裡的場次切換選單在
+          Day2／Day3 之間切換（見 app/camp/devotion/[day]/page.tsx 的
+          SessionSelect），不用在首頁放兩個按鈕。連到 /camp/devotion
+          （會自動轉去目前這一天的正式網址）。 */}
+      <Link href="/camp/devotion" className="mt-6 block">
+        <SectionCard variant="glass" className="flex flex-col gap-1">
+          <p className={`${genRyuMin.className} text-lg`}>早晨靈修</p>
+          <p className="text-sm text-muted-foreground">查看今天的靈修內容</p>
+        </SectionCard>
+      </Link>
 
       {IG_STORY_IMAGE && (
         <SectionCard className="mt-6 flex flex-col gap-2">
