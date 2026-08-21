@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { ArrowUp } from "lucide-react"
 
 import { mantouSans } from "@/app/fonts/mantou-sans"
+import { dinEngschrift } from "@/app/fonts/din-engschrift"
 
 // 記錄「上次看到的勇氣值」，跟 zone-score-chart.tsx 的計分動畫同一套邏輯：
 // 有加分（目前總分 > 上次看到的總分）才顯示綠色徽章，顯示過一次就把總分存回去，
@@ -37,7 +38,12 @@ export function SquadCourageCard({ squadName, total }: { squadName: string; tota
         )}
       </div>
       <div className="mt-1 flex items-end justify-between gap-4">
-        <p className="text-5xl font-bold text-primary sm:text-6xl">{total.toLocaleString("en-US")}</p>
+        <p
+          className={`${dinEngschrift.className} text-5xl font-bold text-primary sm:text-6xl`}
+          style={{ transform: "skewX(-5deg)" }}
+        >
+          {total.toLocaleString("en-US")}
+        </p>
         <p
           className={`${mantouSans.className} shrink-0 text-2xl tracking-wide sm:text-3xl`}
           style={{ color: "#ffffff", WebkitTextStroke: "1px #000000" }}
