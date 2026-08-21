@@ -1,6 +1,7 @@
 "use client"
 
 import { Fragment, useEffect, useState } from "react"
+import { dinEngschrift } from "@/app/fonts/din-engschrift"
 
 function getRemaining(targetISO: string) {
   const diffMs = new Date(targetISO).getTime() - Date.now()
@@ -74,13 +75,19 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
           <Fragment key={segment.label}>
             <div className="conf-countdown-box relative flex flex-1 flex-col items-center overflow-hidden rounded-xl">
               <div className="absolute inset-0 rounded-xl border border-white/50 bg-white/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] backdrop-blur-md" />
-              <span className="conf-countdown-digit relative leading-none font-bold tabular-nums text-black">
+              <span
+                className={`${dinEngschrift.className} conf-countdown-digit relative leading-none font-bold tabular-nums text-black`}
+              >
                 {pad(segment.value)}
               </span>
               <span className="conf-countdown-label relative text-black/60">{segment.label}</span>
             </div>
             {index < segments.length - 1 && (
-              <span className="conf-countdown-colon flex items-center font-bold text-black/30">:</span>
+              <span
+                className={`${dinEngschrift.className} conf-countdown-colon flex items-center font-bold text-black/30`}
+              >
+                :
+              </span>
             )}
           </Fragment>
         ))}
