@@ -117,6 +117,7 @@ export async function CampMissionHome({
       <CampLiquidGlassFilter filterId="camp-liquid-glass-filter" />
       <PassionLogoHeader
         logoTone="dark"
+        sticky
         leftSlot={<CampSidebar />}
         rightSlot={
           <Link
