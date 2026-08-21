@@ -42,9 +42,13 @@ export function CampZoneIcons({ zones }: { zones: CampZoneScreen[] }) {
       </div>
 
       <Dialog open={activeZone !== null} onOpenChange={(next) => !next && setActiveIndex(null)}>
+        {/* max-h + overflow-y-auto：海報圖＋文字介紹疊起來比彈窗高，小螢幕
+            手機要能捲動看完，不會被切掉（跟 camp-countdown-card.tsx 的
+            「營會資訊」彈窗同一個修法）。rounded-t-3xl 的 overflow-hidden
+            放在圖片自己的容器，不是外層——外層才能保留 overflow-y-auto。 */}
         <DialogContent
           showCloseButton={false}
-          className="camp-theme max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl border-none bg-transparent p-0 sm:max-w-md"
+          className="camp-theme flex max-h-[85vh] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-y-auto rounded-3xl border-none bg-card p-0 sm:max-w-md"
         >
           <DialogTitle className="sr-only">{activeZone?.title}</DialogTitle>
           <DialogClose className="absolute top-2 right-2 z-10 rounded-full bg-black/50 p-1 text-white/90 backdrop-blur-sm hover:text-white">
@@ -53,13 +57,22 @@ export function CampZoneIcons({ zones }: { zones: CampZoneScreen[] }) {
           </DialogClose>
 
           {activeZone && (
-            <Image
-              src={activeZone.posterImage}
-              alt={activeZone.title}
-              width={3600}
-              height={2025}
-              className="block h-auto w-full"
-            />
+            <>
+              <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-t-3xl">
+                <Image
+                  src={activeZone.posterImage}
+                  alt={activeZone.title}
+                  fill
+                  sizes="(min-width: 640px) 448px, 100vw"
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex flex-col gap-2 p-6">
+                <p className="text-sm text-muted-foreground">區長：{activeZone.leaderName}</p>
+                <p className="text-base">{activeZone.body}</p>
+                <p className="text-base font-bold">「{activeZone.quote}」</p>
+              </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
