@@ -93,7 +93,7 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
             <div className="conf-countdown-segment relative flex flex-1 flex-col items-center">
               <span className="relative inline-block">
                 <span
-                  className={`${dinEngschrift.className} conf-countdown-digit leading-none font-bold tabular-nums text-black`}
+                  className={`${dinEngschrift.className} conf-countdown-digit leading-none font-bold tabular-nums text-white`}
                 >
                   {pad(segment.value)}
                 </span>
