@@ -1,9 +1,8 @@
 "use client"
 
-import { forwardRef, useMemo } from "react"
+import { forwardRef } from "react"
 import Image from "next/image"
-import { CanvasBackground } from "@/components/immersive/backgrounds/canvas-background"
-import { versePrayerCategoryDraw } from "@/lib/opening-gradients"
+import { versePrayerCategoryBackgroundCss } from "@/lib/opening-gradients"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 type ExportCardProps = {
@@ -20,23 +19,17 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(function E
   { label, verse, verseRef, categoryKey },
   ref
 ) {
-  // 一定要 useMemo：draw 沒記住的話，ExportCard 每次重繪都會產生新的函式
-  // 參照，CanvasBackground 的 useEffect（deps 是 [draw, reducedMotion]）
-  // 就會整個拆掉重建——resize() 會先把 canvas 清空（設 canvas.width 這個
-  // 動作本身就會清畫面），要等下一個 requestAnimationFrame 才會重新畫上
-  // 漸層。這段卡片平常藏在畫面外、不會有人剛好在那個空白瞬間截圖，但
-  // 「儲存圖片」是使用者主動點擊觸發 toBlob，如果剛好點在清空之後、還沒
-  // 畫回來之前，擷取到的就是空白畫布——這正是使用者回報「存出來的圖沒有
-  // 背景、白底白字」的成因。跟 verse-prayer-step.tsx 裡同一個
-  // versePrayerCategoryDraw(category?.key) 呼叫已經用 useMemo 包起來的
-  // 做法一致，這裡漏掉了。
-  const draw = useMemo(() => versePrayerCategoryDraw(categoryKey), [categoryKey])
+  // 背景改用 CSS radial-gradient（見 versePrayerCategoryBackgroundCss），
+  // 不再用 <canvas> 畫。原本用 canvas 是因為這張卡片平常 opacity-0 長期
+  // 藏在背景，手機瀏覽器（尤其真機 iOS Safari）會不定期把畫面外/不可見
+  // canvas 的內容釋放掉，toDataURL() 讀到空的，html-to-image 擷取到的
+  // 背景就整片消失——使用者反覆回報「存出來的圖沒有背景」正是這個成因，
+  // 就算在擷取前強制重繪過一次也還是會發生。CSS background 是宣告式的，
+  // 沒有「畫的時機」這回事，不存在讀到空畫布的問題，直接從根本避開整類問題。
+  const backgroundCss = versePrayerCategoryBackgroundCss(categoryKey)
 
   return (
-    <div ref={ref} className="relative aspect-[4/5] w-[540px] overflow-hidden">
-      <div className="absolute inset-0">
-        <CanvasBackground draw={draw} />
-      </div>
+    <div ref={ref} className="relative aspect-[4/5] w-[540px] overflow-hidden" style={{ background: backgroundCss }}>
       {/* 上面 PASSION LOGO、下面主視覺橫式，中間經文／禱告文置中——三塊直接
           排在同一個 flex-col 裡，用 gap 留空隙，不用另外疊 margin。中間這塊
           包一層 flex-1 + justify-center，讓經文區塊在 LOGO 跟主視覺之間的
