@@ -78,16 +78,23 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
             {/* label 改成 absolute 疊在數字右下角，不再是 flex-col 疊在數字
                 下面：拿掉 label 這個 flow 元素之後，數字在 flex-col 裡就是
                 唯一的排版對象，位置不會因為 label 移走而跟著往下（或往上）
-                挪動，維持原本的位置。label 定位在 segment 的右下角，跟數字
-                共用同一塊玻璃底（segment 本身撐滿整條的高度），不是另外
-                疊一塊底色。 */}
+                挪動，維持原本的位置。
+                label 定位的錨點是「數字自己」（inline-block 包一層，寬度
+                貼合數字實際渲染出來的字元數），不是整個 segment——時數超過
+                99 變 3 位數（例如 168）時，segment 是跟分／秒共用同一個
+                flex-1 寬度不會變，但數字本身變寬了，如果錨點是 segment，
+                位置就沒對到數字實際的右邊緣，跑掉。 */}
             <div className="conf-countdown-segment relative flex flex-1 flex-col items-center">
-              <span
-                className={`${dinEngschrift.className} conf-countdown-digit leading-none font-bold tabular-nums text-black`}
-              >
-                {pad(segment.value)}
+              <span className="relative inline-block">
+                <span
+                  className={`${dinEngschrift.className} conf-countdown-digit leading-none font-bold tabular-nums text-black`}
+                >
+                  {pad(segment.value)}
+                </span>
+                <span className="conf-countdown-label absolute right-[8cqw] bottom-0 text-black/60">
+                  {segment.label}
+                </span>
               </span>
-              <span className="conf-countdown-label absolute right-[8cqw] bottom-0 text-black/60">{segment.label}</span>
             </div>
             {index < segments.length - 1 && (
               <span
