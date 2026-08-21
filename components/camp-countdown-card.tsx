@@ -13,16 +13,15 @@ import { getNextCampSession } from "@/lib/opening-camp-content"
 // 圖片＋標籤／標題／日期／時間同一種排版。標籤文字跟倒數目標都是「下一場
 // 還沒開始的聚會」（campSessions／getNextCampSession，跟 CONF 的
 // getNextConferenceSession 同一套邏輯）。視覺依場次換成 nextSession.image，
-// 外層卡片改成跟 CONF（conference-mission-home.tsx）同一種扁平的
-// bg-slate-300 卡片，不是「小隊分數」「各區積分」那兩張的液態玻璃質感。
+// 外層卡片維持液態玻璃質感（跟「小隊分數」「各區積分」那兩張卡片同一套視覺）。
 export function CampCountdownCard() {
   const [open, setOpen] = useState(false)
   const nextSession = getNextCampSession()
 
   return (
     <>
-      <div className="mt-6 rounded-3xl bg-slate-300 p-6">
-        <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-black/70">
+      <div className="camp-glass-card mt-6 rounded-3xl border-2 border-white/50 bg-[radial-gradient(120%_100%_at_25%_15%,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.06)_35%,rgba(191,219,254,0.05)_70%,rgba(255,255,255,0.08)_100%)] p-6 shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),inset_0_-3px_4px_rgba(30,64,124,0.14),0_16px_40px_rgba(0,0,0,0.22)]">
+        <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-muted-foreground">
           距離{nextSession.label}開始，還剩...
         </p>
 
@@ -30,7 +29,7 @@ export function CampCountdownCard() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label="營會資訊"
-          className="relative mt-3 aspect-video w-full overflow-hidden rounded-2xl bg-white/70"
+          className="relative mt-3 aspect-video w-full overflow-hidden rounded-2xl"
         >
           <Image
             src={nextSession.image}
