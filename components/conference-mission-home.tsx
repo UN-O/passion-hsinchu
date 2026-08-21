@@ -107,18 +107,21 @@ export function ConferenceMissionHome({
           一樣的純藍色，蓋到 100svh 之後直接接回 main 本身的純色底，
           銜接處不會看出接縫。-z-10 讓背景圖蓋在 main 的純色底之上、
           後面正常排版的內容之下（main 一定要有 z-0，見下面 sticky 那段
-          註解）。backgroundSize 刻意寫死 "auto 100%"（不是 cover）：
-          cover 會依螢幕比例自己選裁切的軸，寬螢幕時反而會裁到上下；
-          auto 100% 強制高度永遠等於容器高度（上下永遠滿版、不裁切），
-          寬度依圖片比例等比縮放，比容器寬的部分才裁左右，比容器窄時
-          兩側露出跟圖片色調很接近的純色底。圖片直接用原始解析度，沒有
-          另外壓縮，避免裁到最寬的機型時因為放大而模糊。 */}
+          註解）。backgroundSize 改用 "cover"：圖片是 6000×3375（16:9），
+          跟大多數螢幕、視窗的長寬比已經很接近，cover 頂多裁掉上下各
+          一小段就能同時滿足「左右滿版」＋「上下不留白」，裁到的部分
+          又剛好是圖片下緣本來就要融合成純藍色的漸層區，看起來不會少
+          內容。原本用 auto 100% 是為了避免寬螢幕裁到上下，但代價是
+          寬螢幕時左右會露出色塊——寬螢幕、桌機視窗這個代價比預期明顯，
+          改回 cover 換成寬螢幕最多裁一點點漸層區，划算得多。
+          backgroundPosition 用 "top center"：裁切優先發生在下緣（本來
+          就要融合掉的部分），不要裁到上面的人群、燈光等實際內容。 */}
       <div
         className="fixed inset-x-0 top-0 -z-10 h-[100svh] bg-no-repeat"
         style={{
           backgroundImage: "url('/images/conference-background.webp')",
-          backgroundSize: "auto 100%",
-          backgroundPosition: "center",
+          backgroundSize: "cover",
+          backgroundPosition: "top center",
         }}
         aria-hidden
       />
