@@ -6,8 +6,8 @@ import { eq } from "drizzle-orm"
 import { db } from "@/db"
 import { user } from "@/db/schema/auth"
 import { findEnrollment } from "@/lib/enrollment"
-import { getAppSession, postSignInPath } from "@/lib/session"
 import { mergeCampIdentity } from "@/lib/claim-merge"
+import { getAppSession, postSignInPath } from "@/lib/session"
 
 export type ClaimState = { error: string | null }
 
@@ -61,7 +61,10 @@ export async function claimIdentity(
       redirect(updated ? postSignInPath(updated) : "/")
     }
 
-    return { error: "這筆報名資料已被其他帳號認領，請洽現場工作人員" }
+    // 對方是別的已驗證帳號：真的被別人認領了，或者自己剛剛用錯了 Google 帳號登入
+    return {
+      error: "這筆報名資料已經用其他 Google 帳號認領了，如果這是你本人，可能是登入時選錯了 Google 帳號，請確認後再試一次",
+    }
   }
 
   try {
