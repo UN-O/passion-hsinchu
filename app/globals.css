@@ -227,8 +227,8 @@
 .conf-countdown-digit {
   font-size: 2.5rem;
   font-size: 11cqw;
-  /* 同一組裡的兩個數字（例如「00」）貼緊一點，照數位鐘參考圖的字距。 */
-  letter-spacing: -0.06em;
+  /* 同一組裡的兩個數字（例如「00」）字距，照數位鐘參考圖抓的比例。 */
+  letter-spacing: 0.02em;
 }
 
 .conf-countdown-label {
