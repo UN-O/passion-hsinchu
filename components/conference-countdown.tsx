@@ -87,7 +87,7 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
               >
                 {pad(segment.value)}
               </span>
-              <span className="conf-countdown-label absolute right-0 bottom-0 text-black/60">{segment.label}</span>
+              <span className="conf-countdown-label absolute right-[8cqw] bottom-0 text-black/60">{segment.label}</span>
             </div>
             {index < segments.length - 1 && (
               <span
