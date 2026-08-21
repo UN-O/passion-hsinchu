@@ -64,6 +64,24 @@ export const flowProgress = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.flow] })]
 )
 
+// 認領轉移紀錄：CAMP 免驗證合成帳號（camp-*@camp.invalid）的報名認領被
+// 轉移到後來用 Google 驗證登入的帳號時（見 lib/claim-merge.ts），留一筆
+// 稽核紀錄，工作人員之後可以在 Neon SQL editor 查「這筆報名什麼時候、
+// 從哪個帳號轉去哪個帳號」——轉移本身不需要人工審核就會發生，這張表
+// 是唯一的事後追蹤方式。帳號被刪掉時記錄要留著，所以是 set null 不是
+// cascade；email 是轉移當下的快照，不是即時關聯查詢。
+export const claimMerges = pgTable("claim_merges", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  enrollmentId: uuid("enrollment_id")
+    .notNull()
+    .references(() => enrollment.id, { onDelete: "cascade" }),
+  oldUserId: text("old_user_id").references(() => user.id, { onDelete: "set null" }),
+  oldUserEmail: text("old_user_email").notNull(),
+  newUserId: text("new_user_id").references(() => user.id, { onDelete: "set null" }),
+  newUserEmail: text("new_user_email").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 // CAMP 加分記錄。分數是「區」的總分，不追到個人。
 //
 // 各區總分一律用 sum(amount) 現算，不另外存一份冗餘的總分欄位——兩份數字

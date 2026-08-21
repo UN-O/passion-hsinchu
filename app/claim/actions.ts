@@ -7,6 +7,7 @@ import { db } from "@/db"
 import { user } from "@/db/schema/auth"
 import { findEnrollment } from "@/lib/enrollment"
 import { getAppSession, postSignInPath } from "@/lib/session"
+import { mergeCampIdentity } from "@/lib/claim-merge"
 
 export type ClaimState = { error: string | null }
 
@@ -33,12 +34,33 @@ export async function claimIdentity(
   // user.enrollment_id 上有 unique index，這裡先查是為了回傳友善訊息；
   // 真正保證「一筆報名只能被一個帳號認領」的是資料庫的約束。
   const [taken] = await db
-    .select({ id: user.id })
+    .select({ id: user.id, email: user.email })
     .from(user)
     .where(eq(user.enrollmentId, enrollment.id))
     .limit(1)
 
   if (taken && taken.id !== session.user.id) {
+    // 舊的認領者是 CAMP 免驗證登入的合成帳號（camp-*@camp.invalid，見
+    // lib/auth-plugins/camp-identify.ts）：代表同一個人之前用姓名＋教會
+    // 報到過，現在換用 Google 驗證登入（例如要進 CONFERENCE），不是真的
+    // 被別人搶先認領，直接把報名轉移過來，不要卡在「已被認領」。
+    if (taken.email.endsWith("@camp.invalid")) {
+      try {
+        await mergeCampIdentity(
+          taken.id,
+          taken.email,
+          session.user.id,
+          session.user.email,
+          enrollment.id,
+          enrollment.name
+        )
+      } catch {
+        return { error: "這筆報名資料已被其他帳號認領，請洽現場工作人員" }
+      }
+      const updated = await getAppSession()
+      redirect(updated ? postSignInPath(updated) : "/")
+    }
+
     return { error: "這筆報名資料已被其他帳號認領，請洽現場工作人員" }
   }
 
