@@ -16,13 +16,7 @@ import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { CampMeetingSessions } from "@/components/camp-meeting-sessions"
 import { getRegionTotals } from "@/lib/exp"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
-import {
-  campZoneScreens,
-  formatCampMeetingDateLabel,
-  formatCampMeetingTimeLabel,
-  getCampMeetingSessions,
-  getNextCampMeetingSession,
-} from "@/lib/opening-camp-content"
+import { campZoneScreens, getNextCampMeetingSession } from "@/lib/opening-camp-content"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 // 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
@@ -98,13 +92,6 @@ export async function CampMissionHome({
   // 顯示這 4 場，兩邊的「下一場」要對得起來（大地競賽／辯論場／Podcast
   // 不算聚會，見 lib/opening-camp-content.ts 的 CAMP_MEETING_SESSION_IDS）。
   const nextSession = getNextCampMeetingSession()
-  const allSessions = getCampMeetingSessions().map((s) => ({
-    id: s.id,
-    label: s.label,
-    dateTimeLabel: `${formatCampMeetingDateLabel(s.startISO)} ${formatCampMeetingTimeLabel(s.startISO)}`,
-    image: s.image,
-    startISO: s.startISO,
-  }))
   // 過期（上傳超過 24 小時）的限動先在伺服器端濾掉，client 不用自己重算。
   const activeIgStories = getActiveIgStories()
 
@@ -154,14 +141,8 @@ export async function CampMissionHome({
       {/* 背景只在「即將開始」那張卡片整個露出來（沒被 sticky logo 列蓋到、
           也沒被畫面下緣切到）時才變黑，只要卡片被切掉一點點就變回黃色
           （見 camp-scroll-blackout.tsx）。ScrollBlackoutTrigger 包在
-          camp-meeting-sessions.tsx 裡面、只包住卡片本身——不包住「查看
-          所有活動」展開清單，不然清單展開／收合時容器高度跟著變，量出來
-          的「整個露出來」門檻會跟著跑掉。 */}
-      <CampMeetingSessions
-        nextSession={allSessions.find((s) => s.id === nextSession.id) ?? allSessions[0]}
-        allSessions={allSessions}
-        meetingHref={meetingHref}
-      />
+          camp-meeting-sessions.tsx 裡面、只包住卡片本身。 */}
+      <CampMeetingSessions nextSession={nextSession} meetingHref={meetingHref} />
 
       {/* 早晨靈修：首頁只留一個入口，進去之後用頁面裡的 DAY2／DAY3 玻璃
           切換按鈕切換（見 app/camp/devotion/[day]/layout.tsx 的
