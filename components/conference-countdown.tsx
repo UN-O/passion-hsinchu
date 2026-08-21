@@ -64,27 +64,28 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
     // cqw 尺寸都寫在 globals.css 的 .conf-countdown-* class 裡，帶了舊瀏覽器
     // 看不懂 container query 時的固定尺寸備援（避免退回瀏覽器預設字級跑版）。
     <div className="@container w-full">
-      {/* 三個數字框直接各自 flex-1 佔同一列的等分寬度，冒號是獨立的兄弟元素、
-          不佔彈性空間，這樣不管有沒有冒號夾在旁邊，三個框框的寬度都會一致
-          （之前冒號跟框框綁在同一個 flex-1 容器裡，最後一組沒有冒號分走空間，
-          框框會比前兩組寬）。玻璃底跟 CAMP 靈修內容 DAY1／DAY2 切換按鈕同一種
-          樣式（border-white/50 + bg-white/30 + 內緣高光陰影 + backdrop-blur-md），
-          不是 CONF 工作坊卡片那種 SVG 折射液態玻璃。 */}
-      <div className="conf-countdown-row flex items-stretch">
+      {/* 底下的玻璃底改成一整條，不再是三個各自獨立的框框：一個 absolute
+          inset-0 蓋滿整列，三組數字／兩個冒號都是同一個矩形上面的內容，
+          不是各自貼一塊玻璃再拼起來。玻璃樣式跟 CAMP 靈修內容 DAY1／DAY2
+          切換按鈕同一種（border-white/50 + bg-white/30 + 內緣高光陰影 +
+          backdrop-blur-md），不是 CONF 工作坊卡片那種 SVG 折射液態玻璃。
+          數字用 tracking 讓同一組裡的兩個數字（例如「00」）貼緊一點，
+          照使用者提供的數位鐘參考圖那種字距。 */}
+      <div className="conf-countdown-row relative flex items-stretch overflow-hidden rounded-xl">
+        <div className="absolute inset-0 rounded-xl border border-white/50 bg-white/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] backdrop-blur-md" />
         {segments.map((segment, index) => (
           <Fragment key={segment.label}>
-            <div className="conf-countdown-box relative flex flex-1 flex-col items-center overflow-hidden rounded-xl">
-              <div className="absolute inset-0 rounded-xl border border-white/50 bg-white/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] backdrop-blur-md" />
+            <div className="conf-countdown-segment relative flex flex-1 flex-col items-center">
               <span
-                className={`${dinEngschrift.className} conf-countdown-digit relative leading-none font-bold tabular-nums text-black`}
+                className={`${dinEngschrift.className} conf-countdown-digit leading-none font-bold tabular-nums text-black`}
               >
                 {pad(segment.value)}
               </span>
-              <span className="conf-countdown-label relative text-black/60">{segment.label}</span>
+              <span className="conf-countdown-label text-black/60">{segment.label}</span>
             </div>
             {index < segments.length - 1 && (
               <span
-                className={`${dinEngschrift.className} conf-countdown-colon flex items-center font-bold text-black/30`}
+                className={`${dinEngschrift.className} conf-countdown-colon relative flex items-center font-bold text-black/30`}
               >
                 :
               </span>
