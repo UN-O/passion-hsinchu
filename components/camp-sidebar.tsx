@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { CampLodgingInfo } from "@/components/camp-lodging-info"
+import { useScrollBlackout } from "@/components/camp-scroll-blackout"
 
 const PANEL_MENU_ITEMS = [
   { key: "schedule", label: "聚會流程表", type: "image", imageSrc: "/images/camp-schedule.webp" },
@@ -19,6 +20,8 @@ type PanelKey = (typeof PANEL_MENU_ITEMS)[number]["key"]
 export function CampSidebar() {
   const [open, setOpen] = useState(false)
   const [activePanel, setActivePanel] = useState<PanelKey | null>(null)
+  // 沒包在 ScrollBlackout 底下時固定回傳 false，不影響原本樣子。
+  const isBlack = useScrollBlackout()
 
   const activeItem = PANEL_MENU_ITEMS.find((item) => item.key === activePanel)
 
@@ -30,7 +33,9 @@ export function CampSidebar() {
             size="icon"
             variant="outline"
             aria-label="選單"
-            className="flex size-10 items-center justify-center rounded-full border border-border bg-background"
+            className={`flex size-10 items-center justify-center rounded-full border transition-colors duration-700 ${
+              isBlack ? "border-white/30 bg-black/20 text-white" : "border-border bg-background"
+            }`}
           >
             <Menu className="size-5" />
           </Button>
