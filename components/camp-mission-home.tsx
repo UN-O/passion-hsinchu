@@ -127,7 +127,7 @@ export async function CampMissionHome({
         className="mt-6 h-auto w-full"
       />
 
-      <SectionCard className="mt-10 flex items-center justify-center gap-6">
+      <div className="mt-10 flex items-center justify-center gap-6">
         {ZONE_META.map((zone) => (
           <Image
             key={zone.key}
@@ -135,10 +135,10 @@ export async function CampMissionHome({
             alt={zone.title}
             width={120}
             height={120}
-            className="size-14 rounded-full sm:size-16"
+            className="size-20 rounded-full sm:size-24"
           />
         ))}
-      </SectionCard>
+      </div>
 
       <CampCountdownCard />
 
