@@ -179,7 +179,9 @@ export const campZoneScreens: CampZoneScreen[] = [
     title: "熊蜂區",
     leaderName: "宇翔",
     body: "熊蜂身體圓胖、翅膀看起來根本不適合飛行，卻能靠快速拍動翅膀飛行，甚至在寒冷環境中活動。",
-    quote: "勇敢，是不被外在的眼光所限制，依然願意跨出突破的那一步。",
+    // 兩個分句用換行分開（見 camp-zone-icons.tsx／camp-zones-reveal.tsx
+    // 的 whiteSpace: pre-line），固定斷在逗號後面，不靠瀏覽器自動斷行。
+    quote: "勇敢，是不被外在的眼光所限制，\n依然願意跨出突破的那一步。",
     icon: "/images/zone-icon-3.webp",
     cardImage: "/images/zone-card-bee.webp",
     posterImage: "/images/zone-intro-bee.webp",
