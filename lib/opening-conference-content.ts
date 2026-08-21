@@ -215,7 +215,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
   {
     id: "workshop-c",
     speaker: "歐震弟兄",
-    topic: "要在職場中傳福音，其實很需要勇氣！",
+    topic: "要在職場中活出信仰，其實很需要勇氣！",
     location: "地點待公布",
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-c.webp",
