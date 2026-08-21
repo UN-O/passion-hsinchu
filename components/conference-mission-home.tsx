@@ -47,7 +47,7 @@ function breakAfterFirstComma(text: string) {
 function ConferenceSessionCard({ session, meetingHref }: { session: ConferenceSession; meetingHref: string }) {
   return (
     <Link
-      href={`${meetingHref}?session=${session.id}`}
+      href={`${meetingHref}/${session.id}`}
       className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
     >
       <Image
@@ -207,7 +207,9 @@ export function ConferenceMissionHome({
               沒載入完成的瞬間會先看到這層底色，紅色跟頁面本身的藍色背景
               反差太大，載入時會很明顯地閃一下紅色；透明的話載入中直接透出
               頁面底色，比較不突兀。點卡片連去聚會內容頁對應的場次
-              （?session=）。倒數計時只有最上面那一個，卡片本身不重複顯示。
+              （/${session.id} 路徑，不是 query string——場次一律用路徑裡的
+              id 定位，可以參考 app/conference/meeting/[sessionId]/page.tsx
+              最上面的說明）。倒數計時只有最上面那一個，卡片本身不重複顯示。
               工作坊卡片列插在午場聚會（session-2）跟 DAY2 晚場聚會
               （session-3）中間，對齊流程表本身的順序（午場→工作坊→晚場），
               conferenceSessions 固定就是 [session-1, session-2, session-3]
