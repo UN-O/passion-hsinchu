@@ -189,7 +189,7 @@ export async function CampMissionHome({
       </Link>
 
       {activeIgStories.length > 0 && (
-        <SectionCard className="mt-6 flex flex-col gap-2">
+        <SectionCard variant="glass" className="mt-6 flex flex-col gap-2">
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Instagram className="size-4" />
             官方 IG 限時動態
