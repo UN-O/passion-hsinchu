@@ -7,6 +7,7 @@ import { CampLiquidGlassFilter } from "@/components/camp-liquid-glass-filter"
 import { ScrollBlackout, ScrollBlackoutTrigger } from "@/components/camp-scroll-blackout"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampSidebar } from "@/components/camp-sidebar"
+import { CampZoneIcons } from "@/components/camp-zone-icons"
 import { SquadCourageCard } from "@/components/squad-courage-card"
 import { IgStoriesSection } from "@/components/ig-stories-section"
 import { getActiveIgStories } from "@/lib/instagram-stories"
@@ -14,7 +15,7 @@ import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { getRegionTotals } from "@/lib/exp"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
-import { getNextCampMeetingSession } from "@/lib/opening-camp-content"
+import { getNextCampMeetingSession, campZoneScreens } from "@/lib/opening-camp-content"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 // 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
@@ -127,18 +128,7 @@ export async function CampMissionHome({
         className="mt-6 h-auto w-full"
       />
 
-      <div className="mt-10 flex items-center justify-center gap-6">
-        {ZONE_META.map((zone) => (
-          <Image
-            key={zone.key}
-            src={zone.icon}
-            alt={zone.title}
-            width={120}
-            height={120}
-            className="size-20 rounded-full sm:size-24"
-          />
-        ))}
-      </div>
+      <CampZoneIcons zones={campZoneScreens} />
 
       <CampCountdownCard />
 
