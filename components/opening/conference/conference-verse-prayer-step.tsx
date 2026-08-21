@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
 import { useImmersiveNav } from "@/components/immersive/immersive-nav-context"
 import { useOpeningStepAdvance } from "@/hooks/use-opening-step-advance"
@@ -8,8 +8,7 @@ import { useConferenceFlow } from "@/components/opening/conference-flow-context"
 import { getCategoryForItem, getVersePrayerContent } from "@/lib/opening-conference-content"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 import { versePrayerCategoryDraw } from "@/lib/opening-gradients"
-import { ExportCard } from "@/components/opening/export-card"
-import { downloadNodeAsImage } from "@/lib/export-image"
+import { downloadConferenceExportCard } from "@/lib/export-conference-card"
 import { Button } from "@/components/ui/button"
 import { OpeningTransitionProvider } from "@/components/opening/opening-transition"
 import { conferenceStepFromPath, type ConferenceStep } from "@/lib/opening-steps"
@@ -29,7 +28,6 @@ function VersePrayerContent({
   // nextRoute——最後一頁改用下面的「完成」表單直接送出，不是靠 advance()
   // 導頁過去。
   const advance = useOpeningStepAdvance(null)
-  const exportRef = useRef<HTMLDivElement>(null)
   const content = getVersePrayerContent(selectedItemId)
 
   if (!content) return null
@@ -75,7 +73,12 @@ function VersePrayerContent({
         {!isVersePage && (
           <Button
             variant="outline"
-            onClick={() => downloadNodeAsImage(exportRef.current, `passion-${content.itemId}.png`)}
+            onClick={() =>
+              downloadConferenceExportCard(
+                { label, verse: bodyText, verseRef: isVersePage ? content.verseRef : undefined, categoryKey },
+                `passion-${content.itemId}.png`
+              )
+            }
           >
             儲存圖片
           </Button>
@@ -92,12 +95,6 @@ function VersePrayerContent({
             </Button>
           </form>
         )}
-      </div>
-
-      {/* 用 opacity-0 而不是移到畫面外：手機瀏覽器（尤其 iOS Safari）會把定位在可視範圍外的 canvas 內容釋放掉，
-          等按下「儲存圖片」擷取時就會拿到空白圖片。opacity-0 讓節點仍在畫面範圍內、canvas 保持有內容，但視覺上看不到。 */}
-      <div className="pointer-events-none fixed inset-0 -z-10 opacity-0" aria-hidden>
-        <ExportCard ref={exportRef} label={label} verse={bodyText} verseRef={isVersePage ? content.verseRef : undefined} categoryKey={categoryKey} />
       </div>
     </div>
   )

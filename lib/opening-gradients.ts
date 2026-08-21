@@ -49,23 +49,6 @@ export function versePrayerCategoryDraw(categoryKey?: CategoryKey): CanvasDraw {
   }
 }
 
-// export-card.tsx（「儲存圖片」擷取用的隱藏卡片）專用：跟上面 versePrayerCategoryDraw
-// 同一組色票、同一個放射狀漸層算式，但輸出成 CSS radial-gradient 字串直接當
-// background 用，不透過 <canvas> 畫。手機瀏覽器（尤其真機 iOS Safari）在
-// canvas 長期用 opacity-0 藏在背景時會不定期把畫面內容釋放掉，toDataURL()
-// 讀到空的，html-to-image 擷取到的背景就整片消失；CSS background 是宣告式的，
-// 沒有「畫的時機」這回事，html-to-image 序列化 DOM 時直接讀 computed style，
-// 不存在讀到空畫布的問題。540×675 是 export-card.tsx 卡片固定的實際尺寸
-// （見該檔案關於寬度 540px 的說明），這裡的漸層半徑直接按這個尺寸算死，
-// 卡片尺寸不會變動。
-export function versePrayerCategoryBackgroundCss(categoryKey?: CategoryKey): string {
-  const [center, edge] = versePrayerCategoryPalettes[categoryKey ?? "B"]
-  const cardWidth = 540
-  const cardHeight = 675
-  const radius = Math.max(cardWidth, cardHeight) * 0.9
-  return `radial-gradient(circle ${radius}px at 50% 35%, ${center} 0%, ${edge} 100%)`
-}
-
 // camp result（ProfileCard 那一頁）專用：深色但不是全黑，中心稍微亮一點，不搶 ProfileCard 的風采
 export const staticDarkCanvasDraw: CanvasDraw = (ctx, { width, height }) => {
   const gradient = ctx.createRadialGradient(
