@@ -48,7 +48,7 @@ function ConferenceSessionCard({ session, meetingHref }: { session: ConferenceSe
   return (
     <Link
       href={`${meetingHref}/${session.id}`}
-      className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
+      className="relative mt-6 flex aspect-video w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
     >
       <Image
         src={session.image}
