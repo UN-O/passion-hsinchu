@@ -30,7 +30,13 @@ export function CampZoneIcons({ zones }: { zones: CampZoneScreen[] }) {
             aria-label={`${zone.title}介紹`}
             className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)]"
           >
-            <Image src={zone.icon} alt={zone.title} fill sizes="(min-width: 640px) 151px, 33vw" className="object-cover" />
+            <Image
+              src={zone.cardImage}
+              alt={zone.title}
+              fill
+              sizes="(min-width: 640px) 151px, 33vw"
+              className="object-cover"
+            />
           </button>
         ))}
       </div>
