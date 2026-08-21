@@ -206,7 +206,7 @@ export function ConferenceMissionHome({
             alt="我們相信，每個人都會在這裡遇見神。WE BELIEVE EVERYONE WILL EXPERIENCE GOD'S PRESENCE HERE."
             width={2434}
             height={257}
-            className="mx-auto mt-6 h-auto w-[70%]"
+            className="mt-6 h-auto w-full"
           />
 
           {/* 三場聚會（同一批 session 也是聚會流程表印的三場）各自一張卡片，
