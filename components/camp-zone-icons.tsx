@@ -5,13 +5,11 @@ import Image from "next/image"
 import { X } from "lucide-react"
 
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import { mantouSans } from "@/app/fonts/mantou-sans"
 import type { CampZoneScreen } from "@/lib/opening-camp-content"
 
-// 首頁三區 icon：點一個就彈出那一區的介紹（跟 camp-sidebar.tsx／
-// camp-countdown-card.tsx 同一套彈窗互動，不跳頁）。內容沿用 onboarding
-// 「介紹 3 區」那一步的同一份資料（campZoneScreens），現在還是佔位文字，
-// 之後使用者提供正式介紹內容時只要改 lib/opening-camp-content.ts。
+// 首頁三區 icon：點一個就彈出那一區的介紹（跟 camp-sidebar.tsx 聚會流程表
+// 同一套「滿版圖片、不跳頁」的彈窗互動）。圖是區長提供的完整介紹圖
+// （posterImage，見 lib/opening-camp-content.ts），不是文字內容。
 export function CampZoneIcons({ zones }: { zones: CampZoneScreen[] }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const activeZone = activeIndex !== null ? zones[activeIndex] : null
@@ -40,26 +38,22 @@ export function CampZoneIcons({ zones }: { zones: CampZoneScreen[] }) {
       <Dialog open={activeZone !== null} onOpenChange={(next) => !next && setActiveIndex(null)}>
         <DialogContent
           showCloseButton={false}
-          className="camp-theme flex max-w-[calc(100%-2rem)] flex-col items-center gap-3 rounded-3xl border-none bg-card p-6 text-center sm:max-w-sm"
+          className="camp-theme max-w-[calc(100%-2rem)] gap-0 overflow-hidden rounded-3xl border-none bg-transparent p-0 sm:max-w-md"
         >
           <DialogTitle className="sr-only">{activeZone?.title}</DialogTitle>
-          <DialogClose className="absolute top-4 right-4 z-10 rounded-full bg-black/50 p-1 text-white/90 backdrop-blur-sm hover:text-white">
+          <DialogClose className="absolute top-2 right-2 z-10 rounded-full bg-black/50 p-1 text-white/90 backdrop-blur-sm hover:text-white">
             <X className="size-5" />
             <span className="sr-only">關閉</span>
           </DialogClose>
 
           {activeZone && (
-            <>
-              <Image
-                src={activeZone.icon}
-                alt={activeZone.title}
-                width={120}
-                height={120}
-                className="size-20 rounded-full"
-              />
-              <h2 className={`${mantouSans.className} text-xl sm:text-2xl`}>{activeZone.title}</h2>
-              <p className="text-muted-foreground">{activeZone.body}</p>
-            </>
+            <Image
+              src={activeZone.posterImage}
+              alt={activeZone.title}
+              width={3600}
+              height={2025}
+              className="block h-auto w-full"
+            />
           )}
         </DialogContent>
       </Dialog>

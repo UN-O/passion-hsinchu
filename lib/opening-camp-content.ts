@@ -137,14 +137,32 @@ export const campRuleScreens: CampRuleScreen[] = [
 ]
 
 // 營會守則之後的「介紹 3 區」段落：一頁放三格資訊，先放佔位文字＋預設視覺
-// （跟營會守則那 6 頁是不同視覺風格，使用者說之後會另外給設計），
-// icon 已經是使用者提供的吉祥物圖。
-export type CampZoneScreen = { title: string; body: string; icon: string }
+// （跟營會守則那 6 頁是不同視覺風格）。icon 是吉祥物圖，onboarding 那一步
+// （camp-zones-reveal.tsx 的 CampZonesGrid）跟首頁三區 icon 的彈窗
+// （camp-zone-icons.tsx）共用同一份資料，各自只挑自己要的欄位。
+// posterImage 是區長提供的完整介紹圖（區長照片＋小隊分組＋區名，
+// 3600×2025），只有首頁彈窗用，onboarding 那一步版面不吃這張大圖。
+export type CampZoneScreen = { title: string; body: string; icon: string; posterImage: string }
 
 export const campZoneScreens: CampZoneScreen[] = [
-  { title: "土撥鼠區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-1.webp" },
-  { title: "小丑魚區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-2.webp" },
-  { title: "熊蜂區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-3.webp" },
+  {
+    title: "土撥鼠區",
+    body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。",
+    icon: "/images/zone-icon-1.webp",
+    posterImage: "/images/zone-intro-groundhog.webp",
+  },
+  {
+    title: "尼莫魚區",
+    body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。",
+    icon: "/images/zone-icon-2.webp",
+    posterImage: "/images/zone-intro-clownfish.webp",
+  },
+  {
+    title: "熊蜂區",
+    body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。",
+    icon: "/images/zone-icon-3.webp",
+    posterImage: "/images/zone-intro-bee.webp",
+  },
 ]
 
 // 首頁倒數卡片用的逐場聚會時間表，跟 lib/opening-conference-content.ts 的

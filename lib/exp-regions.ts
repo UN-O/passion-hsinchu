@@ -8,7 +8,7 @@
 // 而做成資料表反而讓「有幾區」變成執行期才知道的事。
 export const EXP_REGIONS = [
   { key: "bee", label: "蜜蜂" },
-  { key: "clownfish", label: "小丑魚" },
+  { key: "clownfish", label: "尼莫魚" },
   { key: "groundhog", label: "土撥鼠" },
 ] as const
 

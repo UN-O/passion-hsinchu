@@ -21,18 +21,18 @@ import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 // 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
 // 先放佔位內容做畫面，之後接上真正的小隊資料庫再換掉（之後會把全部名單分隊做進後台）。
-// 六眼肥魚是小丑魚區的小隊。
+// 六眼肥魚是尼莫魚區的小隊。
 const PLACEHOLDER_SQUAD_NAME = "六眼肥魚"
 const PLACEHOLDER_SQUAD_COURAGE_POINTS = 1280
 const PLACEHOLDER_USER_ZONE_KEY = "clownfish"
 
 // 對應 lib/exp-regions.ts 的 region key，但圖示／名稱沿用 onboarding 那邊
-// 已經定案的三區吉祥物（土撥鼠區／小丑魚區／熊蜂區），維持前後一致。
+// 已經定案的三區吉祥物（土撥鼠區／尼莫魚區／熊蜂區），維持前後一致。
 // color 用 dataviz skill 的分類色票，在深色底下跑過六項檢查（validate_palette.js
 // --mode dark --surface "#0a0a0a" --pairs all）確認可分辨，對應各區 icon 的主色調。
 const ZONE_META = [
   { key: "groundhog", title: "土撥鼠區", icon: "/images/zone-icon-1.webp", color: "#008300" },
-  { key: "clownfish", title: "小丑魚區", icon: "/images/zone-icon-2.webp", color: "#9333ea" },
+  { key: "clownfish", title: "尼莫魚區", icon: "/images/zone-icon-2.webp", color: "#9333ea" },
   { key: "bee", title: "熊蜂區", icon: "/images/zone-icon-3.webp", color: "#3987e5" },
 ] as const
 
