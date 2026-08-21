@@ -2,11 +2,11 @@
 
 import { createContext, useContext, useEffect, useRef, useState } from "react"
 
-// 首頁背景滑到某個位置就整個變黑、往回滑過那個位置又變回黃色——不是照
-// 卡片在文件裡的高度百分比畫一條固定漸層帶（那種做法卡片高度一變位置
-// 就跟著跑，而且只能單向漸變，滑回去不會變回黃色）。這裡改成量實際
-// scroll 位置：有沒有滑過 <ScrollBlackoutTrigger /> 那個節點，整個
-// viewport 的背景用 transition-colors 在黃／黑兩色之間切換。
+// 首頁背景在「每場聚會」那張卡片整個露出來（不被 sticky logo 列蓋到、也
+// 沒有被畫面下緣切到）才整片變黑；往上滑只要卡片開始被切掉一點（不管是
+// 被 sticky 列蓋住還是被畫面下緣切掉）就變回黃色。用 getBoundingClientRect
+// 量卡片跟 sticky 列（見 passion-logo-header.tsx 的 data-scroll-blackout-header）
+// 的實際位置，不是猜一個固定門檻。
 const TriggerContext = createContext<(node: HTMLDivElement | null) => void>(() => {})
 
 export function ScrollBlackout({ children }: { children: React.ReactNode }) {
@@ -17,12 +17,18 @@ export function ScrollBlackout({ children }: { children: React.ReactNode }) {
     function onScroll() {
       const el = triggerRef.current
       if (!el) return
-      const triggerTop = el.getBoundingClientRect().top + window.scrollY
-      setIsBlack(window.scrollY >= triggerTop)
+      const headerEl = document.querySelector<HTMLElement>("[data-scroll-blackout-header]")
+      const headerBottom = headerEl ? headerEl.getBoundingClientRect().bottom : 0
+      const rect = el.getBoundingClientRect()
+      setIsBlack(rect.top >= headerBottom && rect.bottom <= window.innerHeight)
     }
     onScroll()
     window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
+    window.addEventListener("resize", onScroll)
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      window.removeEventListener("resize", onScroll)
+    }
   }, [])
 
   return (
@@ -42,8 +48,9 @@ export function ScrollBlackout({ children }: { children: React.ReactNode }) {
   )
 }
 
-// 放在想讓背景開始變黑的位置正上方，本身不佔版面（h-0）。
-export function ScrollBlackoutTrigger() {
+// 包住想追蹤「有沒有整個露出來」的區塊（例如整張卡片），本身不影響版面
+// （純粹是量尺寸用的容器，沒有自己的間距／樣式）。
+export function ScrollBlackoutTrigger({ children }: { children: React.ReactNode }) {
   const setTriggerEl = useContext(TriggerContext)
-  return <div ref={setTriggerEl} aria-hidden className="h-0" />
+  return <div ref={setTriggerEl}>{children}</div>
 }

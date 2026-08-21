@@ -151,31 +151,31 @@ export async function CampMissionHome({
         <ZoneScoreChart zones={zoneScores} />
       </SectionCard>
 
-      {/* 背景在滑到這張「開場聚會」卡片時整個變黑，往回滑過這裡又變回黃色
-          （見 camp-scroll-blackout.tsx）。放在卡片正上方，這樣背景在卡片
-          進畫面前就已經是黑的。 */}
-      <ScrollBlackoutTrigger />
-
-      {/* 下場聚會視覺依場次換成 nextSession.image，跟 CONF 首頁聚會卡片
-          同一個排版：滿版照片＋由下往上的黑色漸層，文字疊在上面維持可讀度。 */}
-      <Link
-        href={meetingHref}
-        className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
-      >
-        <Image
-          src={nextSession.image}
-          alt=""
-          fill
-          sizes="(min-width: 640px) 640px, 100vw"
-          className="object-cover"
-          style={{ objectPosition: "50% 30%" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-        <p className="relative z-10 text-sm text-white/80">{MEETING_CARD_LABEL}</p>
-        <p className={`${genRyuMin.className} relative z-10 mt-2 w-[min(74%,28rem)] text-2xl text-white`}>
-          {nextSession.label}
-        </p>
-      </Link>
+      {/* 背景只在這張「開場聚會」卡片整個露出來（沒被 sticky logo 列蓋到、
+          也沒被畫面下緣切到）時才變黑，只要卡片被切掉一點點就變回黃色
+          （見 camp-scroll-blackout.tsx，量的是這個包住卡片的容器）。 */}
+      <ScrollBlackoutTrigger>
+        {/* 下場聚會視覺依場次換成 nextSession.image，跟 CONF 首頁聚會卡片
+            同一個排版：滿版照片＋由下往上的黑色漸層，文字疊在上面維持可讀度。 */}
+        <Link
+          href={meetingHref}
+          className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
+        >
+          <Image
+            src={nextSession.image}
+            alt=""
+            fill
+            sizes="(min-width: 640px) 640px, 100vw"
+            className="object-cover"
+            style={{ objectPosition: "50% 30%" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+          <p className="relative z-10 text-sm text-white/80">{MEETING_CARD_LABEL}</p>
+          <p className={`${genRyuMin.className} relative z-10 mt-2 w-[min(74%,28rem)] text-2xl text-white`}>
+            {nextSession.label}
+          </p>
+        </Link>
+      </ScrollBlackoutTrigger>
 
       {/* 早晨靈修：首頁只留一個入口，進去之後用頁面裡的 DAY2／DAY3 玻璃
           切換按鈕切換（見 app/camp/devotion/[day]/layout.tsx 的

@@ -23,6 +23,9 @@ export function PassionLogoHeader({
 } = {}) {
   return (
     <div
+      // data-scroll-blackout-header：camp-scroll-blackout.tsx 用這個屬性量
+      // sticky 列實際佔的高度，判斷底下卡片有沒有被蓋到，只在 sticky 時標。
+      data-scroll-blackout-header={sticky ? "" : undefined}
       className={sticky ? "sticky top-0 z-20 bg-gradient-to-b from-[#feed74] to-transparent pb-4" : "pt-6"}
       style={sticky ? { paddingTop: "calc(env(safe-area-inset-top) + 1.5rem)" } : undefined}
     >
