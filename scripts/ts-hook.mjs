@@ -16,7 +16,7 @@ registerHooks({
       return nextResolve(spec, context)
     } catch (error) {
       if (!/\.[a-z]+$/i.test(spec)) {
-        for (const ext of [".ts", ".tsx", "/index.ts"]) {
+        for (const ext of [".ts", ".tsx", "/index.ts", ".js"]) {
           try {
             return nextResolve(spec + ext, context)
           } catch {
