@@ -6,7 +6,7 @@ import { X } from "lucide-react"
 
 import { ConferenceCountdown } from "@/components/conference-countdown"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import { formatCampMeetingDateLabel, formatCampMeetingTimeLabel, getNextCampSession } from "@/lib/opening-camp-content"
+import { formatCampMeetingDateLabel, formatCampMeetingTimeRangeLabel, getNextCampSession } from "@/lib/opening-camp-content"
 
 // 跟 CONF 那張「下場聚會倒數」卡片同樣的樣式跟互動：點下去彈出資訊視窗，
 // 圖片＋標籤／標題／日期／時間同一種排版。標籤文字跟倒數目標都是「下一場
@@ -79,7 +79,8 @@ export function CampCountdownCard() {
             <p className="text-sm text-muted-foreground">聚會資訊</p>
             <p className="text-xl font-bold">{nextSession.label}</p>
             <p className="text-base">
-              {formatCampMeetingDateLabel(nextSession.startISO)} {formatCampMeetingTimeLabel(nextSession.startISO)}
+              {formatCampMeetingDateLabel(nextSession.startISO)}{" "}
+              {formatCampMeetingTimeRangeLabel(nextSession.startISO, nextSession.endISO)}
             </p>
           </div>
         </DialogContent>

@@ -153,6 +153,7 @@ export type CampSession = {
   id: string
   label: string
   startISO: string
+  endISO: string
   // 16:9 無字視覺圖：首頁聚會內容卡片、倒數計時縮圖共用，跟 ConferenceSession.image
   // 同一個用法。
   image: string
@@ -166,6 +167,7 @@ export const campSessions: CampSession[] = [
     id: "day1-opening",
     label: "開場聚會",
     startISO: "2026-08-25T14:00:00+08:00",
+    endISO: "2026-08-25T17:30:00+08:00",
     image: "/images/camp-session-day1-opening.webp",
     infoImage: "/images/camp-session-day1-opening-info.webp",
   },
@@ -173,6 +175,7 @@ export const campSessions: CampSession[] = [
     id: "day1-evening",
     label: "晚場聚會",
     startISO: "2026-08-25T19:00:00+08:00",
+    endISO: "2026-08-25T21:20:00+08:00",
     image: "/images/camp-session-day1-evening.webp",
     infoImage: "/images/camp-session-day1-evening-info.webp",
   },
@@ -180,6 +183,7 @@ export const campSessions: CampSession[] = [
     id: "day2-game",
     label: "大地競賽",
     startISO: "2026-08-26T09:20:00+08:00",
+    endISO: "2026-08-26T11:10:00+08:00",
     image: "/images/camp-session-day2-game.webp",
     infoImage: "/images/camp-session-day2-game-info.webp",
   },
@@ -187,6 +191,7 @@ export const campSessions: CampSession[] = [
     id: "day2-debate",
     label: "勇者辯論場",
     startISO: "2026-08-26T14:00:00+08:00",
+    endISO: "2026-08-26T17:30:00+08:00",
     image: "/images/camp-session-day2-debate.webp",
     infoImage: "/images/camp-session-day2-debate-info.webp",
   },
@@ -194,6 +199,7 @@ export const campSessions: CampSession[] = [
     id: "day2-evening",
     label: "晚場聚會",
     startISO: "2026-08-26T19:00:00+08:00",
+    endISO: "2026-08-26T21:20:00+08:00",
     image: "/images/camp-session-day2-evening.webp",
     infoImage: "/images/camp-session-day2-evening-info.webp",
   },
@@ -201,6 +207,7 @@ export const campSessions: CampSession[] = [
     id: "day3-podcast",
     label: "Live Podcast",
     startISO: "2026-08-27T09:20:00+08:00",
+    endISO: "2026-08-27T12:00:00+08:00",
     image: "/images/camp-session-day3-podcast.webp",
     infoImage: "/images/camp-session-day3-podcast-info.webp",
   },
@@ -208,6 +215,7 @@ export const campSessions: CampSession[] = [
     id: "day3-closing",
     label: "閉幕聚會",
     startISO: "2026-08-27T13:30:00+08:00",
+    endISO: "2026-08-27T16:30:00+08:00",
     image: "/images/camp-session-day3-closing.webp",
     infoImage: "/images/camp-session-day3-closing-info.webp",
   },
@@ -266,4 +274,9 @@ export function formatCampMeetingTimeLabel(iso: string): string {
   const parts = campMeetingTimeFormatter.formatToParts(new Date(iso))
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? ""
   return `${get("hour")}:${get("minute")}`
+}
+
+// 「14:00-17:30」這種區間顯示，起訖都在同一天（場次目前沒有跨午夜的）。
+export function formatCampMeetingTimeRangeLabel(startISO: string, endISO: string): string {
+  return `${formatCampMeetingTimeLabel(startISO)}-${formatCampMeetingTimeLabel(endISO)}`
 }

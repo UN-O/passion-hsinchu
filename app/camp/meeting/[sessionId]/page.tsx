@@ -14,7 +14,7 @@ import { getOrCreateDiscussionRoot } from "@/lib/discussion/root"
 import { isDiscussionAdmin } from "@/lib/discussion/permissions"
 import {
   formatCampMeetingDateLabel,
-  formatCampMeetingTimeLabel,
+  formatCampMeetingTimeRangeLabel,
   getCampMeetingSessions,
   getNextCampMeetingSession,
 } from "@/lib/opening-camp-content"
@@ -70,7 +70,9 @@ export default async function CampMeetingSessionPage({ params }: { params: Promi
             {formatCampMeetingDateLabel(activeSession.startISO)}・{activeSession.label}
           </p>
           <div className="mt-1 flex items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">{formatCampMeetingTimeLabel(activeSession.startISO)} 聚會開始</p>
+            <p className="text-sm text-muted-foreground">
+              {formatCampMeetingTimeRangeLabel(activeSession.startISO, activeSession.endISO)}
+            </p>
             <SessionSelect
               items={allSessions.map((s) => ({
                 id: s.id,
