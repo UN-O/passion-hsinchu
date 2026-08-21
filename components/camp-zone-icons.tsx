@@ -7,35 +7,30 @@ import { X } from "lucide-react"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import type { CampZoneScreen } from "@/lib/opening-camp-content"
 
-// 首頁三區 icon：點一個就彈出那一區的介紹（跟 camp-sidebar.tsx 聚會流程表
-// 同一套「滿版圖片、不跳頁」的彈窗互動）。圖是區長提供的完整介紹圖
-// （posterImage，見 lib/opening-camp-content.ts），不是文字內容。
+// 首頁三區入口：三個 4:5 直式方框，跟 CONF 工作坊卡片同一種排版
+// （conference-mission-home.tsx 的 aspect-[4/5] 卡片，border/shadow 都
+// 照抄同一組數值）。點一個就彈出那一區的介紹（跟 camp-sidebar.tsx 聚會
+// 流程表同一套「滿版圖片、不跳頁」的彈窗互動）。圖是區長提供的完整
+// 介紹圖（posterImage，見 lib/opening-camp-content.ts），不是文字內容。
 export function CampZoneIcons({ zones }: { zones: CampZoneScreen[] }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const activeZone = activeIndex !== null ? zones[activeIndex] : null
 
   return (
     <>
-      {/* grid-cols-3 讓三個 icon 各佔容器寬度的三分之一，跟著螢幕寬度等比例
-          縮放（不是固定的 size-20/24 px 值），最左／最右 icon 的外緣直接
-          貼齊容器（跟下面「距離開場聚會」那些卡片同一個 max-w-2xl px-[6%]
-          容器）左右邊界，不是置中一小叢。 */}
-      <div className="mt-10 grid grid-cols-3 gap-4">
+      {/* grid-cols-3 讓三個方框各佔容器寬度的三分之一，跟著螢幕寬度等比例
+          縮放，最左／最右方框的外緣直接貼齊容器（跟下面「距離開場聚會」
+          那些卡片同一個 max-w-2xl px-[6%] 容器）左右邊界。 */}
+      <div className="mt-10 grid grid-cols-3 gap-3">
         {zones.map((zone, index) => (
           <button
             key={zone.title}
             type="button"
             onClick={() => setActiveIndex(index)}
             aria-label={`${zone.title}介紹`}
-            className="mx-auto w-full max-w-32"
+            className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)]"
           >
-            <Image
-              src={zone.icon}
-              alt={zone.title}
-              width={120}
-              height={120}
-              className="aspect-square w-full rounded-full object-cover"
-            />
+            <Image src={zone.icon} alt={zone.title} fill sizes="(min-width: 640px) 151px, 33vw" className="object-cover" />
           </button>
         ))}
       </div>
