@@ -51,7 +51,12 @@ export function CampDevotionContent({ entry, isStaff }: { entry: DevotionEntry; 
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <p className="text-sm text-muted-foreground">{entry.day}</p>
-        <p className={`${genRyuMin.className} w-[min(74%,28rem)] text-xl`} style={{ transform: "skewX(-5deg)" }}>
+        {/* 74% 寬度限制是給直式卡片（區介紹彈窗那種）斷行用的慣例，這裡
+            套用會把標題硬擠成兩行、只剩一個字掉到第二行（見使用者截圖：
+            「勇敢是：選擇神看為正確的」／「事」）。這裡容器本身已經是
+            滿版寬度，拿掉限制讓標題用完整寬度斷行，靠 globals.css 的
+            text-wrap: pretty 在標點符號後面斷得更自然。 */}
+        <p className={`${genRyuMin.className} text-xl`} style={{ transform: "skewX(-5deg)" }}>
           {entry.title}
         </p>
       </div>
