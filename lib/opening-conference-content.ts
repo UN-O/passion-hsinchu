@@ -201,7 +201,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1"],
     image: "/images/conference-workshop-a.webp",
-    infoImage: "/images/conference-workshop-info-a.jpg",
+    infoImage: "/images/conference-workshop-info-a.webp",
   },
   {
     id: "workshop-b",
@@ -210,7 +210,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-b.webp",
-    infoImage: "/images/conference-workshop-info-b.jpg",
+    infoImage: "/images/conference-workshop-info-b.webp",
   },
   {
     id: "workshop-c",
@@ -219,7 +219,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-c.webp",
-    infoImage: "/images/conference-workshop-info-c.jpg",
+    infoImage: "/images/conference-workshop-info-c.webp",
   },
   {
     id: "workshop-d",
@@ -228,7 +228,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     location: "地點待公布",
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-d.webp",
-    infoImage: "/images/conference-workshop-info-d.jpg",
+    infoImage: "/images/conference-workshop-info-d.webp",
   },
 ]
 
