@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -41,11 +42,19 @@ export function AdminSidebar({
   return (
     <Sidebar>
       <SidebarHeader>
-        <Link
-          href="/"
-          className="px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          回首頁
+        {/* 後台是深色底（沒有套 camp/conference 的主題 class，吃全站預設的
+            深色 --background），logo 要用白色版本，跟 site-header.tsx 同一
+            個做法。連去 "/"（app 自己的首頁，會依身份導到 camp/conference
+            任務主頁），不是外部行銷網站——後台是工作用的頁面，回去的地方
+            應該是系統本身，不是行銷網站。 */}
+        <Link href="/" className="flex items-center gap-2 px-3 py-2">
+          <Image
+            src="/images/passion-logo.webp"
+            alt="PASSION®"
+            width={979}
+            height={178}
+            className="h-5 w-auto brightness-0 invert"
+          />
         </Link>
       </SidebarHeader>
 
