@@ -165,9 +165,13 @@
     /* 中文字預設可以在任兩個字中間換行；但夾在中間的英文字／片語（PASSION、
        T-shirt）如果沒特別處理，畫面窄的時候會被從單字中間硬切開。keep-all
        讓換行點只能落在空格或標點後面，英文片語會整段一起換到下一行；
-       overflow-wrap 當一個字本身就比整行還長時還是能斷行，不會直接溢出版面。 */
+       overflow-wrap 當一個字本身就比整行還長時還是能斷行，不會直接溢出版面。
+       text-wrap:pretty 讓瀏覽器排這一段的最後幾行時，自己挑比較好的斷行點
+       （避免只斷出一兩個字的孤行、儘量讓斷行落在標點後面），比逐字硬塞滿
+       每一行更好讀；不支援的舊瀏覽器會直接忽略，退回原本的斷行方式，不會壞。 */
     word-break: keep-all;
     overflow-wrap: break-word;
+    text-wrap: pretty;
   }
   html {
     @apply font-sans;
