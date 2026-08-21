@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button"
 import { LocationPinIcon } from "@/components/location-pin-icon"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { DiscussionRoot } from "@/components/discussion/discussion-root"
+import { RootContent } from "@/components/discussion/root-content"
 import { SessionSelect } from "@/components/session-select"
 import { conferenceSessionRootKey } from "@/lib/discussion/root-registry"
-import { getNextConferenceSession, getUnlockedConferenceSessions } from "@/lib/opening-conference-content"
+import { getOrCreateDiscussionRoot } from "@/lib/discussion/root"
+import { isDiscussionAdmin } from "@/lib/discussion/permissions"
+import { conferenceSessions, getNextConferenceSession } from "@/lib/opening-conference-content"
 import { requireFlowAccess } from "@/lib/session"
 import { siteConfig } from "@/lib/site-config"
 
@@ -19,26 +22,21 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-// 大綱、PPT 目前沒有 CMS 可以管理，先放佔位內容，等資料確定再接上真正的內容。
-// 聚會場次、名稱本身已經接上 lib/opening-conference-content.ts 的真實場次資料。
-const PLACEHOLDER_OUTLINE = "這裡先放佔位文字，等聚會大綱與 PPT 連結確定後補上。"
-
 export default async function ConferenceMeetingSessionPage({
   params,
 }: {
   params: Promise<{ sessionId: string }>
 }) {
   const session = await requireFlowAccess("conference")
-  // 工作人員不受「場次還沒輪到不能選」的限制，跟靈修內容公布時間限制同一套邏輯。
-  const isStaff = session.user.role !== "attendee"
   const { sessionId } = await params
-  const unlockedSessions = getUnlockedConferenceSessions(new Date(), isStaff)
-  const activeSession = unlockedSessions.find((s) => s.id === sessionId)
+  // 所有人、不分角色都能看任何一場的聚會內容跟討論——不再有「還沒輪到不能
+  // 選」這種時間限制，只有場次 id 打錯／不存在才會導回目前這一場。
+  const activeSession = conferenceSessions.find((s) => s.id === sessionId)
 
-  // 網址帶的場次不存在、或還沒輪到（不管是打錯還是想提前偷看），一律導回
-  // 目前這一場的正式網址——不是 404（那場次可能真的存在，只是還沒開放），
-  // 也不 fallback 成放行。
   if (!activeSession) redirect(`/conference/meeting/${getNextConferenceSession().id}`)
+
+  const rootKey = conferenceSessionRootKey(activeSession.id)
+  const root = await getOrCreateDiscussionRoot(rootKey)
 
   return (
     <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
@@ -84,18 +82,18 @@ export default async function ConferenceMeetingSessionPage({
               {activeSession.startTime} 聚會開始
             </p>
             <SessionSelect
-              items={unlockedSessions.map((s) => ({ id: s.id, label: `${s.dateLabel}・${s.typeLabel}` }))}
+              items={conferenceSessions.map((s) => ({ id: s.id, label: `${s.dateLabel}・${s.typeLabel}` }))}
               activeId={activeSession.id}
               basePath="/conference/meeting"
             />
           </div>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <p className="text-base">{PLACEHOLDER_OUTLINE}</p>
-        </div>
-
-        <DiscussionRoot rootKey={conferenceSessionRootKey(activeSession.id)} session={session} />
+        <DiscussionRoot
+          rootKey={rootKey}
+          session={session}
+          header={<RootContent rootPostId={root.id} content={root.content} isDiscussionAdmin={isDiscussionAdmin(session)} />}
+        />
       </div>
     </main>
   )

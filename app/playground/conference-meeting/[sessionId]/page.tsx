@@ -8,7 +8,7 @@ import { LocationPinIcon } from "@/components/location-pin-icon"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { MeetingNotes } from "@/components/meeting-notes"
 import { SessionSelect } from "@/components/session-select"
-import { getNextConferenceSession, getUnlockedConferenceSessions } from "@/lib/opening-conference-content"
+import { conferenceSessions, getNextConferenceSession } from "@/lib/opening-conference-content"
 import { siteConfig } from "@/lib/site-config"
 
 export default async function ConferenceMeetingPlaygroundSessionPage({
@@ -17,8 +17,7 @@ export default async function ConferenceMeetingPlaygroundSessionPage({
   params: Promise<{ sessionId: string }>
 }) {
   const { sessionId } = await params
-  const unlockedSessions = getUnlockedConferenceSessions()
-  const activeSession = unlockedSessions.find((s) => s.id === sessionId)
+  const activeSession = conferenceSessions.find((s) => s.id === sessionId)
   if (!activeSession) redirect(`/playground/conference-meeting/${getNextConferenceSession().id}`)
 
   return (
@@ -65,7 +64,7 @@ export default async function ConferenceMeetingPlaygroundSessionPage({
               {activeSession.startTime} 聚會開始
             </p>
             <SessionSelect
-              items={unlockedSessions.map((s) => ({ id: s.id, label: `${s.dateLabel}・${s.typeLabel}` }))}
+              items={conferenceSessions.map((s) => ({ id: s.id, label: `${s.dateLabel}・${s.typeLabel}` }))}
               activeId={activeSession.id}
               basePath="/playground/conference-meeting"
             />

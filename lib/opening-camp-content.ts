@@ -238,16 +238,6 @@ export function getNextCampMeetingSession(now: Date = new Date()): CampSession {
   return upcoming ?? sessions[sessions.length - 1]
 }
 
-// 場次選單只能選「已經輪到過」的場次，工作人員不受限——跟
-// getUnlockedConferenceSessions 同一套邏輯（見該函式的註解）。
-export function getUnlockedCampMeetingSessions(now: Date = new Date(), unlockAll = false): CampSession[] {
-  const sessions = getCampMeetingSessions()
-  if (unlockAll) return sessions
-  const next = getNextCampMeetingSession(now)
-  const nextIndex = sessions.findIndex((session) => session.id === next.id)
-  return sessions.slice(0, nextIndex + 1)
-}
-
 const campMeetingDateFormatter = new Intl.DateTimeFormat("zh-TW", {
   timeZone: "Asia/Taipei",
   month: "numeric",

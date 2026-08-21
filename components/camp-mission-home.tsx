@@ -4,7 +4,7 @@ import { Instagram } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { CampLiquidGlassFilter } from "@/components/camp-liquid-glass-filter"
-import { ScrollBlackout, ScrollBlackoutTrigger } from "@/components/camp-scroll-blackout"
+import { ScrollBlackout } from "@/components/camp-scroll-blackout"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampSidebar } from "@/components/camp-sidebar"
 import { CampZoneIcons } from "@/components/camp-zone-icons"
@@ -13,9 +13,16 @@ import { IgStoriesSection } from "@/components/ig-stories-section"
 import { getActiveIgStories } from "@/lib/instagram-stories"
 import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { CampCountdownCard } from "@/components/camp-countdown-card"
+import { CampMeetingSessions } from "@/components/camp-meeting-sessions"
 import { getRegionTotals } from "@/lib/exp"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
-import { getNextCampMeetingSession, campZoneScreens } from "@/lib/opening-camp-content"
+import {
+  campZoneScreens,
+  formatCampMeetingDateLabel,
+  formatCampMeetingTimeLabel,
+  getCampMeetingSessions,
+  getNextCampMeetingSession,
+} from "@/lib/opening-camp-content"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 // 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
@@ -24,10 +31,6 @@ import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 const PLACEHOLDER_SQUAD_NAME = "六眼肥魚"
 const PLACEHOLDER_SQUAD_COURAGE_POINTS = 1280
 const PLACEHOLDER_USER_ZONE_KEY = "clownfish"
-
-// 大方框、置底文字，跟 conference-mission-home.tsx 的聚會內容卡同一個格式。
-// 場次名稱已經接上 campSessions／getNextCampSession 的真實場次資料。
-const MEETING_CARD_LABEL = "聚會內容"
 
 // 對應 lib/exp-regions.ts 的 region key，但圖示／名稱沿用 onboarding 那邊
 // 已經定案的三區吉祥物（土撥鼠區／小丑魚區／熊蜂區），維持前後一致。
@@ -95,6 +98,12 @@ export async function CampMissionHome({
   // 顯示這 4 場，兩邊的「下一場」要對得起來（大地競賽／辯論場／Podcast
   // 不算聚會，見 lib/opening-camp-content.ts 的 CAMP_MEETING_SESSION_IDS）。
   const nextSession = getNextCampMeetingSession()
+  const allSessions = getCampMeetingSessions().map((s) => ({
+    id: s.id,
+    label: s.label,
+    dateTimeLabel: `${formatCampMeetingDateLabel(s.startISO)} ${formatCampMeetingTimeLabel(s.startISO)}`,
+    image: s.image,
+  }))
   // 過期（上傳超過 24 小時）的限動先在伺服器端濾掉，client 不用自己重算。
   const activeIgStories = getActiveIgStories()
 
@@ -141,31 +150,17 @@ export async function CampMissionHome({
         <ZoneScoreChart zones={zoneScores} />
       </SectionCard>
 
-      {/* 背景只在這張「開場聚會」卡片整個露出來（沒被 sticky logo 列蓋到、
+      {/* 背景只在「即將開始」那張卡片整個露出來（沒被 sticky logo 列蓋到、
           也沒被畫面下緣切到）時才變黑，只要卡片被切掉一點點就變回黃色
-          （見 camp-scroll-blackout.tsx，量的是這個包住卡片的容器）。 */}
-      <ScrollBlackoutTrigger>
-        {/* 下場聚會視覺依場次換成 nextSession.image，跟 CONF 首頁聚會卡片
-            同一個排版：滿版照片＋由下往上的黑色漸層，文字疊在上面維持可讀度。 */}
-        <Link
-          href={meetingHref}
-          className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
-        >
-          <Image
-            src={nextSession.image}
-            alt=""
-            fill
-            sizes="(min-width: 640px) 640px, 100vw"
-            className="object-cover"
-            style={{ objectPosition: "50% 30%" }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-          <p className="relative z-10 text-sm text-white/80">{MEETING_CARD_LABEL}</p>
-          <p className={`${genRyuMin.className} relative z-10 mt-2 w-[min(74%,28rem)] text-2xl text-white`}>
-            {nextSession.label}
-          </p>
-        </Link>
-      </ScrollBlackoutTrigger>
+          （見 camp-scroll-blackout.tsx）。ScrollBlackoutTrigger 包在
+          camp-meeting-sessions.tsx 裡面、只包住卡片本身——不包住「查看
+          所有活動」展開清單，不然清單展開／收合時容器高度跟著變，量出來
+          的「整個露出來」門檻會跟著跑掉。 */}
+      <CampMeetingSessions
+        nextSession={allSessions.find((s) => s.id === nextSession.id) ?? allSessions[0]}
+        allSessions={allSessions}
+        meetingHref={meetingHref}
+      />
 
       {/* 早晨靈修：首頁只留一個入口，進去之後用頁面裡的 DAY2／DAY3 玻璃
           切換按鈕切換（見 app/camp/devotion/[day]/layout.tsx 的

@@ -15,8 +15,8 @@ import { isDiscussionAdmin } from "@/lib/discussion/permissions"
 import {
   formatCampMeetingDateLabel,
   formatCampMeetingTimeLabel,
+  getCampMeetingSessions,
   getNextCampMeetingSession,
-  getUnlockedCampMeetingSessions,
 } from "@/lib/opening-camp-content"
 import { requireFlowAccess } from "@/lib/session"
 
@@ -27,13 +27,12 @@ export const metadata: Metadata = {
 
 export default async function CampMeetingSessionPage({ params }: { params: Promise<{ sessionId: string }> }) {
   const session = await requireFlowAccess("camp")
-  // 工作人員不受「場次還沒輪到不能選」的限制，跟靈修內容公布時間限制同一套邏輯。
-  const isStaff = session.user.role !== "attendee"
   const { sessionId } = await params
-  const unlockedSessions = getUnlockedCampMeetingSessions(new Date(), isStaff)
-  const activeSession = unlockedSessions.find((s) => s.id === sessionId)
+  // 所有人、不分角色都能看任何一場的聚會內容跟討論——不再有「還沒輪到不能
+  // 選」這種時間限制，只有場次 id 打錯／不存在才會導回目前這一場。
+  const allSessions = getCampMeetingSessions()
+  const activeSession = allSessions.find((s) => s.id === sessionId)
 
-  // 網址帶的場次不存在、或還沒輪到，導回目前這一場的正式網址。
   if (!activeSession) redirect(`/camp/meeting/${getNextCampMeetingSession().id}`)
 
   const rootKey = campSessionRootKey(activeSession.id)
@@ -73,7 +72,7 @@ export default async function CampMeetingSessionPage({ params }: { params: Promi
           <div className="mt-1 flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{formatCampMeetingTimeLabel(activeSession.startISO)} 聚會開始</p>
             <SessionSelect
-              items={unlockedSessions.map((s) => ({
+              items={allSessions.map((s) => ({
                 id: s.id,
                 label: `${formatCampMeetingDateLabel(s.startISO)}・${s.label}`,
               }))}
