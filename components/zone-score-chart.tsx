@@ -63,15 +63,17 @@ function useCountUp(target: number, storageKey: string): number {
 
 function ZoneBar({ zone, max }: { zone: ZoneScore; max: number }) {
   const displayValue = useCountUp(zone.total, `${STORAGE_PREFIX}${zone.key}`)
-  // 長條最高只長到 90%，幫上面的數字標籤固定留頭部空間——分數再高
-  // （占滿量尺）長條也不會頂到數字，數字不會被裁切掉。
-  const heightPct = Math.min((displayValue / max) * 90, 90)
+  // 長條最高只長到 84%，幫上面的數字標籤固定留頭部空間——分數再高
+  // （占滿量尺）長條也不會頂到數字，數字不會被裁切掉。數字字級加大
+  // 後（clamp 最大到 1.75rem）比原本的 text-sm/base 占的高度更多，
+  // 90% 留的空間不夠，往下調成 84% 多留一點。
+  const heightPct = Math.min((displayValue / max) * 84, 84)
 
   return (
     <div className="flex h-full flex-col items-center justify-end gap-1.5">
       {displayValue > 0 && (
         <span
-          className={`${dinEngschrift.className} text-sm font-bold tabular-nums sm:text-base`}
+          className={`${dinEngschrift.className} text-[clamp(1.125rem,4.5vw,1.75rem)] leading-none font-bold tracking-wide tabular-nums`}
           style={{ transform: "skewX(-5deg)" }}
         >
           {displayValue.toLocaleString("en-US")}
