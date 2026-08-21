@@ -3,6 +3,8 @@
 import Image from "next/image"
 import { useEffect, useState } from "react"
 
+import { dinEngschrift } from "@/app/fonts/din-engschrift"
+
 export type ZoneScore = {
   key: string
   title: string
@@ -68,7 +70,12 @@ function ZoneBar({ zone, max }: { zone: ZoneScore; max: number }) {
   return (
     <div className="flex h-full flex-col items-center justify-end gap-1.5">
       {displayValue > 0 && (
-        <span className="text-sm font-bold tabular-nums sm:text-base">{displayValue.toLocaleString("en-US")}</span>
+        <span
+          className={`${dinEngschrift.className} text-sm font-bold tabular-nums sm:text-base`}
+          style={{ transform: "skewX(-5deg)" }}
+        >
+          {displayValue.toLocaleString("en-US")}
+        </span>
       )}
       <div
         className="w-full max-w-16 rounded-t-[4px] sm:max-w-20"
