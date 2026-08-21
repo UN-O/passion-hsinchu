@@ -36,25 +36,31 @@ export function CanvasBackground({ draw = defaultDraw }: CanvasBackgroundProps) 
     const ctx = canvas?.getContext("2d")
     if (!canvas || !ctx) return
 
+    const renderAt = (elapsed: number) =>
+      draw(ctx, { width: canvas.clientWidth, height: canvas.clientHeight, time: elapsed })
+
+    // resize() 本身會清空畫布（設定 canvas.width／height 這個動作就是在清畫面），
+    // 一定要緊接著同步補畫一次，不能只靠下面的 requestAnimationFrame(loop)——
+    // 中間那個空窗期（清空之後、下一個動畫影格畫回來之前）雖然只有幾毫秒，
+    // 但像 downloadNodeAsImage 這種使用者主動點擊觸發的一次性截圖
+    // （html-to-image 的 toBlob）剛好卡在這個空窗期的話，擷取到的就是一片
+    // 空白畫布，不是預期的漸層背景。
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio, 2)
       canvas.width = canvas.clientWidth * dpr
       canvas.height = canvas.clientHeight * dpr
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      renderAt(elapsedBeforePause)
     }
+    let elapsedBeforePause = 0
     resize()
     window.addEventListener("resize", resize)
 
-    const renderAt = (elapsed: number) =>
-      draw(ctx, { width: canvas.clientWidth, height: canvas.clientHeight, time: elapsed })
-
     if (reducedMotion) {
-      renderAt(0)
       return () => window.removeEventListener("resize", resize)
     }
 
     let frameId = 0
-    let elapsedBeforePause = 0
     let start: number | null = null
 
     const loop = (time: number) => {
