@@ -184,11 +184,11 @@ export function DiscussionThread({
 
   // 規則 4：展開只顯示一條主幹。主幹查詢沒有分頁游標——鏈超過長度上限時，
   // 鏈尾那則自己會長出「查看更多」，點下去就是從它再走一段。
-  async function handleLoadMoreChildren(postId: string) {
+  async function handleLoadMoreChildren(postId: string, excludeChildId?: string) {
     if (childLoadingMap[postId]) return
     setChildLoadingMap((prev) => ({ ...prev, [postId]: true }))
 
-    const result = await loadReplyChain(postId)
+    const result = await loadReplyChain(postId, excludeChildId)
     if (result.ok) {
       setBase((prev) => ({
         ...prev,

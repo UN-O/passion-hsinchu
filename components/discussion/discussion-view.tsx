@@ -49,12 +49,16 @@ export function DiscussionView({
   viewer,
   isDiscussionAdmin,
   initial,
+  showTeamFilter = false,
 }: {
   rootKey: string
   rootPostId: string
   viewer: ViewerInfo
   isDiscussionAdmin: boolean
   initial: DiscussionResponse
+  // 只有 CAMP 討論、而且使用者自己有進小隊名單時才顯示「小隊」這個排序選項
+  // （見 discussion-root.tsx 的 getViewerCampTeam）。
+  showTeamFilter?: boolean
 }) {
   const [sort, setSort] = useState<SortMode>("top")
   const [base, setBase] = useState<DiscussionData>({
@@ -194,11 +198,11 @@ export function DiscussionView({
   // 主幹查詢沒有分頁游標——它從這個節點開始，順著
   // reply_rank.best_direct_child_id 往下走最多 K 步。鏈超過 K 的時候不需要
   // 另外的分頁：鏈尾那則自己會長出「查看更多」，點下去就是從它再走一段。
-  async function handleLoadMoreChildren(postId: string) {
+  async function handleLoadMoreChildren(postId: string, excludeChildId?: string) {
     if (childLoadingMap[postId]) return
     setChildLoadingMap((prev) => ({ ...prev, [postId]: true }))
 
-    const result = await loadReplyChain(postId)
+    const result = await loadReplyChain(postId, excludeChildId)
     if (result.ok) {
       setBase((prev) => ({
         ...prev,
@@ -267,6 +271,7 @@ export function DiscussionView({
         >
           <option value="top">熱門</option>
           <option value="latest">最新</option>
+          {showTeamFilter && <option value="team">小隊</option>}
         </select>
       </div>
 
@@ -275,7 +280,9 @@ export function DiscussionView({
           區塊——所以這裡就是單一份 replies 列表，沒有另外的 pinned 區塊。 */}
       <div className={cn(sortPending && "opacity-60")}>
         {optimistic.replies.length === 0 ? (
-          <p className="text-sm text-muted-foreground">還沒有人分享，成為第一個留言的人吧。</p>
+          <p className="text-sm text-muted-foreground">
+            {sort === "team" ? "小隊裡還沒有人在這則討論留言。" : "還沒有人分享，成為第一個留言的人吧。"}
+          </p>
         ) : (
           <SiblingList
             items={optimistic.replies}

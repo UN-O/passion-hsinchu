@@ -3,6 +3,7 @@ import { alias, type AnyPgColumn } from "drizzle-orm/pg-core"
 
 import { db } from "@/db"
 import { user } from "@/db/schema/auth"
+import { campTeamMember } from "@/db/schema/app"
 import {
   discussionPins,
   pollOptions,
@@ -16,7 +17,7 @@ import { DISCUSSION_RANKING_CONFIG } from "./ranking"
 import { DiscussionError } from "./constants"
 import type { DiscussionEntry, DiscussionItem, DiscussionResponse, MoreRepliesResponse, PollDTO, PostDTO } from "./dto"
 
-export type SortMode = "top" | "latest"
+export type SortMode = "top" | "latest" | "team"
 
 type CandidateRow = {
   post: typeof posts.$inferSelect
@@ -135,14 +136,18 @@ async function fetchTopCandidates(
 }
 
 // Latest：走 posts_reply_to_created_idx (reply_to_id, created_at DESC, id DESC)。
+// branchIds 不是 null 時，額外限制只回傳 id 落在這個集合裡的頂層貼文——「小隊」
+// 篩選用這個縮小範圍，見 getTeamBranchIds。
 async function fetchLatestCandidates(
   parentPostId: string,
   excludeIds: string[],
   cursor: Cursor | null,
-  limit: number
+  limit: number,
+  branchIds?: string[] | null
 ): Promise<CandidateRow[]> {
   const conditions = [eq(posts.replyToId, parentPostId), isNull(posts.deletedAt)]
   if (excludeIds.length > 0) conditions.push(sqlNotIn(posts.id, excludeIds))
+  if (branchIds) conditions.push(inArray(posts.id, branchIds))
   if (cursor?.createdAt !== undefined) {
     conditions.push(cursorBefore(posts.createdAt, posts.id, new Date(cursor.createdAt), cursor.id))
   }
@@ -170,6 +175,47 @@ async function fetchLatestCandidates(
     directReplyCount: r.directReplyCount ?? 0,
     branchScore: r.branchScore ?? null,
   }))
+}
+
+// 「小隊」篩選只有 CAMP 討論、而且使用者自己有進 camp_team_member 才有意義
+// （工作人員、還沒排進小隊的人都沒有這筆資料）。查不到就回傳 null，呼叫端
+// 當「沒有小隊可篩」處理，不是錯誤。
+export async function getViewerCampTeam(viewerId: string | null): Promise<{ teamName: string } | null> {
+  if (!viewerId) return null
+  // user.enrollment_id 是 better-auth 產生器加的 text 欄位（見 db/schema/auth.ts
+  // 頂端的說明），camp_team_member.enrollment_id 是真的 uuid——兩者型別不同，
+  // Postgres 不會自動轉型，join 條件要自己 cast 掉，不然直接噴
+  // 「operator does not exist: uuid = text」。
+  const [row] = await db
+    .select({ teamName: campTeamMember.teamName })
+    .from(user)
+    .innerJoin(campTeamMember, sql`${campTeamMember.enrollmentId}::text = ${user.enrollmentId}`)
+    .where(eq(user.id, viewerId))
+    .limit(1)
+  return row ?? null
+}
+
+// 某個小隊在這個討論裡，有出現在哪些頂層討論串（不管小隊成員的貼文實際上
+// 藏多深）。posts.root_branch_id 對任何深度的貼文都是 O(1) 直接存好「自己
+// 屬於哪個頂層討論串」（見 db/schema/discussion.ts 的說明），頂層貼文自己的
+// root_branch_id 就是它自己的 id——所以「篩出的 root_branch_id 集合」直接
+// 拿來對頂層列表做 posts.id IN (...) 就好，不用另外爬子樹。這樣「小隊成員
+// 只在很深的地方回過一則」的討論串，整條還是會完整出現，不會被拆散。
+async function getTeamBranchIds(rootPostId: string, teamName: string): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ rootBranchId: posts.rootBranchId })
+    .from(posts)
+    .innerJoin(user, eq(user.id, posts.authorId))
+    // 同樣的型別問題，見 getViewerCampTeam 的說明。
+    .innerJoin(campTeamMember, sql`${campTeamMember.enrollmentId}::text = ${user.enrollmentId}`)
+    .where(
+      and(
+        eq(posts.rootPostId, rootPostId),
+        eq(campTeamMember.teamName, teamName),
+        isNull(posts.deletedAt)
+      )
+    )
+  return rows.map((r) => r.rootBranchId).filter((id): id is string => id !== null)
 }
 
 async function fetchByIds(ids: string[]): Promise<CandidateRow[]> {
@@ -307,10 +353,19 @@ export async function getDiscussionPage(input: GetDiscussionPageInput): Promise<
   const pinnedRows = cursor === null ? await fetchPinned(input.rootPostId) : []
   const pinnedIds = pinnedRows.map((r) => r.post.id)
 
-  const candidateRows =
-    input.sort === "top"
-      ? await fetchTopCandidates(input.rootPostId, pinnedIds, cursor, limit)
-      : await fetchLatestCandidates(input.rootPostId, pinnedIds, cursor, limit)
+  let candidateRows: CandidateRow[]
+  if (input.sort === "top") {
+    candidateRows = await fetchTopCandidates(input.rootPostId, pinnedIds, cursor, limit)
+  } else if (input.sort === "team") {
+    const team = await getViewerCampTeam(input.viewerId)
+    // 沒有小隊可篩（不該發生——UI 只在使用者有小隊時才會出現這個選項），
+    // 當作篩出空集合處理，不是拋錯讓整頁掛掉。
+    const branchIds = team ? await getTeamBranchIds(input.rootPostId, team.teamName) : []
+    candidateRows =
+      branchIds.length > 0 ? await fetchLatestCandidates(input.rootPostId, pinnedIds, cursor, limit, branchIds) : []
+  } else {
+    candidateRows = await fetchLatestCandidates(input.rootPostId, pinnedIds, cursor, limit)
+  }
 
   const hasMore = candidateRows.length > limit
   const pageRows = candidateRows.slice(0, limit)
@@ -415,7 +470,13 @@ export async function getMoreReplies(input: GetMoreRepliesInput): Promise<MoreRe
 export async function getReplyChain(
   parentPostId: string,
   viewerId: string | null,
-  limit?: number
+  limit?: number,
+  // 呼叫端如果已經知道 parent 的最佳子節點是哪一則（例如：這個 parent 自己
+  // 就是上一次展開的鏈尾那則之前的節點，它的最佳子節點已經在同一條鏈裡
+  // 顯示過了），把那個 id 傳進來排除掉，種子改選「次佳」子節點。不排除的話，
+  // 種子查詢每次都選同一個 reply_score 最高的子節點，會跟已經顯示在畫面上
+  // 的那則重複渲染。
+  excludeSeedId?: string | null
 ): Promise<DiscussionItem[]> {
   const max = clampLimit(limit)
 
@@ -431,6 +492,7 @@ export async function getReplyChain(
         FROM reply_rank r2
         JOIN posts p2 ON p2.id = r2.post_id
         WHERE r2.parent_id = ${parentPostId} AND p2.deleted_at IS NULL
+          ${excludeSeedId ? sql`AND r2.post_id != ${excludeSeedId}` : sql``}
         ORDER BY r2.reply_score DESC, r2.post_id DESC
         LIMIT 1
       )

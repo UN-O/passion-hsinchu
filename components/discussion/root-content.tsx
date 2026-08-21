@@ -78,7 +78,7 @@ export function RootContent({
           </div>
         ) : (
           <div className="flex items-start gap-2">
-            <div className="min-w-0 flex-1 text-base leading-relaxed [&>*+*]:mt-3">
+            <div className="min-w-0 flex-1 text-sm leading-relaxed [&>*+*]:mt-3">
               <ReactMarkdown
                 components={{
                   // eslint-disable-next-line @next/next/no-img-element -- 內容來自 admin 貼的任意網址，不是本地靜態資源

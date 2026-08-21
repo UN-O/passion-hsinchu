@@ -1,8 +1,9 @@
 import type { ReactNode } from "react"
 
 import { getOrCreateDiscussionRoot } from "@/lib/discussion/root"
-import { getDiscussionPage } from "@/lib/discussion/queries"
+import { getDiscussionPage, getViewerCampTeam } from "@/lib/discussion/queries"
 import { isDiscussionAdmin } from "@/lib/discussion/permissions"
+import { flowForRootKey } from "@/lib/discussion/root-registry"
 import type { AppSession } from "@/lib/session"
 import { DiscussionView } from "./discussion-view"
 
@@ -23,6 +24,10 @@ export async function DiscussionRoot({
 }) {
   const root = await getOrCreateDiscussionRoot(rootKey)
   const initial = await getDiscussionPage({ rootPostId: root.id, viewerId: session.user.id, sort: "top" })
+  // 「小隊」篩選只有 CAMP 討論、而且使用者自己有進小隊名單才有意義——
+  // CONFERENCE 討論不查這筆，省一次不必要的 db 往返。
+  const showTeamFilter =
+    flowForRootKey(rootKey) === "camp" && (await getViewerCampTeam(session.user.id)) !== null
 
   // 顏色跟著外層頁面的主題走（CAMP 的淺黃 camp-theme／CONFERENCE 的深色），
   // 不強制切成深色。不用圓角、不加水平 margin/padding——不希望討論串跟
@@ -37,6 +42,7 @@ export async function DiscussionRoot({
         viewer={{ id: session.user.id, name: session.user.name, role: session.user.role }}
         isDiscussionAdmin={isDiscussionAdmin(session)}
         initial={initial}
+        showTeamFilter={showTeamFilter}
       />
     </div>
   )

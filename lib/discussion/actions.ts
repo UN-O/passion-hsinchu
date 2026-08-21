@@ -94,12 +94,15 @@ export async function loadMoreReplies(
 // 整層子回覆）。要再往下接的時候，呼叫端把鏈尾那則的 id 當 parentPostId
 // 再叫一次就好——查詢本身沒有游標，因為它每次都只走 best_direct_child_id
 // 這條 O(K) 的指標鏈。
-export async function loadReplyChain(parentPostId: string): Promise<ActionResult<DiscussionItem[]>> {
+export async function loadReplyChain(
+  parentPostId: string,
+  excludeSeedId?: string | null
+): Promise<ActionResult<DiscussionItem[]>> {
   return toResult(
     (async () => {
       const session = await requireClaimedSession()
       await requirePostFlowAccess(session, parentPostId)
-      return getReplyChain(parentPostId, session.user.id)
+      return getReplyChain(parentPostId, session.user.id, undefined, excludeSeedId)
     })()
   )
 }

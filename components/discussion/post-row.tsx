@@ -20,7 +20,10 @@ export type PostRowController = {
   onToggleOfficial: (postId: string, next: boolean) => void
   // 展開這則底下的主幹。沒有游標參數：主幹查詢就是從這個節點順著
   // best_direct_child 指標往下走，鏈太長時由鏈尾那則自己再展開一段。
-  onLoadMoreChildren: (postId: string) => void
+  // excludeChildId：這則是某條已經展開的鏈裡的一節（不是鏈尾）時，下一節
+  // 是誰已經知道、已經顯示在畫面上了——查詢要排除掉它，不然種子每次都選
+  // 同一個 reply_score 最高的子節點，會跟已經顯示的那則重複渲染。
+  onLoadMoreChildren: (postId: string, excludeChildId?: string) => void
   childLoading: (postId: string) => boolean
   childHasLoaded: (postId: string) => boolean
   renderChildren: (postId: string, depth: number) => ReactNode
@@ -268,6 +271,7 @@ export function PostRow({
   controller,
   depth = 0,
   hasFollowingSibling,
+  excludeChildId,
 }: {
   item: DiscussionItem
   controller: PostRowController
@@ -276,6 +280,9 @@ export function PostRow({
   // 一起，而不是每則各自斷開。注意這裡的「sibling」是渲染上的下一則，在
   // 主幹裡它其實是這一則的子節點——所以畫垂直線是對的（規則 2）。
   hasFollowingSibling?: boolean
+  // 這則是主幹裡不是鏈尾的一節時，renderChain 會把「下一節是誰」傳進來，
+  // 這則自己展開時要排除掉它（見 PostRowController.onLoadMoreChildren）。
+  excludeChildId?: string
 }) {
   const [showChildren, setShowChildren] = useState(false)
 
@@ -295,7 +302,7 @@ export function PostRow({
 
   function handleExpand() {
     setShowChildren(true)
-    if (!controller.childHasLoaded(item.post.id)) controller.onLoadMoreChildren(item.post.id)
+    if (!controller.childHasLoaded(item.post.id)) controller.onLoadMoreChildren(item.post.id, excludeChildId)
   }
 
   // 曲線：從自己的 rail 中心往下、轉彎過去接巢狀頭貼。
@@ -405,6 +412,9 @@ export function renderChain(chain: DiscussionItem[], depth: number, controller: 
         controller={controller}
         depth={depth}
         hasFollowingSibling={!isLast}
+        // 同一個理由：不是鏈尾的那幾則，自己展開時要排除下一節那則，不然
+        // 種子查詢又選回同一個 reply_score 最高的子節點，跟下一節重複顯示。
+        excludeChildId={isLast ? undefined : chain[index + 1].post.id}
       />
     )
   })

@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { DiscussionThread } from "@/components/discussion/discussion-thread"
+import { RootContent } from "@/components/discussion/root-content"
 import { cn } from "@/lib/utils"
 import { isDiscussionAdmin } from "@/lib/discussion/permissions"
 import { getAncestorChain, getDiscussionPage, getPostContext } from "@/lib/discussion/queries"
@@ -50,9 +51,11 @@ export default async function DiscussionThreadPage({ params }: { params: Promise
   const focus = chain[chain.length - 1]
   if (!focus || focus.post.id !== postId) notFound()
 
-  // 祖先鏈的最前面是討論 root（教材／活動本身，沒有作者）。它不是誰寫的
-  // 貼文，顯示出來只會是一顆問號頭貼，改成上面那條返回來源頁面的連結。
-  const ancestors = chain.slice(0, -1).filter((item) => item.post.id !== context.rootPostId)
+  // 祖先鏈的最前面是討論 root（教材／活動本身，沒有作者）。跟巢狀回覆點進去
+  // 會看到上一層貼文一樣，這裡也要看到 root 本身的完整內容——用跟 CAMP／
+  // CONFERENCE 聚會頁同一顆 RootContent，不是另外弄一種「只有標題」的樣式。
+  const rootItem = chain[0]
+  const ancestors = chain.slice(1, -1)
   const rootDefinition = context.rootKey ? getRegisteredRoot(context.rootKey) : null
 
   // 這是一條通用路由，不在 app/camp/layout.tsx 底下，本來不會套用 CAMP 的
@@ -75,10 +78,12 @@ export default async function DiscussionThreadPage({ params }: { params: Promise
         />
 
         <div className="mt-10 flex flex-col gap-6">
-          {rootDefinition && (
-            <Link href={rootDefinition.sourcePath} className="text-sm text-muted-foreground hover:text-foreground">
-              {rootDefinition.title}
-            </Link>
+          {rootItem && (
+            <RootContent
+              rootPostId={rootItem.post.id}
+              content={rootItem.post.content}
+              isDiscussionAdmin={isDiscussionAdmin(session)}
+            />
           )}
 
           {/* 顏色跟著頁面主題走、不加圓角／水平 padding，跟 DiscussionRoot
