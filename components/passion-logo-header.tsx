@@ -29,7 +29,7 @@ export function PassionLogoHeader({
       <div className="relative flex justify-center">
         <Link href="https://www.passion-hsinchu.com/" target="_blank" rel="noopener noreferrer">
           <Image
-            src="/images/passion-logo.png"
+            src="/images/passion-logo.webp"
             alt="PASSION®"
             width={979}
             height={178}

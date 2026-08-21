@@ -99,8 +99,8 @@ export function heroGrainUri(config: GrainConfig = DEFAULT_GRAIN) {
     )
 }
 
-// 大頭照 placeholder：public/images/placeholder.png
-export const HERO_AVATAR_PLACEHOLDER_URI = "/images/placeholder.png"
+// 大頭照 placeholder：public/images/placeholder.webp
+export const HERO_AVATAR_PLACEHOLDER_URI = "/images/placeholder.webp"
 
 // 五種勇者結果的正式完稿卡片圖，依 aCount（0~4）對應。camp-profile-card.tsx（卡面）
 // 跟 camp-hero-details.tsx（卡片背面的介紹）共用同一組圖。

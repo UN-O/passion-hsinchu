@@ -31,9 +31,9 @@ const MEETING_CARD_LABEL = "聚會內容"
 // color 用 dataviz skill 的分類色票，在深色底下跑過六項檢查（validate_palette.js
 // --mode dark --surface "#0a0a0a" --pairs all）確認可分辨，對應各區 icon 的主色調。
 const ZONE_META = [
-  { key: "groundhog", title: "土撥鼠區", icon: "/images/zone-icon-1.png", color: "#008300" },
-  { key: "clownfish", title: "小丑魚區", icon: "/images/zone-icon-2.png", color: "#9333ea" },
-  { key: "bee", title: "熊蜂區", icon: "/images/zone-icon-3.png", color: "#3987e5" },
+  { key: "groundhog", title: "土撥鼠區", icon: "/images/zone-icon-1.webp", color: "#008300" },
+  { key: "clownfish", title: "小丑魚區", icon: "/images/zone-icon-2.webp", color: "#9333ea" },
+  { key: "bee", title: "熊蜂區", icon: "/images/zone-icon-3.webp", color: "#3987e5" },
 ] as const
 
 function SectionCard({
@@ -133,7 +133,7 @@ export async function CampMissionHome({
       {/* 主視覺標題圖，跟 CONF 的 conference-title-visual.png 同一個放法：
           頁面最上面、logo 列下面，滿版寬度、正常隨頁面捲動。 */}
       <Image
-        src="/images/camp-title-visual.png"
+        src="/images/camp-title-visual.webp"
         alt="PASSION CAMP"
         width={1400}
         height={1202}

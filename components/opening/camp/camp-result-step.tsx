@@ -15,7 +15,7 @@ import { HERO_CARD_IMAGE } from "@/lib/hero-card-visuals"
 import { campStepFromPath, type CampStep } from "@/lib/opening-steps"
 
 // 測驗完成前不知道會抽到哪一張，5 張都先預載，避免結果頁跳出來時卡片圖還在載入。
-export const resultImages = ["/images/passion-logo.png", ...Object.values(HERO_CARD_IMAGE)]
+export const resultImages = ["/images/passion-logo.webp", ...Object.values(HERO_CARD_IMAGE)]
 
 function ResultContent({ heroName, aCount }: { heroName: string; aCount: number }) {
   const { index } = useImmersiveNav()

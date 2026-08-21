@@ -28,7 +28,7 @@ export function HeroSection({ session }: { session: AppSession | null }) {
 
       <div className="relative z-10 flex flex-col items-center">
         <Image
-          src="/images/passion-logo.png"
+          src="/images/passion-logo.webp"
           alt="PASSION®"
           width={979}
           height={178}

@@ -66,7 +66,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function ProfileCardPlaygroundPage() {
   const [aCount, setACount] = useState(0)
   const [heroName, setHeroName] = useState("阿光")
-  const [avatarUrl, setAvatarUrl] = useState("/images/placeholder.png")
+  const [avatarUrl, setAvatarUrl] = useState("/images/placeholder.webp")
 
   // 以下初始值對齊目前 production（components/opening/camp-profile-card.tsx / .css）正在用的設定，
   // 打開這頁看到的就是「現在線上長怎樣」，再從這裡繼續微調。
@@ -158,7 +158,7 @@ export default function ProfileCardPlaygroundPage() {
           <div className="camp-profile-card-draw">
             <div className="relative w-full">
               <Image
-                src="/images/passion-logo.png"
+                src="/images/passion-logo.webp"
                 alt="PASSION®"
                 width={979}
                 height={178}

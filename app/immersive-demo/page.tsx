@@ -59,7 +59,7 @@ export default function ImmersiveDemoPage() {
       ? { type: "shader", colors: ["#f6ed8e", "#1a1a2e", "#0f0f1a"] }
       : backgroundKey === "canvas"
         ? { type: "canvas" }
-        : { type: "image", src: "/images/passion-logo.png", alt: "demo" }
+        : { type: "image", src: "/images/passion-logo.webp", alt: "demo" }
 
   return (
     <div className="min-h-svh bg-background">

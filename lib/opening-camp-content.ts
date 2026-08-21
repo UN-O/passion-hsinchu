@@ -15,32 +15,32 @@ export const campQuizQuestions: QuizQuestion[] = [
     id: "identity",
     question: "對我來說，什麼是「勇者」？",
     options: [
-      { key: "A", label: "無所畏懼的勇敢之人", imageSrc: "/images/無所畏懼的勇敢之人.png" },
-      { key: "B", label: "很害怕但仍繼續前行的人", imageSrc: "/images/很害怕但仍繼續前行的人.png" },
+      { key: "A", label: "無所畏懼的勇敢之人", imageSrc: "/images/無所畏懼的勇敢之人.webp" },
+      { key: "B", label: "很害怕但仍繼續前行的人", imageSrc: "/images/很害怕但仍繼續前行的人.webp" },
     ],
   },
   {
     id: "boss",
     question: "最難對付的「魔王」，通常來自哪裡？",
     options: [
-      { key: "A", label: "前方聲勢兇猛的野獸", imageSrc: "/images/前方聲勢兇猛的野獸.png" },
-      { key: "B", label: "來自地底深淵的怪物", imageSrc: "/images/來自地底深淵的怪物.png" },
+      { key: "A", label: "前方聲勢兇猛的野獸", imageSrc: "/images/前方聲勢兇猛的野獸.webp" },
+      { key: "B", label: "來自地底深淵的怪物", imageSrc: "/images/來自地底深淵的怪物.webp" },
     ],
   },
   {
     id: "weapon",
     question: "請選擇我的主要武器。",
     options: [
-      { key: "A", label: "勇者之劍", imageSrc: "/images/勇者之劍.png" },
-      { key: "B", label: "無敵之盾", imageSrc: "/images/無敵之盾.png" },
+      { key: "A", label: "勇者之劍", imageSrc: "/images/勇者之劍.webp" },
+      { key: "B", label: "無敵之盾", imageSrc: "/images/無敵之盾.webp" },
     ],
   },
   {
     id: "support",
     question: "請選擇我的輔助武器。",
     options: [
-      { key: "A", label: "補血藥水", imageSrc: "/images/補血藥水.png" },
-      { key: "B", label: "隱形藥水", imageSrc: "/images/隱形藥水.png" },
+      { key: "A", label: "補血藥水", imageSrc: "/images/補血藥水.webp" },
+      { key: "B", label: "隱形藥水", imageSrc: "/images/隱形藥水.webp" },
     ],
   },
 ]
@@ -142,9 +142,9 @@ export const campRuleScreens: CampRuleScreen[] = [
 export type CampZoneScreen = { title: string; body: string; icon: string }
 
 export const campZoneScreens: CampZoneScreen[] = [
-  { title: "土撥鼠區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-1.png" },
-  { title: "小丑魚區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-2.png" },
-  { title: "熊蜂區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-3.png" },
+  { title: "土撥鼠區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-1.webp" },
+  { title: "小丑魚區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-2.webp" },
+  { title: "熊蜂區", body: "這裡先放佔位文字，等使用者提供這個區域的實際介紹內容。", icon: "/images/zone-icon-3.webp" },
 ]
 
 // 首頁倒數卡片用的逐場聚會時間表，跟 lib/opening-conference-content.ts 的

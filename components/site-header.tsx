@@ -38,7 +38,7 @@ export function SiteHeader({ session }: { session: HeaderSession | null }) {
 
         <Link href="#top" className="flex items-center">
           <Image
-            src="/images/passion-logo.png"
+            src="/images/passion-logo.webp"
             alt="PASSION®"
             width={979}
             height={178}

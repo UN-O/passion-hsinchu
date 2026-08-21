@@ -21,7 +21,7 @@ const BODY_TEXT_COLOR = "#3a352c"
 function PassionLogo() {
   return (
     <Image
-      src="/images/passion-logo.png"
+      src="/images/passion-logo.webp"
       alt="PASSION®"
       width={979}
       height={178}
@@ -35,7 +35,7 @@ function PassionLogo() {
 function CourageGenerationsTagline({ className = "" }: { className?: string }) {
   return (
     <Image
-      src="/images/courage-generations-tagline.png"
+      src="/images/courage-generations-tagline.webp"
       alt="THE COURAGE GENERATIONS! 勇者世代"
       width={1200}
       height={187}
@@ -49,7 +49,7 @@ function CourageGenerationsTagline({ className = "" }: { className?: string }) {
 function WorshipRelationExperienceDivider({ className = "" }: { className?: string }) {
   return (
     <Image
-      src="/images/worship-relation-experience.png"
+      src="/images/worship-relation-experience.webp"
       alt="WORSHIP RELATION EXPERIENCE"
       width={1000}
       height={19}

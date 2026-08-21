@@ -10,7 +10,7 @@ import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui
 import { CampLodgingInfo } from "@/components/camp-lodging-info"
 
 const PANEL_MENU_ITEMS = [
-  { key: "schedule", label: "聚會流程表", type: "image", imageSrc: "/images/camp-schedule.jpg" },
+  { key: "schedule", label: "聚會流程表", type: "image", imageSrc: "/images/camp-schedule.webp" },
   { key: "lodging", label: "住房資料", type: "content" },
 ] as const
 

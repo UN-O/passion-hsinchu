@@ -66,7 +66,7 @@ const organizationJsonLd = {
   "@type": "Organization",
   name: siteConfig.orgName,
   url: siteConfig.url,
-  logo: `${siteConfig.url}/images/passion-logo.png`,
+  logo: `${siteConfig.url}/images/passion-logo.webp`,
   address: {
     "@type": "PostalAddress",
     streetAddress: siteConfig.contactAddress,
