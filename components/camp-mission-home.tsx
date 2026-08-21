@@ -1,5 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
+import { Instagram } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { CampLiquidGlassFilter } from "@/components/camp-liquid-glass-filter"
@@ -7,7 +8,7 @@ import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampSidebar } from "@/components/camp-sidebar"
 import { SquadCourageCard } from "@/components/squad-courage-card"
 import { IgStoriesSection } from "@/components/ig-stories-section"
-import { IG_STORY_IMAGE } from "@/lib/instagram-stories"
+import { getActiveIgStories } from "@/lib/instagram-stories"
 import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { getRegionTotals } from "@/lib/exp"
@@ -92,6 +93,8 @@ export async function CampMissionHome({
   // 顯示這 4 場，兩邊的「下一場」要對得起來（大地競賽／辯論場／Podcast
   // 不算聚會，見 lib/opening-camp-content.ts 的 CAMP_MEETING_SESSION_IDS）。
   const nextSession = getNextCampMeetingSession()
+  // 過期（上傳超過 24 小時）的限動先在伺服器端濾掉，client 不用自己重算。
+  const activeIgStories = getActiveIgStories()
 
   return (
     <main className="relative z-0 mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
@@ -196,10 +199,13 @@ export async function CampMissionHome({
         </SectionCard>
       </Link>
 
-      {IG_STORY_IMAGE && (
+      {activeIgStories.length > 0 && (
         <SectionCard className="mt-6 flex flex-col gap-2">
-          <p className="text-sm text-muted-foreground">官方 IG 限時動態</p>
-          <IgStoriesSection />
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Instagram className="size-4" />
+            官方 IG 限時動態
+          </p>
+          <IgStoriesSection stories={activeIgStories} />
         </SectionCard>
       )}
     </main>
