@@ -147,12 +147,28 @@ export async function CampMissionHome({
       {/* 早晨靈修：首頁只留一個入口，進去之後用頁面裡的 DAY2／DAY3 玻璃
           切換按鈕切換（見 app/camp/devotion/[day]/layout.tsx 的
           CampDevotionDaySelect），不用在首頁放兩個按鈕。連到 /camp/devotion
-          （會自動轉去目前這一天的正式網址）。 */}
-      <Link href="/camp/devotion" className="mt-6 block">
-        <SectionCard variant="glass" className="flex flex-col gap-1">
-          <p className={`${genRyuMin.className} w-[min(74%,28rem)] text-2xl text-white`}>早晨靈修</p>
-          <p className="text-sm text-muted-foreground">查看今天的靈修內容</p>
-        </SectionCard>
+          （會自動轉去目前這一天的正式網址）。aspect-[16/4] 用 CSS
+          aspect-ratio，卡片寬度本來就跟著容器（max-w-2xl px-[6%]）縮放，
+          高度自動跟著等比例變化，不用另外寫 media query。 */}
+      <Link
+        href="/camp/devotion"
+        className="relative mt-6 flex aspect-[16/4] w-full items-center overflow-hidden rounded-3xl p-6"
+      >
+        <Image
+          src="/images/camp-devotion-bg.webp"
+          alt=""
+          fill
+          sizes="(min-width: 640px) 640px, 100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <div className="relative z-10 flex flex-col gap-1">
+          {/* 16:4 是矮寬的橫幅，不是直式卡片，74% 寬度限制（給直式卡片
+              斷行用的慣例）在這裡反而會逼標題硬換成兩行、擠壓矮版面。
+              這裡橫向空間充足，不用限制寬度，維持一行。 */}
+          <p className={`${genRyuMin.className} text-2xl whitespace-nowrap text-white`}>早晨靈修</p>
+          <p className="text-sm text-white/80">查看今天的靈修內容</p>
+        </div>
       </Link>
 
       {activeIgStories.length > 0 && (
