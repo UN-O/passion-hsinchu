@@ -100,7 +100,9 @@ export function Avatar({ name, size }: { name: string | null; size: number }) {
 }
 
 // 頭貼底下自動長高的直線。兩端圓角、寬度統一，第一層跟巢狀共用同一個元件。
-function RailLine() {
+// export 給 root-content.tsx 用——root post 後面接祖先鏈時，兩者中間也要
+// 接同一種線，不是另外刻一份。
+export function RailLine() {
   return <div className="mt-1.5 flex-1 rounded-full bg-border" style={{ width: LINE_WIDTH, minHeight: 8 }} />
 }
 

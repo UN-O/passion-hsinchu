@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown"
 
 import { MAX_CONTENT_LENGTH } from "@/lib/discussion/constants"
 import { submitEditRootContent } from "@/lib/discussion/actions"
-import { Avatar } from "./post-row"
+import { Avatar, RailLine } from "./post-row"
 
 // root post 一律顯示成「PASSION 官方」發文（跟一般回覆的官方旗標是同一顆
 // 徽章、同一個視覺語言，見 post-row.tsx 的 showOfficial），不是另外一種
@@ -16,10 +16,16 @@ export function RootContent({
   rootPostId,
   content,
   isDiscussionAdmin,
+  hasRail = false,
 }: {
   rootPostId: string
   content: string
   isDiscussionAdmin: boolean
+  // 討論串頁（/discussion/[postId]）root 後面接著祖先鏈，兩者中間要接一條
+  // 線，視覺上才看得出祖先鏈是接在 root 底下——跟 post-row.tsx 的 EntryBody
+  // 同一套「頭貼下面接線、內文留 pb-3 讓線一路長到底」的做法。討論主頁的
+  // header 不用（root 底下是互不隸屬的頂層回覆，見 post-row.tsx 規則 3）。
+  hasRail?: boolean
 }) {
   const [editing, setEditing] = useState(false)
   const [saved, setSaved] = useState(content)
@@ -45,9 +51,12 @@ export function RootContent({
 
   return (
     <div className="flex gap-3">
-      <Avatar name="PASSION 官方" size={32} />
+      <div className="flex flex-col items-center">
+        <Avatar name="PASSION 官方" size={32} />
+        {hasRail && <RailLine />}
+      </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
+      <div className={`flex min-w-0 flex-1 flex-col gap-2 ${hasRail ? "pb-3" : ""}`}>
         <span className="flex items-center gap-1 text-sm font-semibold text-primary">
           <BadgeCheck className="size-3.5" strokeWidth={2} />
           PASSION 官方

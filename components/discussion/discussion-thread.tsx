@@ -18,10 +18,12 @@ import type { SortMode } from "@/lib/discussion/queries"
 import { ComposerOverlay, type ComposerTarget } from "./composer-overlay"
 import { BottomComposerBar } from "./bottom-composer-bar"
 import { PostRow, SiblingList, renderChain, type PostRowController } from "./post-row"
+import { RootContent } from "./root-content"
 import { buildPendingItem, patchList, patchChildrenMap, type ViewerInfo } from "./tree-utils"
 
 // 規則 5：點進某一則貼文之後看到的畫面。
 //
+//   root post（跟祖先鏈接同一條線，見規則 2）
 //   祖先鏈（root → … → 焦點貼文的 parent，全部對齊同一個 x、用直線串起來）
 //   焦點貼文
 //   排序選單
@@ -53,12 +55,14 @@ function reduce(state: ThreadData, action: Action): ThreadData {
 }
 
 export function DiscussionThread({
+  root,
   ancestors,
   focus,
   viewer,
   isDiscussionAdmin,
   initialReplies,
 }: {
+  root: DiscussionItem
   ancestors: DiscussionItem[]
   focus: DiscussionItem
   viewer: ViewerInfo
@@ -251,9 +255,12 @@ export function DiscussionThread({
 
   return (
     <div className="flex flex-col gap-8 pb-20">
-      {/* 祖先鏈 + 焦點貼文：全部 depth 0（不縮排），除了最後一則之外都往下
-          畫直線，一路串到焦點貼文。 */}
+      {/* root post + 祖先鏈 + 焦點貼文：全部 depth 0（不縮排），root 跟祖先
+          鏈之間、祖先鏈內部除了最後一則之外都往下畫直線，一路串到焦點貼文
+          （規則 2）。root 不用 patch／optimistic 那一套（不會被讚、刪除），
+          直接吃頁面傳進來的 root prop。 */}
       <div className="flex flex-col">
+        <RootContent rootPostId={root.post.id} content={root.post.content} isDiscussionAdmin={isDiscussionAdmin} hasRail />
         {chain.map((item, index) => (
           <PostRow
             key={item.post.id}

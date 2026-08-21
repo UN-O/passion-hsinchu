@@ -103,6 +103,7 @@ export async function CampMissionHome({
     label: s.label,
     dateTimeLabel: `${formatCampMeetingDateLabel(s.startISO)} ${formatCampMeetingTimeLabel(s.startISO)}`,
     image: s.image,
+    startISO: s.startISO,
   }))
   // 過期（上傳超過 24 小時）的限動先在伺服器端濾掉，client 不用自己重算。
   const activeIgStories = getActiveIgStories()

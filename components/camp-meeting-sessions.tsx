@@ -14,6 +14,7 @@ type SessionSummary = {
   label: string
   dateTimeLabel: string
   image: string
+  startISO: string
 }
 
 // 4 場正式聚會全部隨時看得到、隨時可以點進去（不再有「還沒輪到不能看」的
@@ -61,10 +62,13 @@ export function CampMeetingSessions({
 
       {otherSessions.length > 0 && (
         <>
+          {/* 淺色純文字，不用邊框方框——方框那圈 border-border 在黑底（見
+              camp-scroll-blackout.tsx 的 data-blackout）下太不明顯，容易被
+              當成裝飾文字滑過去，改成跟頁面其他連結一樣的文字連結樣式。 */}
           <button
             type="button"
             onClick={() => setExpanded((prev) => !prev)}
-            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-full border border-border py-2.5 text-sm text-muted-foreground hover:text-foreground"
+            className="mt-3 flex w-full items-center justify-center gap-1.5 py-2.5 text-sm text-foreground/80 hover:text-foreground"
             aria-expanded={expanded}
           >
             查看所有活動
@@ -73,16 +77,24 @@ export function CampMeetingSessions({
 
           {expanded && (
             <div className="mt-3 flex flex-col gap-2">
-              {otherSessions.map((s) => (
-                <Link
-                  key={s.id}
-                  href={`${meetingHref}/${s.id}`}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-muted/20 p-4"
-                >
-                  <span className="text-sm font-medium">{s.label}</span>
-                  <span className="text-xs text-muted-foreground">{s.dateTimeLabel}</span>
-                </Link>
-              ))}
+              {otherSessions.map((s) => {
+                const notStarted = new Date(s.startISO) > new Date()
+                return (
+                  <Link
+                    key={s.id}
+                    href={`${meetingHref}/${s.id}`}
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-muted/20 p-4"
+                  >
+                    <span className="flex items-center gap-2 text-sm font-medium">
+                      {s.label}
+                      {/* 拿掉時間鎖之後任何場次都能點進去看，未開始的場次要標出來，
+                          不然使用者會以為聚會已經開始了。 */}
+                      {notStarted && <span className="text-xs font-normal text-muted-foreground">未開始</span>}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{s.dateTimeLabel}</span>
+                  </Link>
+                )
+              })}
             </div>
           )}
         </>

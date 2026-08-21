@@ -6,7 +6,6 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { DiscussionThread } from "@/components/discussion/discussion-thread"
-import { RootContent } from "@/components/discussion/root-content"
 import { cn } from "@/lib/utils"
 import { isDiscussionAdmin } from "@/lib/discussion/permissions"
 import { getAncestorChain, getDiscussionPage, getPostContext } from "@/lib/discussion/queries"
@@ -54,7 +53,9 @@ export default async function DiscussionThreadPage({ params }: { params: Promise
   // 祖先鏈的最前面是討論 root（教材／活動本身，沒有作者）。跟巢狀回覆點進去
   // 會看到上一層貼文一樣，這裡也要看到 root 本身的完整內容——用跟 CAMP／
   // CONFERENCE 聚會頁同一顆 RootContent，不是另外弄一種「只有標題」的樣式。
-  const rootItem = chain[0]
+  // 交給 DiscussionThread 自己渲染（跟祖先鏈接同一條線，見規則 2），這裡
+  // 不用另外包一層。
+  const root = chain[0]
   const ancestors = chain.slice(1, -1)
   const rootDefinition = context.rootKey ? getRegisteredRoot(context.rootKey) : null
 
@@ -77,27 +78,18 @@ export default async function DiscussionThreadPage({ params }: { params: Promise
           }
         />
 
-        <div className="mt-10 flex flex-col gap-6">
-          {rootItem && (
-            <RootContent
-              rootPostId={rootItem.post.id}
-              content={rootItem.post.content}
-              isDiscussionAdmin={isDiscussionAdmin(session)}
-            />
-          )}
-
-          {/* 顏色跟著頁面主題走、不加圓角／水平 padding，跟 DiscussionRoot
-              自己包的那層同一套 class（這裡沒有經過 DiscussionRoot，是
-              DiscussionThread 直接掛在頁面上，所以外層自己包一次）。 */}
-          <div className="flex flex-col bg-background py-6 text-foreground">
-            <DiscussionThread
-              ancestors={ancestors}
-              focus={focus}
-              viewer={{ id: session.user.id, name: session.user.name, role: session.user.role }}
-              isDiscussionAdmin={isDiscussionAdmin(session)}
-              initialReplies={replies}
-            />
-          </div>
+        {/* 顏色跟著頁面主題走、不加圓角／水平 padding，跟 DiscussionRoot
+            自己包的那層同一套 class（這裡沒有經過 DiscussionRoot，是
+            DiscussionThread 直接掛在頁面上，所以外層自己包一次）。 */}
+        <div className="mt-10 flex flex-col bg-background py-6 text-foreground">
+          <DiscussionThread
+            root={root}
+            ancestors={ancestors}
+            focus={focus}
+            viewer={{ id: session.user.id, name: session.user.name, role: session.user.role }}
+            isDiscussionAdmin={isDiscussionAdmin(session)}
+            initialReplies={replies}
+          />
         </div>
       </main>
     </div>
