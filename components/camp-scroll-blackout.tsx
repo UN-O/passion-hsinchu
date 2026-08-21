@@ -27,8 +27,13 @@ export function ScrollBlackout({ children }: { children: React.ReactNode }) {
 
   return (
     <TriggerContext.Provider value={(node) => (triggerRef.current = node)}>
+      {/* z-index 特意不用負值：main 自己有 relative z-0，會另外建立一個
+          stacking context，Safari／WebKit 對「fixed + 負 z-index」在有
+          相鄰 stacking context 的情況下有已知的算繪錯誤（整層直接消失、
+          蓋不到內容），Chrome 系瀏覽器測不出來。這裡改成不設 z-index，
+          單純靠這個 div 在 DOM 順序上排在 children 前面來確保疊在最底層。 */}
       <div
-        className="pointer-events-none fixed inset-0 -z-10 transition-colors duration-700"
+        className="pointer-events-none fixed inset-0 transition-colors duration-700"
         style={{ backgroundColor: isBlack ? "#000000" : "#feed74" }}
         aria-hidden
       />
