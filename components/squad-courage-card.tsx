@@ -37,9 +37,15 @@ export function SquadCourageCard({ squadName, total }: { squadName: string; tota
         </div>
       )}
       {/* 「勇氣值」標籤改成貼在數字右下角、跟數字同一條基線，不是獨立
-          一行的標題文字。 */}
-      <div className="flex items-end justify-between gap-4">
-        <div className="flex items-end gap-1.5">
+          一行的標題文字。數字有 skewX(-5deg)：transform 不影響版面計算
+          （flex gap 還是照未傾斜的框算），但傾斜後字glyph 的視覺右緣會
+          往右凸出一截，字級愈大凸出愈多，gap 太小的話「勇氣值」會被
+          蓋到一部分——gap-2 sm:gap-3 比原本的 1.5 留多一點，跟著
+          text-5xl/6xl 兩個字級分別給夠的緩衝。flex-wrap 是最後一道防線：
+          萬一小隊名稱以後換成更長的字串，寧可整排跳成兩行，也不要硬擠
+          到重疊或被裁掉。 */}
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+        <div className="flex items-end gap-2 sm:gap-3">
           <p
             className={`${dinEngschrift.className} text-5xl font-bold text-primary sm:text-6xl`}
             style={{ transform: "skewX(-5deg)" }}
