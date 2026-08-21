@@ -73,7 +73,7 @@ function ZoneBar({ zone, max }: { zone: ZoneScore; max: number }) {
     <div className="flex h-full flex-col items-center justify-end gap-1.5">
       {displayValue > 0 && (
         <span
-          className={`${dinEngschrift.className} text-[clamp(1.125rem,4.5vw,1.75rem)] leading-none font-bold tracking-wide tabular-nums`}
+          className={`${dinEngschrift.className} text-primary text-[clamp(1.125rem,4.5vw,1.75rem)] leading-none font-bold tracking-wide tabular-nums`}
           style={{ transform: "skewX(-5deg)" }}
         >
           {displayValue.toLocaleString("en-US")}

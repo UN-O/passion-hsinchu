@@ -66,12 +66,15 @@ export function ScrollBlackout({ children }: { children: React.ReactNode }) {
           style={{ backgroundColor: isBlack ? "#000000" : "#feed74" }}
           aria-hidden
         />
-        {/* data-blackout：黑底時把 --muted-foreground 這個 CSS 變數整個
-            改成白色系，讓底下所有卡片本來就用 text-muted-foreground 的
-            小字（副標題、標籤文字）自動一起反白，不用一個一個元件加
-            條件判斷。覆寫規則見 globals.css 的 [data-blackout="true"]。
-            黑底狀態下這一層以上的卡片（各區積分等）本來就已經捲出畫面，
-            不會有「還在黃底、卻被反白」的問題。 */}
+        {/* data-blackout：黑底時把 --muted-foreground、--primary 這兩個
+            CSS 變數整個改成白色系／品牌黃，讓底下所有卡片本來就用
+            text-muted-foreground 的小字（副標題、標籤文字）、text-primary
+            的大數字（勇氣值、各區積分，見 squad-courage-card.tsx／
+            zone-score-chart.tsx）自動一起反白，不用一個一個元件加條件
+            判斷。覆寫規則見 globals.css 的 [data-blackout="true"]。寬螢幕／
+            大平板一次看得到好幾張卡片時，這一層以上的卡片可能跟黑底的
+            「開場聚會」卡片同時在畫面上，所以還是要處理，不能假設
+            一定已經捲出畫面。 */}
         <div data-blackout={isBlack || undefined} className="contents">
           {children}
         </div>

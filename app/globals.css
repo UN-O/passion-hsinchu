@@ -104,7 +104,8 @@
    camp-theme 預設的深灰色小字在黑底上幾乎看不見。data-blackout 這個
    屬性只在黑底時才出現，往上滑回黃底的卡片不受影響。寬螢幕／大平板一次
    看得到好幾張卡片時，「小隊分數」卡片的勇氣值大數字（squad-courage-card.tsx
-   用 text-primary）也可能跟開場聚會卡片同時在畫面上，同樣要處理——
+   用 text-primary）、「各區積分」長條圖上的分數數字（zone-score-chart.tsx
+   同樣用 text-primary）也可能跟開場聚會卡片同時在畫面上，同樣要處理——
    camp-theme 的 --primary 是接近黑色，疊在黑底上會整個看不見，改成品牌
    黃（跟 --primary-foreground 同一色），呼應 style.md「brand-yellow 做強調」。 */
 [data-blackout="true"] {
