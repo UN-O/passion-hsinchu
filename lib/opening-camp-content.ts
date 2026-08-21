@@ -230,13 +230,26 @@ export function getNextCampSession(now: Date = new Date()): CampSession {
   return upcoming ?? campSessions[campSessions.length - 1]
 }
 
-// campSessions 裡只有 4 場是真正的「SESSION」正式聚會（開場／兩場晚場／
-// 閉幕），其餘（大地競賽／辯論場／Podcast）是活動而不是聚會，逐場討論串
-// 只接這 4 場——見 lib/discussion/root-registry.ts。
-const CAMP_MEETING_SESSION_IDS = ["day1-opening", "day1-evening", "day2-evening", "day3-closing"] as const
+// campSessions 裡 6 場開放場次頁選單切換＋逐場討論串（開場／兩場晚場／
+// 閉幕＋勇者辯論場／Live Podcast），只有大地競賽不在裡面——大地競賽有
+// 自己的場次頁（見 app/camp/meeting/[sessionId]/page.tsx），但只提供
+// 聚會資訊、不開放留言，所以不需要（也不該）註冊討論串，見
+// lib/discussion/root-registry.ts。
+const CAMP_MEETING_SESSION_IDS = [
+  "day1-opening",
+  "day1-evening",
+  "day2-debate",
+  "day2-evening",
+  "day3-podcast",
+  "day3-closing",
+] as const
+
+export function isCampMeetingSession(id: string): boolean {
+  return (CAMP_MEETING_SESSION_IDS as readonly string[]).includes(id)
+}
 
 export function getCampMeetingSessions(): CampSession[] {
-  return campSessions.filter((session) => (CAMP_MEETING_SESSION_IDS as readonly string[]).includes(session.id))
+  return campSessions.filter((session) => isCampMeetingSession(session.id))
 }
 
 export function getNextCampMeetingSession(now: Date = new Date()): CampSession {

@@ -29,9 +29,10 @@ const CAMP_MEETING_ROOT: DiscussionRootDefinition = {
   sourcePath: "/camp/meeting",
 }
 
-// CAMP 4 場正式 SESSION（開場／兩場晚場／閉幕），逐場各自一個討論串，
-// 跟 CONFERENCE_SESSION_ROOTS 同一個模式。大地競賽／辯論場／Podcast 不是
-// 「聚會」，不在這裡面。
+// CAMP 6 場開放討論的場次（開場／兩場晚場／閉幕＋勇者辯論場／Live
+// Podcast），逐場各自一個討論串，跟 CONFERENCE_SESSION_ROOTS 同一個模式。
+// 大地競賽只有場次資訊頁、不開放留言，不在這裡面（見
+// lib/opening-camp-content.ts 的 CAMP_MEETING_SESSION_IDS）。
 const CAMP_SESSION_ROOTS: DiscussionRootDefinition[] = getCampMeetingSessions().map((session) => ({
   key: `camp-session-${session.id}`,
   title: session.label,
