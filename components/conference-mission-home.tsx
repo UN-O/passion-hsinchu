@@ -21,6 +21,7 @@ import {
   workshopDateLabel,
   workshopRoundLabels,
   workshopRoundTimeLabels,
+  type ConferenceSession,
 } from "@/lib/opening-conference-content"
 import { siteConfig } from "@/lib/site-config"
 
@@ -36,6 +37,33 @@ function breakAfterFirstComma(text: string) {
       <br />
       {text.slice(commaIndex + 1)}
     </>
+  )
+}
+
+// 聚會卡片（照片＋場次名稱，連去聚會內容頁對應場次）抽成獨立元件：工作坊
+// 卡片列現在插在午場聚會跟 DAY2 晚場聚會中間（跟流程表順序一致：午場→
+// 工作坊→晚場），不再是三張卡片單純用 .map 連續排列，抽出來才不用複製貼上
+// 同一段 Link 兩次。
+function ConferenceSessionCard({ session, meetingHref }: { session: ConferenceSession; meetingHref: string }) {
+  return (
+    <Link
+      href={`${meetingHref}?session=${session.id}`}
+      className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
+    >
+      <Image
+        src={session.image}
+        alt=""
+        fill
+        sizes="(min-width: 640px) 640px, 100vw"
+        className="object-cover"
+        style={{ objectPosition: "50% 30%" }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+      <p className="relative z-10 text-sm text-white/80">
+        {session.dateLabel}・{session.sessionLabel}
+      </p>
+      <p className="relative z-10 mt-2 text-2xl font-bold text-white">{session.typeLabel}</p>
+    </Link>
   )
 }
 
@@ -171,6 +199,22 @@ export function ConferenceMissionHome({
             </button>
           </div>
 
+          {/* 三場聚會（同一批 session 也是聚會流程表印的三場）各自一張卡片，
+              左右邊跟工作坊那排卡片切齊（同一層 px 內距），不是貼齊螢幕邊緣。
+              視覺圖依場次換成 session.image（還沒拿到真圖的場次先共用佔位圖，
+              見 lib/opening-conference-content.ts）；疊一層由下往上的黑色
+              漸層，確保文字在任何圖片上都維持可讀。底色拿掉改透明：圖片還
+              沒載入完成的瞬間會先看到這層底色，紅色跟頁面本身的藍色背景
+              反差太大，載入時會很明顯地閃一下紅色；透明的話載入中直接透出
+              頁面底色，比較不突兀。點卡片連去聚會內容頁對應的場次
+              （?session=）。倒數計時只有最上面那一個，卡片本身不重複顯示。
+              工作坊卡片列插在午場聚會（session-2）跟 DAY2 晚場聚會
+              （session-3）中間，對齊流程表本身的順序（午場→工作坊→晚場），
+              conferenceSessions 固定就是 [session-1, session-2, session-3]
+              這個順序，用索引取代 .map 才能把工作坊插進中間。 */}
+          <ConferenceSessionCard session={conferenceSessions[0]} meetingHref={meetingHref} />
+          <ConferenceSessionCard session={conferenceSessions[1]} meetingHref={meetingHref} />
+
           {/* 工作坊方框底是真正的液態玻璃折射（.conf-glass-surface，SVG
               feDisplacementMap 讓背景真的扭曲，不是單純模糊；濾鏡定義掛在
               上面的 ConferenceLiquidGlassFilter，這裡直接引用同一個 id），
@@ -197,36 +241,7 @@ export function ConferenceMissionHome({
             ))}
           </div>
 
-          {/* 三場聚會（同一批 session 也是聚會流程表印的三場）各自一張卡片，
-              左右邊跟工作坊那排卡片切齊（同一層 px 內距），不是貼齊螢幕邊緣。
-              視覺圖依場次換成 session.image（還沒拿到真圖的場次先共用佔位圖，
-              見 lib/opening-conference-content.ts）；疊一層由下往上的黑色
-              漸層，確保文字在任何圖片上都維持可讀。底色拿掉改透明：圖片還
-              沒載入完成的瞬間會先看到這層底色，紅色跟頁面本身的藍色背景
-              反差太大，載入時會很明顯地閃一下紅色；透明的話載入中直接透出
-              頁面底色，比較不突兀。點卡片連去聚會內容頁對應的場次
-              （?session=）。倒數計時只有最上面那一個，卡片本身不重複顯示。 */}
-          {conferenceSessions.map((session) => (
-            <Link
-              key={session.id}
-              href={`${meetingHref}?session=${session.id}`}
-              className="relative mt-6 flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
-            >
-              <Image
-                src={session.image}
-                alt=""
-                fill
-                sizes="(min-width: 640px) 640px, 100vw"
-                className="object-cover"
-                style={{ objectPosition: "50% 30%" }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-              <p className="relative z-10 text-sm text-white/80">
-                {session.dateLabel}・{session.sessionLabel}
-              </p>
-              <p className="relative z-10 mt-2 text-2xl font-bold text-white">{session.typeLabel}</p>
-            </Link>
-          ))}
+          <ConferenceSessionCard session={conferenceSessions[2]} meetingHref={meetingHref} />
         </div>
       </div>
 
