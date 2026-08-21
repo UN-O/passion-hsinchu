@@ -6,6 +6,7 @@ import { X } from "lucide-react"
 
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import type { CampZoneScreen } from "@/lib/opening-camp-content"
+import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 // 首頁三區入口：三個 4:5 直式方框，跟 CONF 工作坊卡片同一種排版
 // （conference-mission-home.tsx 的 aspect-[4/5] 卡片，border/shadow 都
@@ -70,7 +71,12 @@ export function CampZoneIcons({ zones }: { zones: CampZoneScreen[] }) {
               <div className="flex flex-col gap-2 p-6">
                 <p className="text-sm text-muted-foreground">區長：{activeZone.leaderName}</p>
                 <p className="text-base">{activeZone.body}</p>
-                <p className="text-base font-bold">「{activeZone.quote}」</p>
+                <p
+                  className={`${genRyuMin.className} w-[min(74%,28rem)] text-base`}
+                  style={{ transform: "skewX(-5deg)" }}
+                >
+                  「{activeZone.quote}」
+                </p>
               </div>
             </>
           )}
