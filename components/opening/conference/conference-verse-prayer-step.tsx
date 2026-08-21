@@ -54,11 +54,18 @@ function VersePrayerContent({
           用 fonttools 重新跑過 subset，涵蓋這裡全部經文／禱告文範本的字
           （見 app/fonts/gen-ryu-min.ts 的說明）；範本裡 {"{}"} 代入的使用者
           姓名是動態內容、字沒辦法預先收進字型檔，缺字的字元會自動退回
-          瀏覽器預設的備援字型，不影響其餘文字正常顯示源流明體。break-all
-          是額外保險：這段是純中文長句，逗號句號之間常常沒有半形空格，用
-          break-all 讓每個中文字都可以是斷行點。 */}
+          瀏覽器預設的備援字型，不影響其餘文字正常顯示源流明體。
+          原本用 break-all 讓每個字都能是斷行點，但 break-all 連中文字本身
+          的正常斷行規則都繞過去了，會在完全不相關的兩個字中間硬斷（例如
+          「只定 / 睛在」，把「定睛」這種詞從中間切開），比沒有 break-all
+          更難讀。改成 overflow-wrap:break-word（只在真的需要時，例如姓名
+          帶的一長串英文，才強制斷行）+ text-wrap:pretty（瀏覽器自己找比較
+          好的斷行點，會優先斷在逗號、句號後面，不會斷在詞語中間）——實測用
+          臨時測試頁面比對過，這個組合會準確落在「只是看著環境，」後面才
+          換行，不會再切開「定睛」兩個字。 */}
       <p
-        className={`${genRyuMin.className} w-[min(74%,28rem)] text-xl leading-loose break-all sm:text-2xl`}
+        className={`${genRyuMin.className} w-[min(74%,28rem)] text-xl leading-loose sm:text-2xl`}
+        style={{ overflowWrap: "break-word", textWrap: "pretty" }}
       >
         {bodyText}
       </p>

@@ -40,10 +40,13 @@ export const ExportCard = forwardRef<HTMLDivElement, ExportCardProps>(function E
         <p className="text-sm tracking-[0.2em] text-white/70">{label}</p>
         {/* w-[min(74%,28rem)]＋源流明體：跟畫面上 conference-verse-prayer-step.tsx
             的經文／禱告文同一套處理，存出來的圖片字體才會跟畫面上看到的一致。
-            break-all 是額外保險：這段是純中文長句，中間逗號句號之間常常沒有
-            半形空格，用 break-all 讓每個中文字都可以是斷行點。 */}
+            overflow-wrap + text-wrap:pretty（不是 break-all）：break-all
+            會在完全不相關的兩個字中間硬斷，text-wrap:pretty 會優先斷在逗號、
+            句號後面，同一個修法、同一個理由見 conference-verse-prayer-step.tsx
+            那邊的完整說明。 */}
         <p
-          className={`${genRyuMin.className} w-[min(74%,28rem)] text-2xl leading-relaxed break-all`}
+          className={`${genRyuMin.className} w-[min(74%,28rem)] text-2xl leading-relaxed`}
+          style={{ overflowWrap: "break-word", textWrap: "pretty" }}
         >
           {verse}
         </p>
