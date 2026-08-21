@@ -167,7 +167,10 @@ export const campZoneScreens: CampZoneScreen[] = [
     title: "尼莫魚區",
     leaderName: "恩琪",
     body: "小丑魚尼莫通常生活在海葵附近，彼此之間形成合作關係。牠們會全力守護自己的家、照顧魚卵、維持生活的安全，對抗比自己大數倍的魚群。",
-    quote: "勇敢，是守護那最重要的。也讓彼此知道，你不是一個人。",
+    // 兩句話刻意用換行分開（見 camp-zone-icons.tsx／camp-zones-reveal.tsx
+    // 的 whiteSpace: pre-line），不靠瀏覽器自動斷行猜位置——這句話兩個
+    // 分句語意獨立，固定在句號後面換行比較好讀。
+    quote: "勇敢，是守護那最重要的。\n也讓彼此知道，你不是一個人。",
     icon: "/images/zone-icon-2.webp",
     cardImage: "/images/zone-card-clownfish.webp",
     posterImage: "/images/zone-intro-clownfish.webp",

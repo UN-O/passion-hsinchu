@@ -73,8 +73,14 @@ export function CampZoneIcons({ zones }: { zones: CampZoneScreen[] }) {
                 <p className="text-base">{activeZone.body}</p>
                 {/* 這裡是完整一句話（不是「早晨靈修」那種短標題），寬度
                     卡在 74% 在手機窄螢幕會斷得很難看，改用滿版寬度，讓
-                    換行點跟著螢幕寬度自動跑，不同裝置都能自然換行。 */}
-                <p className={`${genRyuMin.className} w-full text-base`} style={{ transform: "skewX(-5deg)" }}>
+                    換行點跟著螢幕寬度自動跑，不同裝置都能自然換行。
+                    quote 字串裡如果有 \n（分句語意獨立時，見
+                    lib/opening-camp-content.ts），whiteSpace: pre-line
+                    讓它變成真正的換行，不靠瀏覽器自動斷行猜位置。 */}
+                <p
+                  className={`${genRyuMin.className} w-full text-base`}
+                  style={{ transform: "skewX(-5deg)", whiteSpace: "pre-line" }}
+                >
                   「{activeZone.quote}」
                 </p>
               </div>
