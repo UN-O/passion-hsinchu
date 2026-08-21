@@ -16,20 +16,25 @@ export function CampZoneIcons({ zones }: { zones: CampZoneScreen[] }) {
 
   return (
     <>
-      <div className="mt-10 flex items-center justify-center gap-6">
+      {/* grid-cols-3 讓三個 icon 各佔容器寬度的三分之一，跟著螢幕寬度等比例
+          縮放（不是固定的 size-20/24 px 值），最左／最右 icon 的外緣直接
+          貼齊容器（跟下面「距離開場聚會」那些卡片同一個 max-w-2xl px-[6%]
+          容器）左右邊界，不是置中一小叢。 */}
+      <div className="mt-10 grid grid-cols-3 gap-4">
         {zones.map((zone, index) => (
           <button
             key={zone.title}
             type="button"
             onClick={() => setActiveIndex(index)}
             aria-label={`${zone.title}介紹`}
+            className="mx-auto w-full max-w-32"
           >
             <Image
               src={zone.icon}
               alt={zone.title}
               width={120}
               height={120}
-              className="size-20 rounded-full sm:size-24"
+              className="aspect-square w-full rounded-full object-cover"
             />
           </button>
         ))}
