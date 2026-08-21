@@ -83,7 +83,13 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
                 貼合數字實際渲染出來的字元數），不是整個 segment——時數超過
                 99 變 3 位數（例如 168）時，segment 是跟分／秒共用同一個
                 flex-1 寬度不會變，但數字本身變寬了，如果錨點是 segment，
-                位置就沒對到數字實際的右邊緣，跑掉。 */}
+                位置就沒對到數字實際的右邊緣，跑掉。offset 用 -3.25cqw（負值，
+                比數字右邊緣再往右一點）不是正值：分／秒（2 位數）原本用
+                「貼著 segment 右邊緣」定位就是對的位置，數字本身比 segment
+                窄一截，錨點換成數字之後如果 offset 照舊用正的 8cqw，分／秒
+                的位置會整組往左移太多；這個負值是反推回去、讓 2 位數字的
+                視覺位置跟原本一樣，3 位數（時）則因為錨點正確跟著數字寬度走，
+                不會再跑掉。 */}
             <div className="conf-countdown-segment relative flex flex-1 flex-col items-center">
               <span className="relative inline-block">
                 <span
@@ -91,7 +97,7 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
                 >
                   {pad(segment.value)}
                 </span>
-                <span className="conf-countdown-label absolute right-[8cqw] bottom-0 text-black/60">
+                <span className="conf-countdown-label absolute right-[-3.25cqw] bottom-0 text-black/60">
                   {segment.label}
                 </span>
               </span>
