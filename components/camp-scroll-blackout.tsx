@@ -66,7 +66,15 @@ export function ScrollBlackout({ children }: { children: React.ReactNode }) {
           style={{ backgroundColor: isBlack ? "#000000" : "#feed74" }}
           aria-hidden
         />
-        {children}
+        {/* data-blackout：黑底時把 --muted-foreground 這個 CSS 變數整個
+            改成白色系，讓底下所有卡片本來就用 text-muted-foreground 的
+            小字（副標題、標籤文字）自動一起反白，不用一個一個元件加
+            條件判斷。覆寫規則見 globals.css 的 [data-blackout="true"]。
+            黑底狀態下這一層以上的卡片（各區積分等）本來就已經捲出畫面，
+            不會有「還在黃底、卻被反白」的問題。 */}
+        <div data-blackout={isBlack || undefined} className="contents">
+          {children}
+        </div>
       </IsBlackContext.Provider>
     </TriggerContext.Provider>
   )
