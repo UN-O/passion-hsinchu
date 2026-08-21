@@ -9,7 +9,7 @@ export type ExportCardData = {
 }
 
 const LOGO_SRC = "/images/conference-hero-logo.webp"
-const VISUAL_SRC = "/images/conference-export-visual.png"
+const VISUAL_SRC = "/images/conference-export-visual.webp"
 
 // 540×675（4:5）、2 倍輸出 → 1080×1350，跟原本 ExportCard／
 // downloadNodeAsImage 用的規格一致。
