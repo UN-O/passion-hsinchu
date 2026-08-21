@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import Link from "next/link"
 import { Menu, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -65,14 +64,6 @@ export function CampSidebar() {
                 {item.label}
               </button>
             ))}
-            <SheetClose asChild>
-              <Link
-                href="/camp/devotion/day2"
-                className="rounded-full border border-white/15 bg-white/10 px-6 py-4 text-center text-base font-bold backdrop-blur-sm hover:bg-white/15"
-              >
-                靈修內容
-              </Link>
-            </SheetClose>
           </nav>
         </SheetContent>
       </Sheet>
