@@ -199,6 +199,16 @@ export function ConferenceMissionHome({
             </button>
           </div>
 
+          {/* 標語圖放在倒數計時區塊下面（不是主視覺標題圖後面），白字透明底，
+              直接疊在頁面藍色底上。 */}
+          <Image
+            src="/images/conference-slogan.webp"
+            alt="我們相信，每個人都會在這裡遇見神。WE BELIEVE EVERYONE WILL EXPERIENCE GOD'S PRESENCE HERE."
+            width={2434}
+            height={257}
+            className="mx-auto mt-6 h-auto w-[70%]"
+          />
+
           {/* 三場聚會（同一批 session 也是聚會流程表印的三場）各自一張卡片，
               左右邊跟工作坊那排卡片切齊（同一層 px 內距），不是貼齊螢幕邊緣。
               視覺圖依場次換成 session.image（還沒拿到真圖的場次先共用佔位圖，
