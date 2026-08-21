@@ -3,10 +3,12 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react"
 
 // 首頁背景在「每場聚會」那張卡片整個露出來（不被 sticky logo 列蓋到、也
-// 沒有被畫面下緣切到）才整片變黑；往上滑只要卡片開始被切掉一點（不管是
-// 被 sticky 列蓋住還是被畫面下緣切掉）就變回黃色。用 getBoundingClientRect
-// 量卡片跟 sticky 列（見 passion-logo-header.tsx 的 data-scroll-blackout-header）
-// 的實際位置，不是猜一個固定門檻。
+// 沒有被畫面下緣切到）才變黑，之後卡片以下的區域一路都維持黑色——包括
+// 繼續往下滑、卡片頂端被 sticky 列蓋住捲出畫面之後也一樣，不會因為卡片
+// 不再「整個」露出來就跳回黃色。只有往上滑、卡片的底部又被畫面下緣切到
+// （代表已經滑回卡片還沒完全進來的那個位置）才變回黃色。用
+// getBoundingClientRect 量卡片跟 sticky 列（見 passion-logo-header.tsx 的
+// data-scroll-blackout-header）的實際位置，不是猜一個固定門檻。
 const TriggerContext = createContext<(node: HTMLDivElement | null) => void>(() => {})
 
 export function ScrollBlackout({ children }: { children: React.ReactNode }) {
@@ -20,7 +22,18 @@ export function ScrollBlackout({ children }: { children: React.ReactNode }) {
       const headerEl = document.querySelector<HTMLElement>("[data-scroll-blackout-header]")
       const headerBottom = headerEl ? headerEl.getBoundingClientRect().bottom : 0
       const rect = el.getBoundingClientRect()
-      setIsBlack(rect.top >= headerBottom && rect.bottom <= window.innerHeight)
+      const fullyVisible = rect.top >= headerBottom && rect.bottom <= window.innerHeight
+      if (fullyVisible) {
+        setIsBlack(true)
+      } else if (rect.bottom > window.innerHeight) {
+        // 卡片底部還沒進到畫面下緣以內：還沒滑到（或往上滑退回了）卡片
+        // 完全露出來之前的狀態。
+        setIsBlack(false)
+      } else {
+        // 卡片底部已經在畫面內、只是頂端被 sticky 列蓋住了：代表已經滑
+        // 過這張卡片，維持黑色。
+        setIsBlack(true)
+      }
     }
     onScroll()
     window.addEventListener("scroll", onScroll, { passive: true })
