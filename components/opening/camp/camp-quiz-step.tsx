@@ -16,7 +16,7 @@ export const quizImages = campQuizQuestions.flatMap((question) =>
   question.options.map((option) => option.imageSrc).filter((src): src is string => Boolean(src))
 )
 
-function QuizContent({ onStepChange }: { onStepChange: (step: CampStep) => void }) {
+function QuizContent() {
   const { index } = useImmersiveNav()
   const { answers, setAnswer } = useCampFlow()
   const advance = useOpeningStepAdvance("/opening/camp/result")
@@ -78,7 +78,7 @@ export function CampQuizStep({ onStepChange }: { onStepChange: (step: CampStep) 
         progress={{ mode: "manual", value: 0 }}
         onBack={() => (index === 0 ? onStepChange("welcome") : setIndex(index - 1))}
       >
-        <QuizContent onStepChange={onStepChange} />
+        <QuizContent />
       </ImmersiveScreen>
     </OpeningTransitionProvider>
   )
