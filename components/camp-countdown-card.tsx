@@ -20,7 +20,7 @@ export function CampCountdownCard() {
 
   return (
     <>
-      <div className="camp-glass-card mt-6 rounded-3xl border-2 border-white/50 bg-[radial-gradient(120%_100%_at_25%_15%,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.06)_35%,rgba(191,219,254,0.05)_70%,rgba(255,255,255,0.08)_100%)] p-6 shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),inset_0_-3px_4px_rgba(30,64,124,0.14),0_16px_40px_rgba(0,0,0,0.22)]">
+      <div className="camp-glass-card mt-6 rounded-3xl border-2 border-white/50 bg-[radial-gradient(120%_100%_at_25%_15%,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.06)_35%,rgba(191,219,254,0.05)_70%,rgba(255,255,255,0.08)_100%)] p-4 shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),inset_0_-3px_4px_rgba(30,64,124,0.14),0_16px_40px_rgba(0,0,0,0.22)]">
         <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-muted-foreground">
           距離{nextSession.label}開始，還剩...
         </p>
