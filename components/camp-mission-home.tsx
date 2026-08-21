@@ -162,12 +162,14 @@ export async function CampMissionHome({
           className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-        <div className="relative z-10 flex flex-col gap-1">
+        <div className="relative z-10 flex flex-wrap items-baseline gap-x-3 gap-y-1">
           {/* 16:4 是矮寬的橫幅，不是直式卡片，74% 寬度限制（給直式卡片
               斷行用的慣例）在這裡反而會逼標題硬換成兩行、擠壓矮版面。
-              這裡橫向空間充足，不用限制寬度，維持一行。 */}
-          <p className={`${genRyuMin.className} text-2xl whitespace-nowrap text-white`}>早晨靈修</p>
-          <p className="text-sm text-white/80">查看今天的靈修內容</p>
+              這裡橫向空間充足，不用限制寬度，維持一行。小標題貼在標題
+              右邊、同一條基線，不是獨立一行；flex-wrap 是保險，字級再
+              加大或標題變長時可以整排跳成兩行，不會硬擠。 */}
+          <p className={`${genRyuMin.className} text-3xl whitespace-nowrap text-white sm:text-4xl`}>早晨靈修</p>
+          <p className="text-sm whitespace-nowrap text-white/80">查看今天的靈修內容</p>
         </div>
       </Link>
 
