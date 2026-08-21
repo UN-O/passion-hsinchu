@@ -61,16 +61,19 @@ function useCountUp(target: number, storageKey: string): number {
 
 function ZoneBar({ zone, max }: { zone: ZoneScore; max: number }) {
   const displayValue = useCountUp(zone.total, `${STORAGE_PREFIX}${zone.key}`)
+  // 長條最高只長到 90%，幫上面的數字標籤固定留頭部空間——分數再高
+  // （占滿量尺）長條也不會頂到數字，數字不會被裁切掉。
+  const heightPct = Math.min((displayValue / max) * 90, 90)
 
   return (
-    <div className="flex h-full w-16 flex-col items-center justify-end gap-1.5">
+    <div className="flex h-full flex-col items-center justify-end gap-1.5">
       {displayValue > 0 && (
-        <span className="text-sm font-bold tabular-nums">{displayValue.toLocaleString("en-US")}</span>
+        <span className="text-sm font-bold tabular-nums sm:text-base">{displayValue.toLocaleString("en-US")}</span>
       )}
       <div
-        className="w-10 rounded-t-[4px] sm:w-12"
+        className="w-full max-w-16 rounded-t-[4px] sm:max-w-20"
         style={{
-          height: `${Math.max((displayValue / max) * 100, displayValue > 0 ? 1 : 0)}%`,
+          height: `${Math.max(heightPct, displayValue > 0 ? 1 : 0)}%`,
           backgroundColor: zone.color,
         }}
       />
@@ -94,17 +97,27 @@ export function ZoneScoreChart({ zones }: { zones: ZoneScore[] }) {
 
   return (
     <div className="pt-2">
-      <div className="flex h-48 items-end justify-center gap-x-8 border-b border-foreground/10 sm:h-56 sm:gap-x-12">
+      {/* grid-cols-3：每個長條各佔容器寬度的三分之一，跟著卡片寬度等比例
+          縮放（不是固定的 w-10/12 px 值），寬螢幕時長條、圖示都會跟著變
+          大。高度用 clamp() 讓圖表本身也跟著螢幕寬度平滑縮放，不是卡在
+          兩個斷點之間硬跳。 */}
+      <div className="grid h-[clamp(12rem,45vw,16rem)] grid-cols-3 items-end gap-4 border-b border-foreground/10">
         {zones.map((zone) => (
           <ZoneBar key={zone.key} zone={zone} max={max} />
         ))}
       </div>
 
-      <div className="mt-3 flex justify-center gap-x-8 sm:gap-x-12">
+      <div className="mt-3 grid grid-cols-3 gap-4">
         {zones.map((zone) => (
-          <div key={zone.key} className="flex w-16 flex-col items-center gap-1.5">
-            <Image src={zone.icon} alt="" width={48} height={48} className="size-10 rounded-full" />
-            <span className="text-xs whitespace-nowrap text-muted-foreground">{zone.title}</span>
+          <div key={zone.key} className="flex flex-col items-center gap-1.5">
+            <Image
+              src={zone.icon}
+              alt=""
+              width={80}
+              height={80}
+              className="aspect-square w-full max-w-16 rounded-full object-cover sm:max-w-20"
+            />
+            <span className="text-xs whitespace-nowrap text-muted-foreground sm:text-sm">{zone.title}</span>
           </div>
         ))}
       </div>
