@@ -130,11 +130,16 @@ export async function requireClaimedSession(): Promise<AppSession> {
 // 抽出來是因為有些頁面（例如 /discussion/[postId]）要先讀資料庫才知道該用
 // 哪個 flow 擋，這時已經拿過 session 了，不該為了套規則再抓一次 session。
 // 規則本身只有這一份，兩個入口不會走偏。
+//
+// 被踢去 /signin?need=google 補驗證時帶上 next=/${flow}：不然 Google
+// 驗證完會落回 postSignInPath 那套「登入成功後該去哪裡」的通用邏輯，兩場
+// 都報名、還沒兩邊都做完開場的人會被送去 /opening 選單，而不是回到他
+// 原本點的那個 flow（例如首頁點「進入 CONFERENCE」結果又跳回選單）。
 export function assertFlowAccess(session: AppSession, flow: Flow): void {
   // 工作人員兩邊都能看（首頁的「查看 CAMP／Conference 頁面」），不需要自己報名。
   // 一樣要求 verified，否則 CAMP 那條無驗證的路就能繞進來。
   if (session.user.role !== "attendee") {
-    if (!session.isVerified) redirect("/signin?need=google")
+    if (!session.isVerified) redirect(`/signin?need=google&next=/${flow}`)
     return
   }
 
@@ -142,7 +147,7 @@ export function assertFlowAccess(session: AppSession, flow: Flow): void {
   if (!enrolled) redirect("/")
 
   // CONFERENCE 需要證明過 Google 帳號所有權；CAMP 不需要
-  if (flow === "conference" && !session.isVerified) redirect("/signin?need=google")
+  if (flow === "conference" && !session.isVerified) redirect(`/signin?need=google&next=/${flow}`)
 }
 
 // opening flow 的閘門。放在 layout 裡而不是 proxy.ts：

@@ -8,16 +8,21 @@ import { GoogleButton } from "./google-button"
 export default async function SigninPage({
   searchParams,
 }: {
-  searchParams: Promise<{ need?: string }>
+  searchParams: Promise<{ need?: string; next?: string }>
 }) {
   const session = await getAppSession()
-  const { need } = await searchParams
+  const { need, next } = await searchParams
 
   // 已經有 session 的人不該停在這裡；但 need=google 是「session 層級不夠」
   // 被踢回來的，這種情況要留在頁面上讓他改用 Google 登入。
   if (session && need !== "google") {
     redirect(postSignInPath(session))
   }
+
+  // next 只允許站內路徑，不接受 "//host/..." 這種協定相對網址，避免變成
+  // open redirect——雖然目前唯一的來源（assertFlowAccess）只會塞
+  // "/camp"／"/conference"，但 query string 使用者自己也能改，還是要驗。
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : undefined
 
   return (
     <main className="flex min-h-svh flex-col items-center justify-center px-[6%] py-16 sm:px-8">
@@ -35,7 +40,9 @@ export default async function SigninPage({
         )}
 
         <div className="mt-8">
-          <GoogleButton />
+          <GoogleButton
+            callbackURL={safeNext ? `/signin/redirect?next=${encodeURIComponent(safeNext)}` : undefined}
+          />
         </div>
 
         <div className="mt-10 border-t border-border pt-6">

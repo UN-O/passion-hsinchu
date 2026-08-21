@@ -11,10 +11,24 @@ import { getAppSession, postSignInPath } from "@/lib/session"
 const RETRIES = 3
 const RETRY_DELAY_MS = 150
 
-export default async function SigninRedirectPage() {
+export default async function SigninRedirectPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>
+}) {
+  const { next } = await searchParams
+  // next 只允許站內路徑（見 app/signin/page.tsx 同一個檢查），避免變成
+  // open redirect。有這個值代表使用者是被 assertFlowAccess 踢來補驗證的
+  // （例如點「進入 CONFERENCE」但 session 還沒證明過 Google 帳號所有權），
+  // 驗證完要送回他原本要去的 flow，不是套 postSignInPath 那套「登入成功
+  // 後該去哪裡」的通用邏輯——不然兩場都報名、還沒兩邊都做完開場的人會被
+  // 送去 /opening 選單，而不是他原本點的那個 flow。目的地本身還是有
+  // 自己的 requireFlowAccess 把關，next 選錯也不會繞過權限檢查。
+  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null
+
   for (let attempt = 0; attempt <= RETRIES; attempt++) {
     const session = await getAppSession()
-    if (session) redirect(postSignInPath(session))
+    if (session) redirect(safeNext ?? postSignInPath(session))
 
     if (attempt < RETRIES) {
       await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
