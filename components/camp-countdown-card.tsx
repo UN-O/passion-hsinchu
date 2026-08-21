@@ -6,14 +6,16 @@ import { X } from "lucide-react"
 
 import { ConferenceCountdown } from "@/components/conference-countdown"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import { camp } from "@/lib/site-config"
-import { getNextCampSession } from "@/lib/opening-camp-content"
+import { formatCampMeetingDateLabel, formatCampMeetingTimeLabel, getNextCampSession } from "@/lib/opening-camp-content"
 
 // 跟 CONF 那張「下場聚會倒數」卡片同樣的樣式跟互動：點下去彈出資訊視窗，
 // 圖片＋標籤／標題／日期／時間同一種排版。標籤文字跟倒數目標都是「下一場
 // 還沒開始的聚會」（campSessions／getNextCampSession，跟 CONF 的
-// getNextConferenceSession 同一套邏輯）。視覺依場次換成 nextSession.image，
-// 外層卡片維持液態玻璃質感（跟「小隊分數」「各區積分」那兩張卡片同一套視覺）。
+// getNextConferenceSession 同一套邏輯）。彈窗內容是那一場聚會自己的資訊
+// （標題＋日期時間），不是整個營會的資訊——之前誤用 lib/site-config.ts
+// 的 camp（整個營會的日期範圍／時段），跟卡片本身顯示的單一場次對不起來。
+// 視覺依場次換成 nextSession.image，外層卡片維持液態玻璃質感（跟「小隊
+// 分數」「各區積分」那兩張卡片同一套視覺）。
 export function CampCountdownCard() {
   const [open, setOpen] = useState(false)
   const nextSession = getNextCampSession()
@@ -28,7 +30,7 @@ export function CampCountdownCard() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label="營會資訊"
+          aria-label="聚會資訊"
           className="relative mt-3 aspect-video w-full overflow-hidden rounded-2xl"
         >
           <Image
@@ -51,7 +53,7 @@ export function CampCountdownCard() {
           showCloseButton={false}
           className="camp-theme flex max-w-[calc(100%-2rem)] flex-col gap-0 rounded-3xl border-none bg-card p-0 sm:max-w-md"
         >
-          <DialogTitle className="sr-only">營會資訊</DialogTitle>
+          <DialogTitle className="sr-only">聚會資訊</DialogTitle>
           <DialogClose className="absolute top-4 right-4 z-10 text-white/80 hover:text-white">
             <X className="size-5" />
             <span className="sr-only">關閉</span>
@@ -74,12 +76,11 @@ export function CampCountdownCard() {
           </div>
 
           <div className="flex flex-col gap-2 p-6">
-            <p className="text-sm text-muted-foreground">營會資訊</p>
-            <p className="text-xl font-bold">{camp.label}</p>
+            <p className="text-sm text-muted-foreground">聚會資訊</p>
+            <p className="text-xl font-bold">{nextSession.label}</p>
             <p className="text-base">
-              {camp.dateLabel}（{camp.durationLabel}）
+              {formatCampMeetingDateLabel(nextSession.startISO)} {formatCampMeetingTimeLabel(nextSession.startISO)}
             </p>
-            <p className="text-sm text-muted-foreground">{camp.timeEntries.join("・")}</p>
           </div>
         </DialogContent>
       </Dialog>
