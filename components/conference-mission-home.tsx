@@ -116,7 +116,7 @@ export function ConferenceMissionHome({
       <div
         className="fixed inset-x-0 top-0 -z-10 h-[100svh] bg-no-repeat"
         style={{
-          backgroundImage: "url('/images/conference-background.jpg')",
+          backgroundImage: "url('/images/conference-background.webp')",
           backgroundSize: "auto 100%",
           backgroundPosition: "center",
         }}
@@ -145,10 +145,10 @@ export function ConferenceMissionHome({
         >
           <Link href="https://www.passion-hsinchu.com/" target="_blank" rel="noopener noreferrer">
             <Image
-              src="/images/conference-hero-logo.png"
+              src="/images/conference-hero-logo.webp"
               alt="PASSION"
-              width={1400}
-              height={263}
+              width={3356}
+              height={630}
               priority
               className="mx-auto h-auto w-full"
             />
@@ -162,10 +162,10 @@ export function ConferenceMissionHome({
               WORSHIP / RELATION / EXPERIENCE 標語）跟上面 sticky 的 PASSION
               LOGO 是兩張獨立圖，不隨捲動縮放、正常捲動離開畫面。 */}
           <Image
-            src="/images/conference-title-visual.png"
+            src="/images/conference-title-visual.webp"
             alt="THE COURAGE GENERATIONS 勇者世代 WORSHIP RELATION EXPERIENCE"
-            width={1400}
-            height={1202}
+            width={3364}
+            height={2888}
             className="h-auto w-full"
           />
 
@@ -251,10 +251,10 @@ export function ConferenceMissionHome({
           跟倒數計時卡片之間留 mt-12 的空隙，沒有圓角、下面不留白，圖片底部就是頁面底部。 */}
       <div className="relative mt-12">
         <Image
-          src="/images/conference-schedule.jpg"
+          src="/images/conference-schedule.webp"
           alt="PASSION CONFERENCE 特會流程表"
-          width={1080}
-          height={2250}
+          width={2250}
+          height={4688}
           className="h-auto w-full"
         />
       </div>

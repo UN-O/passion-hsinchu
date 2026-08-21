@@ -200,7 +200,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     topic: "預備自己成為對的人，其實很需要勇氣！",
     location: "地點待公布",
     rounds: ["R1"],
-    image: "/images/conference-workshop-a.png",
+    image: "/images/conference-workshop-a.webp",
     infoImage: "/images/conference-workshop-info-a.jpg",
   },
   {
@@ -209,7 +209,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     topic: "人生要做出選擇，其實很需要勇氣！",
     location: "地點待公布",
     rounds: ["R1", "R2"],
-    image: "/images/conference-workshop-b.png",
+    image: "/images/conference-workshop-b.webp",
     infoImage: "/images/conference-workshop-info-b.jpg",
   },
   {
@@ -218,7 +218,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     topic: "要在職場中傳福音，其實很需要勇氣！",
     location: "地點待公布",
     rounds: ["R1", "R2"],
-    image: "/images/conference-workshop-c.png",
+    image: "/images/conference-workshop-c.webp",
     infoImage: "/images/conference-workshop-info-c.jpg",
   },
   {
@@ -227,7 +227,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     topic: "面對自己的不完美，其實很需要勇氣！",
     location: "地點待公布",
     rounds: ["R1", "R2"],
-    image: "/images/conference-workshop-d.png",
+    image: "/images/conference-workshop-d.webp",
     infoImage: "/images/conference-workshop-info-d.jpg",
   },
 ]
@@ -271,7 +271,7 @@ export const conferenceSessions: ConferenceSession[] = [
     doorsOpenTime: "18:50",
     startTime: "19:00",
     startISO: "2026-08-28T19:00:00+08:00",
-    image: "/images/conference-session-1-visual.jpg",
+    image: "/images/conference-session-1-visual.webp",
   },
   {
     id: "session-2",
@@ -281,7 +281,7 @@ export const conferenceSessions: ConferenceSession[] = [
     doorsOpenTime: "13:50",
     startTime: "14:00",
     startISO: "2026-08-29T14:00:00+08:00",
-    image: "/images/conference-session-2-visual.jpg",
+    image: "/images/conference-session-2-visual.webp",
   },
   {
     id: "session-3",
@@ -291,7 +291,7 @@ export const conferenceSessions: ConferenceSession[] = [
     doorsOpenTime: "18:50",
     startTime: "19:00",
     startISO: "2026-08-29T19:00:00+08:00",
-    image: "/images/conference-session-3-visual.jpg",
+    image: "/images/conference-session-3-visual.webp",
   },
 ]
 
