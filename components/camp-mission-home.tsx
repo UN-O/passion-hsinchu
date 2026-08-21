@@ -185,13 +185,13 @@ export async function CampMissionHome({
         </p>
       </Link>
 
-      {/* 早晨靈修：首頁只留一個入口，進去之後用頁面裡的場次切換選單在
-          Day2／Day3 之間切換（見 app/camp/devotion/[day]/page.tsx 的
-          SessionSelect），不用在首頁放兩個按鈕。連到 /camp/devotion
+      {/* 早晨靈修：首頁只留一個入口，進去之後用頁面裡的 DAY2／DAY3 玻璃
+          切換按鈕切換（見 app/camp/devotion/[day]/layout.tsx 的
+          CampDevotionDaySelect），不用在首頁放兩個按鈕。連到 /camp/devotion
           （會自動轉去目前這一天的正式網址）。 */}
       <Link href="/camp/devotion" className="mt-6 block">
         <SectionCard variant="glass" className="flex flex-col gap-1">
-          <p className={`${genRyuMin.className} text-lg`}>早晨靈修</p>
+          <p className={`${genRyuMin.className} w-[min(74%,28rem)] text-2xl text-white`}>早晨靈修</p>
           <p className="text-sm text-muted-foreground">查看今天的靈修內容</p>
         </SectionCard>
       </Link>
