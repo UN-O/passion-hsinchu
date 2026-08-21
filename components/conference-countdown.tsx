@@ -75,13 +75,19 @@ export function ConferenceCountdown({ targetISO }: { targetISO: string }) {
         <div className="absolute inset-0 rounded-xl border border-white/50 bg-white/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] backdrop-blur-md" />
         {segments.map((segment, index) => (
           <Fragment key={segment.label}>
+            {/* label 改成 absolute 疊在數字右下角，不再是 flex-col 疊在數字
+                下面：拿掉 label 這個 flow 元素之後，數字在 flex-col 裡就是
+                唯一的排版對象，位置不會因為 label 移走而跟著往下（或往上）
+                挪動，維持原本的位置。label 定位在 segment 的右下角，跟數字
+                共用同一塊玻璃底（segment 本身撐滿整條的高度），不是另外
+                疊一塊底色。 */}
             <div className="conf-countdown-segment relative flex flex-1 flex-col items-center">
               <span
                 className={`${dinEngschrift.className} conf-countdown-digit leading-none font-bold tabular-nums text-black`}
               >
                 {pad(segment.value)}
               </span>
-              <span className="conf-countdown-label text-black/60">{segment.label}</span>
+              <span className="conf-countdown-label absolute right-0 bottom-0 text-black/60">{segment.label}</span>
             </div>
             {index < segments.length - 1 && (
               <span
