@@ -1,13 +1,8 @@
 import type { Metadata } from "next"
-import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
-import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampDevotionContent } from "@/components/camp-devotion-content"
 import { DiscussionRoot } from "@/components/discussion/discussion-root"
-import { CampDevotionDaySelect } from "@/components/camp-devotion-day-select"
 import { DEVOTION_ENTRIES } from "@/lib/devotion-content"
 import { campDevotionRootKey } from "@/lib/discussion/root-registry"
 import { getOrCreateDevotionRoot } from "@/lib/discussion/root"
@@ -18,6 +13,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
+// 頭部＋DAY2／DAY3 切換按鈕在同一路由區段的 layout.tsx（見該檔案註解，
+// 是為了讓玻璃滑動底跨頁面動畫）。這裡只放會隨 day 換掉的內容本身。
 export default async function CampDevotionDayPage({ params }: { params: Promise<{ day: string }> }) {
   const { day } = await params
   const entry = DEVOTION_ENTRIES.find((e) => e.id === day)
@@ -33,29 +30,10 @@ export default async function CampDevotionDayPage({ params }: { params: Promise<
   await getOrCreateDevotionRoot(rootKey, entry.questions)
 
   return (
-    <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
-      <PassionLogoHeader
-        logoTone="dark"
-        leftSlot={
-          <Button asChild size="icon-sm" variant="outline" aria-label="返回" className="rounded-full">
-            <Link href="/camp">
-              <ArrowLeft />
-            </Link>
-          </Button>
-        }
-      />
-
-      <div className="mt-10 flex flex-col gap-10">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">靈修內容</p>
-          <CampDevotionDaySelect
-            items={DEVOTION_ENTRIES.map((e) => ({ id: e.id, label: e.id.toUpperCase() }))}
-            activeId={entry.id}
-          />
-        </div>
-
-        <DiscussionRoot rootKey={rootKey} session={session} header={<CampDevotionContent entry={entry} isStaff={isStaff} />} />
-      </div>
-    </main>
+    <DiscussionRoot
+      rootKey={rootKey}
+      session={session}
+      header={<CampDevotionContent entry={entry} isStaff={isStaff} />}
+    />
   )
 }
