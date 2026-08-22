@@ -16,7 +16,7 @@ export type ZoneScore = {
 // 抓一個「好看的整數」當長條圖的量尺上限（1, 2, 5 × 10 的次方），
 // 讓最高的長條不會頂到圖表上緣。
 const NICE_STEPS = [1, 2, 5, 10]
-const ANIMATION_MS = 900
+const ANIMATION_MS = 1600
 const STORAGE_PREFIX = "zone-score:"
 
 function niceMax(value: number): number {
@@ -29,8 +29,10 @@ function niceMax(value: number): number {
   return 10 * magnitude
 }
 
-function easeOutCubic(t: number): number {
-  return 1 - (1 - t) ** 3
+// 由慢到快（ease-in）：一開始幾乎不動，越接近終點衝得越快，跟原本
+// 「一開始快、後面慢下來」的 easeOutCubic 相反，長條看起來更有蓄力感。
+function easeInCubic(t: number): number {
+  return t ** 3
 }
 
 // 每次進到儀表板都從「上次看到的分數」往上衝到目前分數，而不是直接跳出結果，
@@ -46,7 +48,7 @@ function useCountUp(target: number, storageKey: string): number {
 
     function tick(now: number) {
       const progress = Math.min((now - startTime) / ANIMATION_MS, 1)
-      const eased = easeOutCubic(progress)
+      const eased = easeInCubic(progress)
       setValue(Math.round(start + (target - start) * eased))
       if (progress < 1) {
         frame = requestAnimationFrame(tick)
