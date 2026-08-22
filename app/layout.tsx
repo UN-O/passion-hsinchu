@@ -59,6 +59,13 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   viewportFit: "cover",
   themeColor: "#F6ED8E",
+  // 沒宣告 color-scheme 的話，部分瀏覽器（實測 Samsung Internet 最明顯）
+  // 會用自己的「網頁自動深色模式」heuristic 硬套一層反色／變色濾鏡，
+  // 想把它以為的「淺色網站」轉成深色，但這個網站本來就是深色為主
+  // （只有 /camp/* 用 .camp-theme 覆寫成淺黃色），套上去的結果是整頁
+  // 變成詭異的橘棕色（使用者截圖回報）。宣告 "light dark" 告訴瀏覽器
+  // 這個網站兩種配色都是刻意設計的，不需要瀏覽器自己猜、自己套濾鏡。
+  colorScheme: "light dark",
 }
 
 const organizationJsonLd = {
