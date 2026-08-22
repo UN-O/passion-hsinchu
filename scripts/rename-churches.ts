@@ -2,7 +2,9 @@ import { eq, ne, and } from "drizzle-orm"
 
 import { db } from "@/db"
 import { enrollment } from "@/db/schema/app"
+import { CHURCH_LIST_TAG } from "@/lib/enrollment"
 import { normalizeChurch } from "@/lib/normalize"
+import { triggerRevalidate } from "./trigger-revalidate"
 
 // 一次性腳本：把資料庫裡的教會簡寫/變體改成主辦方提供的正規名稱。
 // 只改 church / church_norm 顯示與比對用的值，不影響 name / camp / conference。
@@ -61,6 +63,13 @@ async function main() {
   }
 
   console.log(`\n共更新 ${updated} 筆，跳過 ${skipped} 筆`)
+
+  // 改了 church 就等於改了 /signin/camp、/claim 下拉選單裡的教會清單，
+  // 但這支腳本跟 sync-roster.ts 一樣是獨立跑的，不會經過任何一個
+  // server action，要自己補上清快取這一步（見 trigger-revalidate.ts 的說明）。
+  if (updated > 0) {
+    await triggerRevalidate(CHURCH_LIST_TAG)
+  }
 }
 
 main()

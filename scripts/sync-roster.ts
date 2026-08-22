@@ -1,8 +1,9 @@
 import { parse } from "csv-parse/sync"
 
-import { applyDiff, getAllForDiff } from "@/lib/enrollment"
+import { applyDiff, CHURCH_LIST_TAG, getAllForDiff } from "@/lib/enrollment"
 import { diffEnrollments, parseEnrollmentCsv } from "@/lib/enrollment-csv"
 import { normalizeChurch, normalizeName } from "@/lib/normalize"
+import { triggerRevalidate } from "./trigger-revalidate"
 
 // 直接對 Google Form 的「回覆」試算表匯出 CSV，只取姓名與所屬教會兩欄。
 // 生日、電話、緊急聯絡人、信仰問答等欄位一律不讀取、不落地——這個系統的
@@ -159,6 +160,15 @@ async function main() {
     `\n已套用：新增 ${result.created} 筆、更新 ${result.updated} 筆、未變更 ${result.unchanged} 筆`
   )
   console.log("（只做新增與更新，沒有刪除任何既有名冊資料）")
+
+  // 這支腳本跟後台的批次匯入（app/admin/enrollment/actions.ts 的 confirmCsv）
+  // 走的是同一個 applyDiff，但這裡是獨立腳本、不會經過那支 server action，
+  // 所以要自己補上清快取這一步，不然新加的教會要等 1 小時 TTL 到期才會出現
+  // 在 /signin/camp 的下拉選單裡——這正是新報名的人打開簽到頁卻選不到自己
+  // 教會的那種情境。
+  if (result.created > 0 || result.updated > 0) {
+    await triggerRevalidate(CHURCH_LIST_TAG)
+  }
 }
 
 main().catch((error) => {
