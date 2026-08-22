@@ -126,11 +126,15 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
           placeholder={
             replyingTo ? "寫下回覆，也可以拍照上傳你的筆記" : "分享你的心得或問題，也可以拍照上傳你的筆記"
           }
-          className="min-h-32 w-full flex-1 resize-none bg-transparent text-base outline-none placeholder:text-muted-foreground"
+          // 輸入框的高度是固定的、超出的部分自己捲，不吃掉剩下的版面：
+          // 手機叫出鍵盤之後畫面只剩上面一小塊，如果讓 textarea 用 flex-1
+          // 撐滿，底下的加號格子就會被推到鍵盤後面完全看不到。
+          className="h-32 w-full shrink-0 resize-none overflow-y-auto bg-transparent text-base outline-none placeholder:text-muted-foreground sm:h-44"
         />
 
-        {/* 加號的空格子放在輸入框下面，不是 header 的一顆 icon——「這裡可以
-            放圖片」要用一個看得到的格子表達。 */}
+        {/* 加號的空格子緊接在輸入框下面（不是 header 的一顆 icon，也不是
+            版面最底部）——鍵盤跳出來時還看得到，「這裡可以放圖片」要用一個
+            看得到的格子表達。 */}
         <AttachmentEditor controller={images} disabled={pending} />
 
         {pollOpen && (
