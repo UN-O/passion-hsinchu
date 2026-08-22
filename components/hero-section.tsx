@@ -27,21 +27,20 @@ export function HeroSection({ session }: { session: AppSession | null }) {
       </div>
 
       <div className="relative z-10 flex flex-col items-center">
-        <Image
-          src="/images/passion-logo.webp"
-          alt="PASSION®"
-          width={979}
-          height={178}
-          priority
-          className="h-10 w-auto brightness-0 invert sm:h-14"
-        />
-
-        <h1 className="font-heading mt-8 text-3xl font-bold tracking-tight sm:text-5xl">
-          《{siteConfig.themeZh}》
+        {/* 主視覺圖已經把 PASSION 標準字、「勇者世代」中英文標題都畫進圖裡
+            了，不用再另外疊 logo／文字。h1 保留但用 sr-only 藏起來——整頁
+            少了這個會少一個 heading，SEO／螢幕閱讀器都會抓不到頁面主標題。 */}
+        <h1 className="sr-only">
+          PASSION《{siteConfig.themeZh}》{siteConfig.themeEn}
         </h1>
-        <p className="mt-2 text-sm tracking-[0.2em] text-muted-foreground sm:text-base">
-          {siteConfig.themeEn}
-        </p>
+        <Image
+          src="/images/hero-title-visual.webp"
+          alt={`PASSION《${siteConfig.themeZh}》${siteConfig.themeEn}`}
+          width={2200}
+          height={333}
+          priority
+          className="h-auto w-full max-w-2xl"
+        />
 
         <p className="mt-6 text-base text-muted-foreground sm:text-lg">
           {siteConfig.year}.8 @{siteConfig.venue}
