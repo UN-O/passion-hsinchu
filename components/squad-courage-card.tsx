@@ -47,7 +47,7 @@ export function SquadCourageCard({ squadName, total }: { squadName: string; tota
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
         <div className="flex items-end gap-2 sm:gap-3">
           <p
-            className={`${dinEngschrift.className} text-5xl font-bold text-primary sm:text-6xl`}
+            className={`${dinEngschrift.className} text-5xl font-bold tracking-wider text-primary sm:text-6xl`}
             style={{ transform: "skewX(-5deg)" }}
           >
             {total.toLocaleString("en-US")}
