@@ -15,17 +15,17 @@ import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { CampMeetingSessions } from "@/components/camp-meeting-sessions"
 import { getRegionTotals } from "@/lib/exp"
-import { getCampRoomNumber } from "@/lib/camp-team"
+import { getCampTeamInfo } from "@/lib/camp-team"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
 import { campZoneScreens, getNextCampMeetingSession } from "@/lib/opening-camp-content"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
-// 小隊資料目前後端還沒有這個模型（只有各區總分，沒有分小隊），
-// 先放佔位內容做畫面，之後接上真正的小隊資料庫再換掉（之後會把全部名單分隊做進後台）。
-// 六眼肥魚是尼莫魚區的小隊。
-const PLACEHOLDER_SQUAD_NAME = "六眼肥魚"
+// 勇氣值目前後端還沒有這個模型（只有各區總分，沒有分小隊的勇氣值），
+// 先固定 0，之後接上真正的小隊積分再換掉。
 const PLACEHOLDER_SQUAD_COURAGE_POINTS = 0
 const PLACEHOLDER_USER_ZONE_KEY = "clownfish"
+// 還沒分到隊（camp_team_member 查不到）時顯示的預設文字。
+const UNASSIGNED_SQUAD_NAME = "尚未分隊"
 
 // 對應 lib/exp-regions.ts 的 region key，但圖示／名稱沿用 onboarding 那邊
 // 已經定案的三區吉祥物（土撥鼠區／尼莫魚區／熊蜂區），維持前後一致。
@@ -86,7 +86,8 @@ export async function CampMissionHome({
   heroName?: string
   enrollmentId?: string | null
 } = {}) {
-  const [totals, roomNumber] = await Promise.all([getRegionTotals(), getCampRoomNumber(enrollmentId)])
+  const [totals, teamInfo] = await Promise.all([getRegionTotals(), getCampTeamInfo(enrollmentId)])
+  const { room: roomNumber, teamName } = teamInfo
   const zoneScores = withUserZoneInMiddle(
     ZONE_META.map((zone) => ({ ...zone, total: totals[zone.key] })),
     PLACEHOLDER_USER_ZONE_KEY
@@ -133,7 +134,7 @@ export async function CampMissionHome({
       <CampCountdownCard />
 
       <SectionCard variant="glass" className="mt-6">
-        <SquadCourageCard squadName={PLACEHOLDER_SQUAD_NAME} total={PLACEHOLDER_SQUAD_COURAGE_POINTS} />
+        <SquadCourageCard squadName={teamName ?? UNASSIGNED_SQUAD_NAME} total={PLACEHOLDER_SQUAD_COURAGE_POINTS} />
       </SectionCard>
 
       <SectionCard variant="glass" className="mt-6 flex flex-col gap-2">
