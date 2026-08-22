@@ -1,6 +1,3 @@
-// 房號目前沒有真的分配資料表，先放佔位內容，等資料確定後換成真的房號。
-const PLACEHOLDER_ROOM_NUMBER = "212"
-
 const LODGING_NOTES = [
   "每天早上 7:15 開始 morning call！",
   "晚上 22:30 會開始查房，熄燈時間為 23:00，請務必留在自己的寢室，不得跑房。",
@@ -14,12 +11,18 @@ const LODGING_SPECIAL_NOTES = [
   "第二天下午統一換穿 PASSION T‑shirt。",
 ]
 
-export function CampLodgingInfo() {
+export function CampLodgingInfo({ roomNumber }: { roomNumber: string | null }) {
   return (
     <div className="flex flex-col gap-6 rounded-3xl bg-muted p-6 text-left">
       <div className="flex flex-col gap-1">
         <p className="text-sm text-muted-foreground">房號</p>
-        <p className="text-6xl font-bold text-primary">{PLACEHOLDER_ROOM_NUMBER}</p>
+        {/* 查不到房號（還沒分房、或這個人不在 camp_team_member 裡，例如
+            工作人員）不要顯示假房號誤導人，改顯示「尚未分配」。 */}
+        {roomNumber ? (
+          <p className="text-6xl font-bold text-primary">{roomNumber}</p>
+        ) : (
+          <p className="text-2xl font-bold text-muted-foreground">尚未分配</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">

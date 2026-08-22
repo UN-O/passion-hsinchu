@@ -17,7 +17,7 @@ const PANEL_MENU_ITEMS = [
 
 type PanelKey = (typeof PANEL_MENU_ITEMS)[number]["key"]
 
-export function CampSidebar() {
+export function CampSidebar({ roomNumber }: { roomNumber: string | null }) {
   const [open, setOpen] = useState(false)
   const [activePanel, setActivePanel] = useState<PanelKey | null>(null)
   // 沒包在 ScrollBlackout 底下時固定回傳 false，不影響原本樣子。
@@ -96,7 +96,7 @@ export function CampSidebar() {
           )}
           {activeItem?.type === "content" && activeItem.key === "lodging" && (
             <div className="min-w-0 px-2 pb-2">
-              <CampLodgingInfo />
+              <CampLodgingInfo roomNumber={roomNumber} />
             </div>
           )}
         </DialogContent>

@@ -15,6 +15,7 @@ import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { CampMeetingSessions } from "@/components/camp-meeting-sessions"
 import { getRegionTotals } from "@/lib/exp"
+import { getCampRoomNumber } from "@/lib/camp-team"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
 import { campZoneScreens, getNextCampMeetingSession } from "@/lib/opening-camp-content"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
@@ -78,12 +79,14 @@ export async function CampMissionHome({
   profileHref = "/camp/profile",
   meetingHref = "/camp/meeting",
   heroName = "",
+  enrollmentId = null,
 }: {
   profileHref?: string
   meetingHref?: string
   heroName?: string
+  enrollmentId?: string | null
 } = {}) {
-  const totals = await getRegionTotals()
+  const [totals, roomNumber] = await Promise.all([getRegionTotals(), getCampRoomNumber(enrollmentId)])
   const zoneScores = withUserZoneInMiddle(
     ZONE_META.map((zone) => ({ ...zone, total: totals[zone.key] })),
     PLACEHOLDER_USER_ZONE_KEY
@@ -102,7 +105,7 @@ export async function CampMissionHome({
       <PassionLogoHeader
         logoTone="dark"
         sticky
-        leftSlot={<CampSidebar />}
+        leftSlot={<CampSidebar roomNumber={roomNumber} />}
         rightSlot={
           <Link
             href={profileHref}
