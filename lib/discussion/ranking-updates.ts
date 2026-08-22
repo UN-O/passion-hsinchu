@@ -242,6 +242,94 @@ export async function propagateScoreChange(tx: Tx, postId: string): Promise<void
   }
 }
 
+// 回覆被刪除（soft delete）之後的排序更新，跟 applyRankingForNewReply 對稱、
+// 方向相反：parent 的 direct_reply_count 要減一，如果 parent 同時是 branch
+// head，descendant_count 也要減一；否則 descendant_count 記在 branch head
+// 自己那一列，另外更新。不這樣做的話 direct_reply_count 會一直停在刪除前
+// 的數字，畫面上「查看更多回覆」的按鈕（靠 hiddenReplyCount = directReplyCount
+// - 1 算出來，見 queries.ts enrichRows）就會一直以為底下還有內容，點下去卻是
+// 空的——因為實際查詢已經用 deleted_at IS NULL 把已刪除的貼文濾掉了。
+//
+// 最後呼叫 recomputeBestDirectChild 重新挑 parent 的最佳 child（處理「被刪的
+// 剛好是原本的精選回覆」），以及往上一層重新挑 grandparent 的最佳 child
+// （parent 自己的 replyScore 因為 directReplyCount 變了，可能會讓 grandparent
+// 原本選的 best child 不再是最佳——跟 applyRankingForNewReply 的
+// refreshGrandparentBestChild 是同一個理由）。
+export async function applyRankingForDelete(tx: Tx, parentId: string): Promise<void> {
+  const now = new Date()
+
+  const [parentPost] = await tx
+    .select({ createdAt: posts.createdAt, replyToId: posts.replyToId, authorRole: user.role })
+    .from(posts)
+    .leftJoin(user, eq(user.id, posts.authorId))
+    .where(eq(posts.id, parentId))
+    .limit(1)
+  if (!parentPost || parentPost.replyToId === null) return // parent 是 root，不參與排序
+
+  const [parentRank] = await tx.select().from(replyRank).where(eq(replyRank.postId, parentId)).for("update")
+  if (!parentRank) return
+
+  const isStaffAuthor = parentPost.authorRole === "staff" || parentPost.authorRole === "admin"
+  const newDirectReplyCount = Math.max(0, parentRank.directReplyCount - 1)
+  const newReplyScore = computeReplyScore({
+    likeCount: parentRank.likeCount,
+    directReplyCount: newDirectReplyCount,
+    createdAt: parentPost.createdAt,
+    isStaffAuthor,
+    now,
+  })
+
+  const isBranchHead = parentRank.rootBranchId === parentId
+
+  if (isBranchHead) {
+    const newDescendantCount = Math.max(0, parentRank.descendantCount - 1)
+    const newBranchScore = computeBranchScore({
+      rootReplyScore: newReplyScore,
+      bestDirectChildScore: parentRank.bestDirectChildScore,
+      descendantCount: newDescendantCount,
+      rootAuthorParticipated: parentRank.rootAuthorParticipated,
+    })
+    await tx
+      .update(replyRank)
+      .set({
+        directReplyCount: newDirectReplyCount,
+        descendantCount: newDescendantCount,
+        replyScore: newReplyScore,
+        branchScore: newBranchScore,
+        updatedAt: now,
+      })
+      .where(eq(replyRank.postId, parentId))
+  } else {
+    await tx
+      .update(replyRank)
+      .set({ directReplyCount: newDirectReplyCount, replyScore: newReplyScore, updatedAt: now })
+      .where(eq(replyRank.postId, parentId))
+
+    const branchHeadId = parentRank.rootBranchId
+    if (branchHeadId) {
+      const [branchRank] = await tx.select().from(replyRank).where(eq(replyRank.postId, branchHeadId)).for("update")
+      if (branchRank) {
+        const newDescendantCount = Math.max(0, branchRank.descendantCount - 1)
+        const newBranchScore = computeBranchScore({
+          rootReplyScore: branchRank.replyScore,
+          bestDirectChildScore: branchRank.bestDirectChildScore,
+          descendantCount: newDescendantCount,
+          rootAuthorParticipated: branchRank.rootAuthorParticipated,
+        })
+        await tx
+          .update(replyRank)
+          .set({ descendantCount: newDescendantCount, branchScore: newBranchScore, updatedAt: now })
+          .where(eq(replyRank.postId, branchHeadId))
+      }
+    }
+  }
+
+  await recomputeBestDirectChild(tx, parentId)
+  if (parentPost.replyToId) {
+    await recomputeBestDirectChild(tx, parentPost.replyToId)
+  }
+}
+
 // 找出某個 parent 目前真正最佳的 direct child，並且在必要時更新該 parent
 // 的 reply_rank 列（包含它是 branch head 時的 branch_score）。用索引查詢
 // 而不是「只跟目前快取值比大小」，這樣「最佳 child 被降分／刪除」時也能

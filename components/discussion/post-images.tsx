@@ -107,7 +107,7 @@ export function PostImages({ images }: { images: PostImageDTO[] }) {
           role="dialog"
           aria-modal="true"
           aria-label="圖片放大檢視"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 px-4 py-8"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 sm:p-8"
           onClick={close}
         >
           <button
@@ -133,14 +133,18 @@ export function PostImages({ images }: { images: PostImageDTO[] }) {
             </button>
           )}
 
-          <div className="flex max-h-[80vh] w-full max-w-3xl items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={images[openIndex].url}
-              alt=""
-              className="max-h-[80vh] w-auto max-w-full rounded-2xl object-contain"
-            />
-          </div>
+          {/* 放大檢視一律看到整張，不裁切：只給 max-width／max-height，讓
+              瀏覽器自己按原比例縮到剛好——直式的圖以高度對齊、橫式的圖以
+              寬度對齊。手機上貼齊視窗邊緣（max-h-dvh 用動態視窗高度，才不會
+              被 Safari 的網址列吃掉一截）；大螢幕才收進最大寬高裡，不然一張
+              大圖會鋪滿整個桌機螢幕。 */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={images[openIndex].url}
+            alt=""
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-dvh w-auto max-w-full object-contain sm:max-h-[85vh] sm:max-w-3xl sm:rounded-2xl"
+          />
 
           {images.length > 1 && (
             <button

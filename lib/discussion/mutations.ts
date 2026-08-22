@@ -14,7 +14,7 @@ import {
   replyRank,
 } from "@/db/schema/discussion"
 import { attachImagesToPost, countImagesForPost, deleteImagesForPost } from "./images"
-import { applyRankingForNewReply, propagateScoreChange, recomputeBestDirectChild, type Tx } from "./ranking-updates"
+import { applyRankingForDelete, applyRankingForNewReply, propagateScoreChange, type Tx } from "./ranking-updates"
 import {
   DiscussionError,
   MAX_CONTENT_LENGTH,
@@ -287,7 +287,7 @@ export async function softDeleteReply(
     if (rows.length === 0) throw new DiscussionError("找不到這則貼文，或沒有權限刪除")
 
     const [{ replyToId }] = rows
-    if (replyToId) await recomputeBestDirectChild(tx, replyToId)
+    if (replyToId) await applyRankingForDelete(tx, replyToId)
   })
 
   // 貼文本身是 soft delete（保留 tree 結構），但圖片是真的刪掉——R2 上的
