@@ -15,6 +15,8 @@ import {
   replyRank,
 } from "@/db/schema/discussion"
 import { fetchImagesByPostIds } from "./images"
+import { fetchCachedPreviews } from "./link-preview"
+import { firstUrlInContent, normalizeUrl } from "./links"
 import { DISCUSSION_RANKING_CONFIG } from "./ranking"
 import { DiscussionError } from "./constants"
 import type {
@@ -25,6 +27,7 @@ import type {
   PollDTO,
   PostDTO,
   PostImageDTO,
+  LinkPreviewDTO,
 } from "./dto"
 
 export type SortMode = "top" | "latest" | "team"
@@ -61,7 +64,12 @@ function decodeCursor(raw: string): Cursor {
   }
 }
 
-function toPostDTO(row: CandidateRow, pinnedIds: Set<string>, images: PostImageDTO[] = []): PostDTO {
+function toPostDTO(
+  row: CandidateRow,
+  pinnedIds: Set<string>,
+  images: PostImageDTO[] = [],
+  linkPreview: LinkPreviewDTO | null = null
+): PostDTO {
   const isDeleted = row.post.deletedAt !== null
   return {
     id: row.post.id,
@@ -78,6 +86,7 @@ function toPostDTO(row: CandidateRow, pinnedIds: Set<string>, images: PostImageD
     // （見 images.ts deleteImagesForPost），這裡只是不要讓畫面留下
     // 一排載不出來的破圖。
     images: isDeleted ? [] : images,
+    linkPreview: isDeleted ? null : linkPreview,
   }
 }
 
@@ -339,9 +348,12 @@ async function enrichRows(
   const allRows = [...rows, ...featuredRows]
   const allIds = allRows.map((r) => r.post.id)
 
-  const [pollByPostId, imagesByPostId, likedIds] = await Promise.all([
+  // 連結預覽只讀快取（fetchCachedPreviews 不會發外部請求）——列表要立刻
+  // 回得出來，沒抓過的連結由前端自己補打一次 server action。
+  const [pollByPostId, imagesByPostId, previewsByUrl, likedIds] = await Promise.all([
     fetchPollsByPostIds(allIds, viewerId),
     fetchImagesByPostIds(allIds),
+    fetchCachedPreviews(allRows.map((r) => firstUrlInContent(r.post.content)).filter((u): u is string => u !== null)),
     viewerId
       ? db
           .select({ postId: postLikes.postId })
@@ -350,12 +362,18 @@ async function enrichRows(
       : Promise.resolve([]),
   ])
 
+  function previewFor(content: string): LinkPreviewDTO | null {
+    const url = firstUrlInContent(content)
+    const normalized = url ? normalizeUrl(url) : null
+    return normalized ? (previewsByUrl.get(normalized) ?? null) : null
+  }
+
   const likedSet = new Set(likedIds.map((r) => r.postId))
   const featuredByChildId = new Map(featuredRows.map((r) => [r.post.id, r]))
 
   function toEntry(row: CandidateRow): DiscussionEntry {
     return {
-      post: toPostDTO(row, pinnedIds, imagesByPostId.get(row.post.id) ?? []),
+      post: toPostDTO(row, pinnedIds, imagesByPostId.get(row.post.id) ?? [], previewFor(row.post.content)),
       stats: { likeCount: row.likeCount, directReplyCount: row.directReplyCount },
       viewer: { hasLiked: likedSet.has(row.post.id) },
       poll: pollByPostId.get(row.post.id),

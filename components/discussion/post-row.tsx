@@ -2,13 +2,16 @@
 
 import { useState, type ReactNode } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { BadgeCheck, ChevronDown, Heart, MessageCircle, Pencil, Pin, PinOff, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { MAX_CONTENT_LENGTH } from "@/lib/discussion/constants"
+import { firstUrlInContent } from "@/lib/discussion/links"
 import type { DiscussionEntry, DiscussionItem, PollDTO, PostImageDTO } from "@/lib/discussion/dto"
 import { PollView } from "./poll-view"
 import { PostImages } from "./post-images"
+import { ContentWithLinks, LinkCard } from "./link-card"
 import { AttachmentEditor, useImageAttachments } from "./image-attachments"
 
 export type PostRowController = {
@@ -147,6 +150,8 @@ function EntryBody({
   const [draft, setDraft] = useState(post.content)
   // 編輯時也可以再加圖（跟發文同一顆編輯區元件）。
   const newImages = useImageAttachments()
+  const router = useRouter()
+  const previewUrl = post.isDeleted ? null : firstUrlInContent(post.content)
 
   function startEdit() {
     setDraft(post.content)
@@ -242,8 +247,18 @@ function EntryBody({
                 {post.isPinned && <span className="text-xs text-primary">已置頂</span>}
               </div>
 
-              {!post.isDeleted && post.content && <p className="whitespace-pre-wrap text-sm">{post.content}</p>}
             </Link>
+
+            {/* 內文獨立在 <Link> 外面：內文裡的網址要是真的 <a>（可以另開
+                分頁、可以複製網址），而 <a> 不能巢狀在 <a> 裡面。點內文
+                本身仍然是進討論串頁，只是改用 router.push。 */}
+            {!post.isDeleted && post.content && (
+              <div onClick={() => router.push(`/discussion/${post.id}`)} className="cursor-pointer">
+                <ContentWithLinks content={post.content} />
+              </div>
+            )}
+
+            {previewUrl && <LinkCard url={previewUrl} initial={post.linkPreview} />}
 
             {/* 附圖放在連結外面：點圖片是放大檢視，不是進到討論串頁。 */}
             {!post.isDeleted && post.images.length > 0 && <PostImages images={post.images} />}

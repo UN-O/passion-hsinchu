@@ -3,7 +3,14 @@
 import { unstable_rethrow } from "next/navigation"
 
 import { assertFlowAccess, requireClaimedSession, type AppSession } from "@/lib/session"
-import type { DiscussionResponse, DiscussionItem, MoreRepliesResponse, PollDTO, PostImageDTO } from "./dto"
+import type {
+  DiscussionResponse,
+  DiscussionItem,
+  LinkPreviewDTO,
+  MoreRepliesResponse,
+  PollDTO,
+  PostImageDTO,
+} from "./dto"
 import { getDiscussionPage, getMoreReplies, getPostContext, getReplyChain, type SortMode } from "./queries"
 import { flowForRootKey } from "./root-registry"
 import {
@@ -26,6 +33,7 @@ import {
   fetchImagesForPost,
   removeImagesFromPost,
 } from "./images"
+import { ensureLinkPreview } from "./link-preview"
 import { getOrCreateDiscussionRoot } from "./root"
 import { isDiscussionAdmin } from "./permissions"
 import { DiscussionError } from "./constants"
@@ -163,6 +171,7 @@ export async function submitReply(
           isPinned: false,
           isOfficial: false,
           images: images.get(post.id) ?? [],
+          linkPreview: null,
         },
         stats: { likeCount: 0, directReplyCount: 0 },
         viewer: { hasLiked: false },
@@ -249,6 +258,19 @@ export async function submitRemovePostImages(postId: string, imageIds: string[])
       await requirePostFlowAccess(session, postId)
       await removeImagesFromPost(postId, imageIds, session.user.id, isDiscussionAdmin(session))
       return null
+    })()
+  )
+}
+
+// 內文裡的連結還沒有快取過的預覽時，由前端補打這一支（畫面上先顯示骨架）。
+// 抓取本身在 lib/discussion/link-preview.ts，那裡會擋掉指向內網的網址
+// ——這支端點等於「讓登入者叫伺服器去連一個他給的網址」，沒有那層防護就是
+// 一個 SSRF 洞。
+export async function loadLinkPreview(url: string): Promise<ActionResult<LinkPreviewDTO | null>> {
+  return toResult(
+    (async () => {
+      await requireClaimedSession()
+      return ensureLinkPreview(url)
     })()
   )
 }

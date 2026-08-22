@@ -31,6 +31,8 @@ export function buildPendingItem(
       isPinned: false,
       isOfficial: false,
       images,
+      // 剛送出的貼文還沒有連結預覽的快取，卡片由 LinkCard 自己補抓。
+      linkPreview: null,
     },
     stats: { likeCount: 0, directReplyCount: 0 },
     viewer: { hasLiked: false },

@@ -13,6 +13,17 @@ export type PostImageDTO = {
   height: number
 }
 
+// 內文裡第一個網址的預覽卡片。imageUrl 一樣是站上的路徑，不是對方站台的
+// 網址——見 lib/discussion/link-preview.ts 的說明。
+export type LinkPreviewDTO = {
+  url: string
+  host: string
+  title: string | null
+  description: string | null
+  siteName: string | null
+  imageUrl: string | null
+}
+
 export type PostDTO = {
   id: string
   authorId: string | null
@@ -27,6 +38,8 @@ export type PostDTO = {
   // （authorId）跟編輯／刪除權限都不受影響。
   isOfficial: boolean
   images: PostImageDTO[]
+  // null＝還沒有快取（前端會自己補抓一次），或這個連結做不出卡片。
+  linkPreview: LinkPreviewDTO | null
 }
 
 export type PollDTO = {

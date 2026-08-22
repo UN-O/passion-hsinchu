@@ -259,3 +259,31 @@ export const postImages = pgTable(
     index("post_images_pending_idx").on(table.postId, table.createdAt),
   ]
 )
+
+// 貼文內文裡第一個網址的預覽卡片，以「網址」為單位快取（不是以貼文為
+// 單位）：同一個連結被十個人貼，只會去對方伺服器抓一次。
+//
+// 這張表是**衍生資料**，整張清空也只是所有卡片要重抓一次，不影響貼文本身。
+//
+// status 記下「抓失敗」也是有意義的結果——沒有這一列的話，一個連不上的
+// 網址會讓每次渲染都重新嘗試連線一次。
+export const linkPreviews = pgTable(
+  "link_previews",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    // 正規化過的網址（去掉 hash 與結尾斜線，見 lib/discussion/links.ts）
+    url: text("url").notNull().unique(),
+    status: text("status", { enum: ["ok", "failed"] })
+      .notNull()
+      .default("ok"),
+    title: text("title"),
+    description: text("description"),
+    siteName: text("site_name"),
+    // og:image 抓下來之後放在 R2（跟貼文附圖同一個 bucket，不同前綴）。
+    // 不直接把對方的圖片網址丟給瀏覽器：那會讓每個看貼文的人都對第三方
+    // 伺服器發一次請求，把 IP 跟「誰在看哪則貼文」洩漏出去。
+    imageKey: text("image_key"),
+    fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("link_previews_fetched_at_idx").on(table.fetchedAt)]
+)
