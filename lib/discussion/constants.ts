@@ -34,3 +34,10 @@ export type ImageContentType = (typeof IMAGE_ALLOWED_TYPES)[number]
 
 // 沒被附加到任何貼文的上傳（使用者選了圖但最後沒送出）超過這個時間就回收。
 export const IMAGE_ORPHAN_TTL_MS = 6 * 60 * 60 * 1000
+
+// 討論 root（含大綱內文）被 unstable_cache 包了 1 小時（見
+// lib/discussion/root.ts）。管理員改完大綱之後要讓其他人立刻看到新內容，
+// 就得把那份快取打掉——tag 放在這裡而不是 root.ts，是為了避免
+// mutations.ts ↔ root.ts 互相 import（root.ts 已經 import 了 mutations.ts
+// 的 seedOfficialQuestions）。
+export const DISCUSSION_ROOT_TAG = "discussion-root"

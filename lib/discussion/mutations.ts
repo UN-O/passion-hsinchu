@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto"
+import { updateTag } from "next/cache"
 import { and, desc, eq, isNull, sql } from "drizzle-orm"
 
 import { db } from "@/db"
@@ -20,6 +21,7 @@ import {
   MAX_CONTENT_LENGTH,
   MAX_POLL_OPTIONS,
   MAX_POLL_OPTION_LENGTH,
+  DISCUSSION_ROOT_TAG,
   MAX_POST_IMAGES,
   MIN_POLL_OPTIONS,
 } from "./constants"
@@ -230,6 +232,11 @@ export async function editRootContent(
       await attachImagesToPost(tx, rootPostId, imageIds, uploaderId, existing.nextPosition)
     }
   })
+
+  // root 是被快取的（見 lib/discussion/root.ts），不打掉的話其他人最久要
+  // 等一小時才看得到改過的大綱。這支只會從 server action 呼叫，符合
+  // updateTag 只能在 action／route handler 裡使用的限制。
+  updateTag(DISCUSSION_ROOT_TAG)
 }
 
 // 靈修引導問題＝root 底下置頂的「官方」直接回覆，只在 root 剛建立時（見

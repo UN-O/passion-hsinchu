@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm"
 
 import { db } from "@/db"
 import { discussionSettings, posts } from "@/db/schema/discussion"
+import { DISCUSSION_ROOT_TAG } from "./constants"
 import { getRegisteredRoot } from "./root-registry"
 import { seedOfficialQuestions } from "./mutations"
 
@@ -62,7 +63,15 @@ async function selectOrCreateRoot(rootKey: string): Promise<DiscussionRoot> {
 // 一筆真的存在的 row，就會被原樣快取，之後同一個 rootKey 直接吃 cache。
 const TTL_SECONDS = 60 * 60
 
-const getCachedRoot = unstable_cache(selectOrCreateRoot, ["discussion-root-by-key"], { revalidate: TTL_SECONDS })
+// TTL 之外再掛一個 tag：管理員編輯 root 大綱時（mutations.ts 的
+// editRootContent）會立刻把這份快取打掉，不用等一小時，其他人重新整理
+// 就看得到新內容。tag 是全站共用一個、不分 rootKey——root 的數量是固定的
+// 十幾個，多失效幾筆的代價遠低於為了 per-key tag 去繞 unstable_cache
+// 「options 不能吃參數」的限制。
+const getCachedRoot = unstable_cache(selectOrCreateRoot, ["discussion-root-by-key"], {
+  revalidate: TTL_SECONDS,
+  tags: [DISCUSSION_ROOT_TAG],
+})
 
 // 冪等取得（必要時建立）某個頁面的討論 root。rootKey 一定要先出現在
 // root-registry.ts 才能被建立——client 端傳來的 rootKey 只是「查哪一個
