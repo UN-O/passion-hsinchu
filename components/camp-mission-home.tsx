@@ -24,7 +24,7 @@ import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 // 先放佔位內容做畫面，之後接上真正的小隊資料庫再換掉（之後會把全部名單分隊做進後台）。
 // 六眼肥魚是尼莫魚區的小隊。
 const PLACEHOLDER_SQUAD_NAME = "六眼肥魚"
-const PLACEHOLDER_SQUAD_COURAGE_POINTS = 1280
+const PLACEHOLDER_SQUAD_COURAGE_POINTS = 0
 const PLACEHOLDER_USER_ZONE_KEY = "clownfish"
 
 // 對應 lib/exp-regions.ts 的 region key，但圖示／名稱沿用 onboarding 那邊
