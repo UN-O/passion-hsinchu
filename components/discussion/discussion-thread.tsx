@@ -9,6 +9,7 @@ import {
   loadReplyChain,
   loadThreadReplies,
   submitDeleteReply,
+  submitEditReply,
   submitLike,
   submitReply,
   submitToggleOfficial,
@@ -174,6 +175,20 @@ export function DiscussionThread({
     })
   }
 
+  function handleEdit(postId: string, content: string) {
+    const entry = findEntry(postId)
+    if (!entry) return
+    const editedPost: PostDTO = { ...entry.post, content, updatedAt: new Date().toISOString() }
+
+    startTransition(async () => {
+      addOptimistic({ kind: "patch", postId, changes: { post: editedPost } })
+      const result = await submitEditReply(postId, content)
+      if (result.ok) {
+        setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: editedPost } }))
+      }
+    })
+  }
+
   function handleToggleOfficial(postId: string, next: boolean) {
     const entry = findEntry(postId)
     if (!entry) return
@@ -243,6 +258,7 @@ export function DiscussionThread({
     onPin: () => {},
     onUnpin: () => {},
     onDelete: handleDelete,
+    onEdit: handleEdit,
     onToggleOfficial: handleToggleOfficial,
     onLoadMoreChildren: handleLoadMoreChildren,
     childLoading: (postId) => childLoadingMap[postId] ?? false,

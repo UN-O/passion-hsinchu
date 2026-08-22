@@ -2,9 +2,10 @@
 
 import { useState, type ReactNode } from "react"
 import Link from "next/link"
-import { BadgeCheck, ChevronDown, Heart, MessageCircle, Pin, PinOff, Trash2 } from "lucide-react"
+import { BadgeCheck, ChevronDown, Heart, MessageCircle, Pencil, Pin, PinOff, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { MAX_CONTENT_LENGTH } from "@/lib/discussion/constants"
 import type { DiscussionEntry, DiscussionItem, PollDTO } from "@/lib/discussion/dto"
 import { PollView } from "./poll-view"
 
@@ -17,6 +18,10 @@ export type PostRowController = {
   onPin: (postId: string) => void
   onUnpin: (postId: string) => void
   onDelete: (postId: string) => void
+  // 只有作者本人能編輯自己的文字內容（跟刪除不同，管理員不能代編他人的
+  // 發言——見 mutations.ts 的 editReply，WHERE 條件卡死 authorId，沒有
+  // isDiscussionAdmin 那條後門）。
+  onEdit: (postId: string, content: string) => void
   onToggleOfficial: (postId: string, next: boolean) => void
   // 展開這則底下的主幹。沒有游標參數：主幹查詢就是從這個節點順著
   // best_direct_child 指標往下走，鏈太長時由鏈尾那則自己再展開一段。
@@ -124,11 +129,30 @@ function EntryBody({
 }) {
   const { post, stats, viewer } = entry
   const canDelete = !post.isDeleted && (post.authorId === controller.viewerId || controller.isDiscussionAdmin)
+  // 編輯只有作者本人能做，管理員不行——跟刪除不一樣（見上面 onEdit 的
+  // 說明）。
+  const canEdit = !post.isDeleted && post.authorId === controller.viewerId
   // 官方旗標只換顯示：貼文實際上還是原本那個 authorId 發的，這裡只是
   // 把畫面上看到的名字／頭貼換成「PASSION 官方」。
   const showOfficial = post.isOfficial && !post.isDeleted
   const displayName = post.isDeleted ? null : showOfficial ? "PASSION 官方" : post.authorName
   const canToggleOfficial = !post.isDeleted && post.authorId === controller.viewerId && controller.isDiscussionAdmin
+
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(post.content)
+
+  function startEdit() {
+    setDraft(post.content)
+    setEditing(true)
+  }
+
+  function handleSaveEdit() {
+    const trimmed = draft.trim()
+    if (!trimmed) return
+    // 內容沒變就不用多打一次 server action。
+    if (trimmed !== post.content) controller.onEdit(post.id, trimmed)
+    setEditing(false)
+  }
 
   return (
     <div className="flex" style={{ gap: RAIL_GAP }}>
@@ -141,114 +165,154 @@ function EntryBody({
           最底部——下一則緊接著開始（串起來的 container 不留 gap），線就會是
           連續的，不會每則之間斷一截。 */}
       <div className={cn("flex min-w-0 flex-1 flex-col gap-2", hasRail && "pb-3")}>
-        {/* 按下貼文本身（作者／時間／內文）＝開啟它的討論串頁（有返回鍵），
-            不是直接跳出全螢幕回覆框——要先看到上下文，回覆要在那一頁裡
-            另外按（規則 5）。投票／按讚／回覆／置頂／刪除有自己的互動，
-            刻意留在這個連結範圍外面，不然點讚會被連結吃掉變成導頁。 */}
-        <Link href={`/discussion/${post.id}`} className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-baseline gap-x-2">
-            <span
-              className={cn(
-                "flex items-center gap-1 text-sm font-semibold",
-                post.isDeleted && "text-muted-foreground",
-                showOfficial && "text-primary"
-              )}
-            >
-              {showOfficial && <BadgeCheck className="size-3.5" strokeWidth={2} />}
-              {post.isDeleted ? "已刪除的貼文" : (displayName ?? "匿名")}
-            </span>
-            <span className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</span>
-            {!showOfficial && post.authorRole && post.authorRole !== "attendee" && !post.isDeleted && (
-              <span className="text-xs text-muted-foreground">工作人員</span>
-            )}
-            {post.isPinned && <span className="text-xs text-primary">已置頂</span>}
-          </div>
-
-          {!post.isDeleted && <p className="whitespace-pre-wrap text-sm">{post.content}</p>}
-        </Link>
-
-        {entry.poll && !post.isDeleted && (
-          <PollView poll={entry.poll} onChange={(next) => controller.onPollChange(post.id, next)} />
-        )}
-
-        {!post.isDeleted && (
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => controller.onLike(entry)}
-              aria-label={viewer.hasLiked ? "取消讚" : "讚"}
-              className={cn(
-                "flex items-center gap-1.5 text-muted-foreground hover:text-foreground",
-                viewer.hasLiked && "text-primary hover:text-primary"
-              )}
-            >
-              <Heart className="size-[18px]" fill={viewer.hasLiked ? "currentColor" : "none"} strokeWidth={1.75} />
-              {stats.likeCount > 0 && <span className="text-xs">{stats.likeCount}</span>}
-            </button>
-
-            {/* icon 跟數字都連到這則的討論串頁（規則 5）：要回覆一定要先進去
-                那一頁，看到完整的上下文，回覆框才會在那裡另外開——這裡
-                不直接跳全螢幕回覆框。 */}
-            <div className="flex items-center gap-1.5">
-              {depth < 6 && (
-                <Link href={`/discussion/${post.id}`} aria-label="查看討論串" className="text-muted-foreground hover:text-foreground">
-                  <MessageCircle className="size-[18px]" strokeWidth={1.75} />
-                </Link>
-              )}
-              {stats.directReplyCount > 0 && (
-                <Link
-                  href={`/discussion/${post.id}`}
-                  aria-label={`查看這則的 ${stats.directReplyCount} 則回覆`}
-                  className="-mx-1 px-1 text-xs text-muted-foreground hover:text-foreground"
-                >
-                  {stats.directReplyCount}
-                </Link>
-              )}
+        {editing ? (
+          // 編輯中：文字框＋取消／儲存整組取代平常的內文＋互動列（跟
+          // root-content.tsx 的編輯模式同一個做法），不跟平常的讚／回覆／
+          // 刪除同時出現，避免點錯。
+          <div className="flex flex-col gap-2">
+            <textarea
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value.slice(0, MAX_CONTENT_LENGTH))}
+              className="min-h-20 w-full resize-none rounded-2xl border border-border bg-transparent p-3 text-sm outline-none"
+            />
+            <div className="flex items-center gap-3 self-end text-sm">
+              <button type="button" onClick={() => setEditing(false)} className="text-muted-foreground hover:text-foreground">
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveEdit}
+                disabled={!draft.trim()}
+                className="font-semibold text-primary disabled:opacity-40"
+              >
+                儲存
+              </button>
             </div>
-
-            {canPin &&
-              (post.isPinned ? (
-                <button
-                  type="button"
-                  onClick={() => controller.onUnpin(post.id)}
-                  aria-label="取消置頂"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <PinOff className="size-[18px]" strokeWidth={1.75} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => controller.onPin(post.id)}
-                  aria-label="置頂這則回覆"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Pin className="size-[18px]" strokeWidth={1.75} />
-                </button>
-              ))}
-
-            {canToggleOfficial && (
-              <button
-                type="button"
-                onClick={() => controller.onToggleOfficial(post.id, !post.isOfficial)}
-                aria-label={showOfficial ? "取消官方公告" : "轉為官方公告"}
-                className={cn("text-muted-foreground hover:text-foreground", showOfficial && "text-primary")}
-              >
-                <BadgeCheck className="size-[18px]" strokeWidth={1.75} />
-              </button>
-            )}
-
-            {canDelete && (
-              <button
-                type="button"
-                onClick={() => controller.onDelete(post.id)}
-                aria-label="刪除"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Trash2 className="size-[18px]" strokeWidth={1.75} />
-              </button>
-            )}
           </div>
+        ) : (
+          <>
+            {/* 按下貼文本身（作者／時間／內文）＝開啟它的討論串頁（有返回鍵），
+                不是直接跳出全螢幕回覆框——要先看到上下文，回覆要在那一頁裡
+                另外按（規則 5）。投票／按讚／回覆／置頂／刪除有自己的互動，
+                刻意留在這個連結範圍外面，不然點讚會被連結吃掉變成導頁。 */}
+            <Link href={`/discussion/${post.id}`} className="flex flex-col gap-2">
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <span
+                  className={cn(
+                    "flex items-center gap-1 text-sm font-semibold",
+                    post.isDeleted && "text-muted-foreground",
+                    showOfficial && "text-primary"
+                  )}
+                >
+                  {showOfficial && <BadgeCheck className="size-3.5" strokeWidth={2} />}
+                  {post.isDeleted ? "已刪除的貼文" : (displayName ?? "匿名")}
+                </span>
+                <span className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</span>
+                {!showOfficial && post.authorRole && post.authorRole !== "attendee" && !post.isDeleted && (
+                  <span className="text-xs text-muted-foreground">工作人員</span>
+                )}
+                {post.isPinned && <span className="text-xs text-primary">已置頂</span>}
+              </div>
+
+              {!post.isDeleted && <p className="whitespace-pre-wrap text-sm">{post.content}</p>}
+            </Link>
+
+            {entry.poll && !post.isDeleted && (
+              <PollView poll={entry.poll} onChange={(next) => controller.onPollChange(post.id, next)} />
+            )}
+
+            {!post.isDeleted && (
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => controller.onLike(entry)}
+                  aria-label={viewer.hasLiked ? "取消讚" : "讚"}
+                  className={cn(
+                    "flex items-center gap-1.5 text-muted-foreground hover:text-foreground",
+                    viewer.hasLiked && "text-primary hover:text-primary"
+                  )}
+                >
+                  <Heart className="size-[18px]" fill={viewer.hasLiked ? "currentColor" : "none"} strokeWidth={1.75} />
+                  {stats.likeCount > 0 && <span className="text-xs">{stats.likeCount}</span>}
+                </button>
+
+                {/* icon 跟數字都連到這則的討論串頁（規則 5）：要回覆一定要先進去
+                    那一頁，看到完整的上下文，回覆框才會在那裡另外開——這裡
+                    不直接跳全螢幕回覆框。 */}
+                <div className="flex items-center gap-1.5">
+                  {depth < 6 && (
+                    <Link href={`/discussion/${post.id}`} aria-label="查看討論串" className="text-muted-foreground hover:text-foreground">
+                      <MessageCircle className="size-[18px]" strokeWidth={1.75} />
+                    </Link>
+                  )}
+                  {stats.directReplyCount > 0 && (
+                    <Link
+                      href={`/discussion/${post.id}`}
+                      aria-label={`查看這則的 ${stats.directReplyCount} 則回覆`}
+                      className="-mx-1 px-1 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      {stats.directReplyCount}
+                    </Link>
+                  )}
+                </div>
+
+                {canPin &&
+                  (post.isPinned ? (
+                    <button
+                      type="button"
+                      onClick={() => controller.onUnpin(post.id)}
+                      aria-label="取消置頂"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <PinOff className="size-[18px]" strokeWidth={1.75} />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => controller.onPin(post.id)}
+                      aria-label="置頂這則回覆"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Pin className="size-[18px]" strokeWidth={1.75} />
+                    </button>
+                  ))}
+
+                {canToggleOfficial && (
+                  <button
+                    type="button"
+                    onClick={() => controller.onToggleOfficial(post.id, !post.isOfficial)}
+                    aria-label={showOfficial ? "取消官方公告" : "轉為官方公告"}
+                    className={cn("text-muted-foreground hover:text-foreground", showOfficial && "text-primary")}
+                  >
+                    <BadgeCheck className="size-[18px]" strokeWidth={1.75} />
+                  </button>
+                )}
+
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={startEdit}
+                    aria-label="編輯"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Pencil className="size-[18px]" strokeWidth={1.75} />
+                  </button>
+                )}
+
+                {canDelete && (
+                  <button
+                    type="button"
+                    onClick={() => controller.onDelete(post.id)}
+                    aria-label="刪除"
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Trash2 className="size-[18px]" strokeWidth={1.75} />
+                  </button>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

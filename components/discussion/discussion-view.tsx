@@ -11,6 +11,7 @@ import {
   submitLike,
   submitPin,
   submitDeleteReply,
+  submitEditReply,
   submitReply,
   submitToggleOfficial,
   submitUnlike,
@@ -153,6 +154,20 @@ export function DiscussionView({
     })
   }
 
+  function handleEdit(postId: string, content: string) {
+    const entry = findEntry(postId)
+    if (!entry) return
+    const editedPost: PostDTO = { ...entry.post, content, updatedAt: new Date().toISOString() }
+
+    startTransition(async () => {
+      addOptimistic({ kind: "patch", postId, changes: { post: editedPost } })
+      const result = await submitEditReply(postId, content)
+      if (result.ok) {
+        setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: editedPost } }))
+      }
+    })
+  }
+
   // 置頂／取消置頂只是切換 isPinned 這個標記（EntryBody 上的「已置頂」
   // 徽章），貼文留在原本排序的位置，不會被搬到另一個區塊。
   function handlePin(postId: string) {
@@ -251,6 +266,7 @@ export function DiscussionView({
     onPin: handlePin,
     onUnpin: handleUnpin,
     onDelete: handleDelete,
+    onEdit: handleEdit,
     onToggleOfficial: handleToggleOfficial,
     onLoadMoreChildren: handleLoadMoreChildren,
     childLoading: (postId) => childLoadingMap[postId] ?? false,
