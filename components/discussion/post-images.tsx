@@ -166,35 +166,3 @@ export function PostImages({ images }: { images: PostImageDTO[] }) {
     </>
   )
 }
-
-// 編輯貼文時的附圖清單：每張圖右上角一顆叉叉，按下去連 R2 的檔案一起刪
-// （見 lib/discussion/images.ts removeImagesFromPost）。刪掉不能復原，所以
-// 只在編輯模式出現，不是平常瀏覽時就掛在圖片上。
-export function EditableImageList({
-  images,
-  onRemove,
-}: {
-  images: PostImageDTO[]
-  onRemove: (imageId: string) => void
-}) {
-  if (images.length === 0) return null
-
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-1">
-      {images.map((image) => (
-        <div key={image.id} className="relative size-24 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={image.thumbUrl} alt="" loading="lazy" className="size-full object-cover" />
-          <button
-            type="button"
-            onClick={() => onRemove(image.id)}
-            aria-label="移除這張圖"
-            className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground hover:text-foreground"
-          >
-            <X className="size-3.5" />
-          </button>
-        </div>
-      ))}
-    </div>
-  )
-}

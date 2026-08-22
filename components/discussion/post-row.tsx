@@ -6,9 +6,10 @@ import { BadgeCheck, ChevronDown, Heart, MessageCircle, Pencil, Pin, PinOff, Tra
 
 import { cn } from "@/lib/utils"
 import { MAX_CONTENT_LENGTH } from "@/lib/discussion/constants"
-import type { DiscussionEntry, DiscussionItem, PollDTO } from "@/lib/discussion/dto"
+import type { DiscussionEntry, DiscussionItem, PollDTO, PostImageDTO } from "@/lib/discussion/dto"
 import { PollView } from "./poll-view"
-import { EditableImageList, PostImages } from "./post-images"
+import { PostImages } from "./post-images"
+import { AttachmentEditor, useImageAttachments } from "./image-attachments"
 
 export type PostRowController = {
   viewerId: string
@@ -22,7 +23,7 @@ export type PostRowController = {
   // 只有作者本人能編輯自己的文字內容（跟刪除不同，管理員不能代編他人的
   // 發言——見 mutations.ts 的 editReply，WHERE 條件卡死 authorId，沒有
   // isDiscussionAdmin 那條後門）。
-  onEdit: (postId: string, content: string) => void
+  onEdit: (postId: string, content: string, images?: PostImageDTO[]) => void
   // 移除已發布貼文上的某張圖。跟編輯文字一樣只有作者本人能做，而且會連
   // R2 上的檔案一起刪掉（不可復原），所以只在編輯模式裡才出現入口。
   onRemoveImage: (postId: string, imageId: string) => void
@@ -144,6 +145,8 @@ function EntryBody({
 
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(post.content)
+  // 編輯時也可以再加圖（跟發文同一顆編輯區元件）。
+  const newImages = useImageAttachments()
 
   function startEdit() {
     setDraft(post.content)
@@ -154,9 +157,19 @@ function EntryBody({
     const trimmed = draft.trim()
     // 只有圖沒有文字的貼文是合法的（見 mutations.ts editReply），所以
     // 「清空文字」只在這則還有圖的時候擋不下來。
-    if (!trimmed && post.images.length === 0) return
-    // 內容沒變就不用多打一次 server action。
-    if (trimmed !== post.content) controller.onEdit(post.id, trimmed)
+    if (!trimmed && post.images.length === 0 && newImages.readyImages.length === 0) return
+    // 內容沒變、也沒有新加的圖，就不用多打一次 server action。
+    if (trimmed !== post.content || newImages.readyImages.length > 0) {
+      controller.onEdit(post.id, trimmed, newImages.readyImages)
+    }
+    // 這些圖已經綁到貼文上了，只清本地狀態——discardAll 會把它們從 R2 刪掉。
+    newImages.clearLocal()
+    setEditing(false)
+  }
+
+  function cancelEdit() {
+    // 取消＝這次新選的圖沒有人要了，連 R2 一起清掉。
+    newImages.discardAll()
     setEditing(false)
   }
 
@@ -180,17 +193,24 @@ function EntryBody({
               autoFocus
               value={draft}
               onChange={(e) => setDraft(e.target.value.slice(0, MAX_CONTENT_LENGTH))}
-              className="min-h-20 w-full resize-none rounded-2xl border border-border bg-transparent p-3 text-sm outline-none"
+              placeholder="也可以拍照上傳你的筆記"
+              className="min-h-20 w-full resize-none rounded-2xl border border-border bg-transparent p-3 text-sm outline-none placeholder:text-muted-foreground"
             />
-            <EditableImageList images={post.images} onRemove={(imageId) => controller.onRemoveImage(post.id, imageId)} />
+            <AttachmentEditor
+              controller={newImages}
+              existing={post.images}
+              onRemoveExisting={(imageId) => controller.onRemoveImage(post.id, imageId)}
+            />
             <div className="flex items-center gap-3 self-end text-sm">
-              <button type="button" onClick={() => setEditing(false)} className="text-muted-foreground hover:text-foreground">
+              <button type="button" onClick={cancelEdit} className="text-muted-foreground hover:text-foreground">
                 取消
               </button>
               <button
                 type="button"
                 onClick={handleSaveEdit}
-                disabled={!draft.trim() && post.images.length === 0}
+                disabled={
+                  (!draft.trim() && post.images.length === 0 && newImages.readyImages.length === 0) || newImages.busy
+                }
                 className="font-semibold text-primary disabled:opacity-40"
               >
                 儲存

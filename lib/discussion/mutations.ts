@@ -8,13 +8,12 @@ import {
   discussionSettings,
   pollOptions,
   polls,
-  postImages,
   postLikes,
   posts,
   pollVotes,
   replyRank,
 } from "@/db/schema/discussion"
-import { attachImagesToPost, deleteImagesForPost } from "./images"
+import { attachImagesToPost, countImagesForPost, deleteImagesForPost } from "./images"
 import { applyRankingForNewReply, propagateScoreChange, recomputeBestDirectChild, type Tx } from "./ranking-updates"
 import {
   DiscussionError,
@@ -152,27 +151,35 @@ async function isAuthorStaff(authorId: string | null): Promise<boolean> {
   return row?.role === "staff" || row?.role === "admin"
 }
 
-export async function editReply(postId: string, authorId: string, content: string): Promise<void> {
+export async function editReply(
+  postId: string,
+  authorId: string,
+  content: string,
+  // 編輯時新加的圖（已經上傳完成、還沒附加到任何貼文）
+  imageIds: string[] = []
+): Promise<void> {
   const trimmed = content.trim()
   if (trimmed.length > MAX_CONTENT_LENGTH) throw new DiscussionError(`內容不能超過 ${MAX_CONTENT_LENGTH} 字`)
+
+  const existing = await countImagesForPost(postId)
   // 只有圖沒有文字的貼文是合法的（createReply 也允許），所以「清空文字」
   // 只在這則貼文還有圖的時候才放行。
-  if (!trimmed) {
-    const [image] = await db
-      .select({ id: postImages.id })
-      .from(postImages)
-      .where(eq(postImages.postId, postId))
-      .limit(1)
-    if (!image) throw new DiscussionError("內容不能是空的")
+  if (!trimmed && existing.count + imageIds.length === 0) throw new DiscussionError("內容不能是空的")
+  if (existing.count + imageIds.length > MAX_POST_IMAGES) {
+    throw new DiscussionError(`一則貼文最多 ${MAX_POST_IMAGES} 張圖`)
   }
 
-  const rows = await db
-    .update(posts)
-    .set({ content: trimmed, updatedAt: new Date() })
-    .where(and(eq(posts.id, postId), eq(posts.authorId, authorId), isNull(posts.deletedAt)))
-    .returning({ id: posts.id })
+  await db.transaction(async (tx) => {
+    const rows = await tx
+      .update(posts)
+      .set({ content: trimmed, updatedAt: new Date() })
+      .where(and(eq(posts.id, postId), eq(posts.authorId, authorId), isNull(posts.deletedAt)))
+      .returning({ id: posts.id })
 
-  if (rows.length === 0) throw new DiscussionError("找不到這則貼文，或你不是作者")
+    if (rows.length === 0) throw new DiscussionError("找不到這則貼文，或你不是作者")
+
+    await attachImagesToPost(tx, postId, imageIds, authorId, existing.nextPosition)
+  })
 }
 
 // 只能切換自己發的貼文（跟 editReply 一樣用 authorId 卡在 WHERE 裡）——
@@ -192,18 +199,37 @@ export async function toggleOfficial(postId: string, authorId: string, next: boo
 // root post 沒有作者（authorId 是 null），沒辦法像 editReply 那樣比對
 // authorId——呼叫端（actions.ts）改用 isDiscussionAdmin 擋，這裡只用
 // reply_to_id is null 確認真的是在改 root，不是隨便一則貼文。
-export async function editRootContent(rootPostId: string, content: string): Promise<void> {
+export async function editRootContent(
+  rootPostId: string,
+  content: string,
+  // root 沒有作者，但圖片有上傳者——綁定時仍然要卡「這些圖是你上傳的」，
+  // 所以要把操作者（已經由 actions.ts 確認是 discussion admin）傳進來。
+  imageIds: string[] = [],
+  uploaderId?: string
+): Promise<void> {
   const trimmed = content.trim()
   if (!trimmed) throw new DiscussionError("內容不能是空的")
   if (trimmed.length > MAX_CONTENT_LENGTH) throw new DiscussionError(`內容不能超過 ${MAX_CONTENT_LENGTH} 字`)
 
-  const rows = await db
-    .update(posts)
-    .set({ content: trimmed, updatedAt: new Date() })
-    .where(and(eq(posts.id, rootPostId), isNull(posts.replyToId)))
-    .returning({ id: posts.id })
+  const existing = await countImagesForPost(rootPostId)
+  if (existing.count + imageIds.length > MAX_POST_IMAGES) {
+    throw new DiscussionError(`一則貼文最多 ${MAX_POST_IMAGES} 張圖`)
+  }
 
-  if (rows.length === 0) throw new DiscussionError("找不到這個討論 root")
+  await db.transaction(async (tx) => {
+    const rows = await tx
+      .update(posts)
+      .set({ content: trimmed, updatedAt: new Date() })
+      .where(and(eq(posts.id, rootPostId), isNull(posts.replyToId)))
+      .returning({ id: posts.id })
+
+    if (rows.length === 0) throw new DiscussionError("找不到這個討論 root")
+
+    if (imageIds.length > 0) {
+      if (!uploaderId) throw new DiscussionError("沒有權限")
+      await attachImagesToPost(tx, rootPostId, imageIds, uploaderId, existing.nextPosition)
+    }
+  })
 }
 
 // 靈修引導問題＝root 底下置頂的「官方」直接回覆，只在 root 剛建立時（見

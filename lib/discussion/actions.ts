@@ -3,7 +3,7 @@
 import { unstable_rethrow } from "next/navigation"
 
 import { assertFlowAccess, requireClaimedSession, type AppSession } from "@/lib/session"
-import type { DiscussionResponse, DiscussionItem, MoreRepliesResponse, PollDTO } from "./dto"
+import type { DiscussionResponse, DiscussionItem, MoreRepliesResponse, PollDTO, PostImageDTO } from "./dto"
 import { getDiscussionPage, getMoreReplies, getPostContext, getReplyChain, type SortMode } from "./queries"
 import { flowForRootKey } from "./root-registry"
 import {
@@ -20,7 +20,12 @@ import {
   votePoll,
   type DiscussionSettingsPatch,
 } from "./mutations"
-import { discardPendingImage, fetchImagesByPostIds, removeImagesFromPost } from "./images"
+import {
+  discardPendingImage,
+  fetchImagesByPostIds,
+  fetchImagesForPost,
+  removeImagesFromPost,
+} from "./images"
 import { getOrCreateDiscussionRoot } from "./root"
 import { isDiscussionAdmin } from "./permissions"
 import { DiscussionError } from "./constants"
@@ -167,11 +172,15 @@ export async function submitReply(
   )
 }
 
-export async function submitEditReply(postId: string, content: string): Promise<ActionResult<null>> {
+export async function submitEditReply(
+  postId: string,
+  content: string,
+  imageIds?: string[]
+): Promise<ActionResult<null>> {
   return toResult(
     (async () => {
       const session = await requireClaimedSession()
-      await editReply(postId, session.user.id, content)
+      await editReply(postId, session.user.id, content, imageIds ?? [])
       return null
     })()
   )
@@ -179,13 +188,19 @@ export async function submitEditReply(postId: string, content: string): Promise<
 
 // root 沒有作者，不能像 submitEditReply 那樣讓「作者本人」編輯——只有
 // discussion admin 能編輯 root 的大綱文字。
-export async function submitEditRootContent(rootPostId: string, content: string): Promise<ActionResult<null>> {
+export async function submitEditRootContent(
+  rootPostId: string,
+  content: string,
+  imageIds?: string[]
+): Promise<ActionResult<PostImageDTO[]>> {
   return toResult(
     (async () => {
       const session = await requireClaimedSession()
       if (!isDiscussionAdmin(session)) throw new DiscussionError("沒有權限")
-      await editRootContent(rootPostId, content)
-      return null
+      await editRootContent(rootPostId, content, imageIds ?? [], session.user.id)
+      // root 的顯示不是走 enrichRows（那幾頁是 server component 各自查的），
+      // 所以編輯完直接把最新的圖片清單回給呼叫端，不用整頁重新整理。
+      return fetchImagesForPost(rootPostId)
     })()
   )
 }
@@ -232,7 +247,7 @@ export async function submitRemovePostImages(postId: string, imageIds: string[])
     (async () => {
       const session = await requireClaimedSession()
       await requirePostFlowAccess(session, postId)
-      await removeImagesFromPost(postId, imageIds, session.user.id)
+      await removeImagesFromPost(postId, imageIds, session.user.id, isDiscussionAdmin(session))
       return null
     })()
   )

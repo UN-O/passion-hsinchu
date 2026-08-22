@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { ImagePlus, X } from "lucide-react"
+import { Plus, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { MAX_POST_IMAGES } from "@/lib/discussion/constants"
@@ -36,6 +36,9 @@ export type ImageAttachmentsController = {
   remove: (localId: string) => void
   // 取消發文時把已經上傳的圖片一起清掉（含 R2 上的檔案），不要留孤兒。
   discardAll: () => void
+  // 這些圖已經被綁到貼文上了（送出／儲存成功），清掉本地狀態就好——
+  // 不可以呼叫 discardAll，那會把剛存進貼文的圖從 R2 刪掉。
+  clearLocal: () => void
 }
 
 export function useImageAttachments(): ImageAttachmentsController {
@@ -137,6 +140,12 @@ export function useImageAttachments(): ImageAttachmentsController {
     setItems(itemsRef.current)
   }, [])
 
+  const clearLocal = useCallback(() => {
+    for (const item of itemsRef.current) URL.revokeObjectURL(item.previewUrl)
+    itemsRef.current = []
+    setItems(itemsRef.current)
+  }, [])
+
   return {
     items,
     readyImages: items.flatMap((item) => (item.status === "ready" && item.image ? [item.image] : [])),
@@ -146,22 +155,34 @@ export function useImageAttachments(): ImageAttachmentsController {
     addFiles,
     remove,
     discardAll,
+    clearLocal,
   }
 }
 
-// 「加入圖片」的按鈕（含隱藏的檔案選擇器）。放在編輯器的 header，跟送出
-// 同一排——它跟投票一樣是「這篇貼文最終長怎樣」的決定。
-export function AddImagesButton({
+// 附圖編輯區。一排方格：已經在貼文上的圖、正在處理的圖，最後是一個圓角
+// 方格的加號按鈕——「可以放圖片」這件事用一個看得到的空格子表達，比藏在
+// header 的一顆 icon 明顯（發文、回覆、編輯 root 三個地方共用同一個元件）。
+//
+// existing 是已經存在於貼文上的圖（編輯時才有）；controller 管的是這次新
+// 選、還沒綁上貼文的圖。兩種在畫面上長一樣，只是叉叉做的事不同：前者是
+// 真的從貼文上刪掉（連 R2），後者是取消這次的上傳。
+export function AttachmentEditor({
   controller,
+  existing = [],
+  onRemoveExisting,
   disabled,
 }: {
   controller: ImageAttachmentsController
+  existing?: PostImageDTO[]
+  onRemoveExisting?: (imageId: string) => void
   disabled?: boolean
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const total = existing.length + controller.items.length
+  const canAddMore = total < MAX_POST_IMAGES
 
   return (
-    <>
+    <div className="flex shrink-0 flex-wrap gap-2">
       <input
         ref={inputRef}
         type="file"
@@ -174,64 +195,87 @@ export function AddImagesButton({
           event.target.value = ""
         }}
       />
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={disabled || !controller.canAddMore}
-        aria-label={controller.canAddMore ? "加入圖片" : `最多 ${MAX_POST_IMAGES} 張圖`}
-        className="text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        <ImagePlus className="size-5" strokeWidth={1.75} />
-      </button>
-    </>
+
+      {existing.map((image) => (
+        <Tile key={image.id} src={image.thumbUrl} onRemove={onRemoveExisting ? () => onRemoveExisting(image.id) : undefined} />
+      ))}
+
+      {controller.items.map((item) => (
+        <Tile
+          key={item.localId}
+          src={item.previewUrl}
+          onRemove={() => controller.remove(item.localId)}
+          status={item.status}
+          error={item.error}
+        />
+      ))}
+
+      {canAddMore && (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={disabled}
+          aria-label="加入圖片"
+          className="flex size-24 shrink-0 items-center justify-center rounded-2xl border border-border text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Plus className="size-6" strokeWidth={1.75} />
+        </button>
+      )}
+    </div>
   )
 }
 
-// 已選圖片的橫向清單。壓縮／上傳中的圖蓋一層半透明的底＋脈動的骨架條，
-// 完成之後那層就消失——不是另外一顆轉圈圈的 spinner，位置跟大小從頭到尾
-// 都一樣，畫面不會跳。
-export function AttachmentStrip({ controller }: { controller: ImageAttachmentsController }) {
-  if (controller.items.length === 0) return null
+// 一格圖片。壓縮／上傳中蓋一層半透明的底＋脈動的骨架條，完成之後那層就
+// 消失——不是另外一顆轉圈圈的 spinner，格子的位置跟大小從頭到尾都一樣，
+// 畫面不會跳。
+function Tile({
+  src,
+  onRemove,
+  status,
+  error,
+}: {
+  src: string
+  onRemove?: () => void
+  status?: Attachment["status"]
+  error?: string | null
+}) {
+  const busy = status === "compressing" || status === "uploading"
 
   return (
-    <div className="flex shrink-0 gap-2 overflow-x-auto pb-1">
-      {controller.items.map((item) => (
-        <div
-          key={item.localId}
-          className={cn(
-            "relative size-24 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted",
-            item.status === "error" && "border-destructive"
-          )}
-        >
-          {/* 預覽是本機檔案的 object URL，不是遠端圖片，next/image 幫不上忙 */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={item.previewUrl} alt="" className="size-full object-cover" />
+    <div
+      className={cn(
+        "relative size-24 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted",
+        status === "error" && "border-destructive"
+      )}
+    >
+      {/* 預覽可能是本機檔案的 object URL，也可能是站上的讀取端點，
+          兩種 next/image 都幫不上忙（專案本來就設定 images.unoptimized）。 */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt="" loading="lazy" className="size-full object-cover" />
 
-          {(item.status === "compressing" || item.status === "uploading") && (
-            <div className="absolute inset-0 flex flex-col justify-end gap-1 bg-background/70 p-2">
-              <div className="h-1 w-full animate-pulse rounded-full bg-muted-foreground/40" />
-              <span className="text-[11px] text-muted-foreground">
-                {item.status === "compressing" ? "壓縮中" : "上傳中"}
-              </span>
-            </div>
-          )}
-
-          {item.status === "error" && (
-            <div className="absolute inset-0 flex items-end bg-background/70 p-2">
-              <span className="text-[11px] text-destructive">{item.error ?? "失敗"}</span>
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={() => controller.remove(item.localId)}
-            aria-label="移除這張圖"
-            className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground hover:text-foreground"
-          >
-            <X className="size-3.5" />
-          </button>
+      {busy && (
+        <div className="absolute inset-0 flex flex-col justify-end gap-1 bg-background/70 p-2">
+          <div className="h-1 w-full animate-pulse rounded-full bg-muted-foreground/40" />
+          <span className="text-[11px] text-muted-foreground">{status === "compressing" ? "壓縮中" : "上傳中"}</span>
         </div>
-      ))}
+      )}
+
+      {status === "error" && (
+        <div className="absolute inset-0 flex items-end bg-background/70 p-2">
+          <span className="text-[11px] text-destructive">{error ?? "失敗"}</span>
+        </div>
+      )}
+
+      {onRemove && (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="移除這張圖"
+          className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground hover:text-foreground"
+        >
+          <X className="size-3.5" />
+        </button>
+      )}
     </div>
   )
 }

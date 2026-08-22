@@ -11,6 +11,7 @@ import { DiscussionRoot } from "@/components/discussion/discussion-root"
 import { RootContent } from "@/components/discussion/root-content"
 import { SessionSelect } from "@/components/session-select"
 import { conferenceSessionRootKey } from "@/lib/discussion/root-registry"
+import { fetchImagesForPost } from "@/lib/discussion/images"
 import { getOrCreateDiscussionRoot } from "@/lib/discussion/root"
 import { isDiscussionAdmin } from "@/lib/discussion/permissions"
 import { conferenceSessions, getNextConferenceSession } from "@/lib/opening-conference-content"
@@ -37,6 +38,8 @@ export default async function ConferenceMeetingSessionPage({
 
   const rootKey = conferenceSessionRootKey(activeSession.id)
   const root = await getOrCreateDiscussionRoot(rootKey)
+  // root 的附圖不走 enrichRows（這頁的 root 是自己查的），另外撈一次。
+  const rootImages = await fetchImagesForPost(root.id)
 
   return (
     <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
@@ -92,7 +95,14 @@ export default async function ConferenceMeetingSessionPage({
         <DiscussionRoot
           rootKey={rootKey}
           session={session}
-          header={<RootContent rootPostId={root.id} content={root.content} isDiscussionAdmin={isDiscussionAdmin(session)} />}
+          header={
+            <RootContent
+              rootPostId={root.id}
+              content={root.content}
+              images={rootImages}
+              isDiscussionAdmin={isDiscussionAdmin(session)}
+            />
+          }
         />
       </div>
     </main>

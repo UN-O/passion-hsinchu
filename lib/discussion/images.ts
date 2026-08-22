@@ -120,22 +120,45 @@ export async function attachImagesToPost(
   tx: { update: typeof db.update },
   postId: string,
   imageIds: string[],
-  uploaderId: string
+  uploaderId: string,
+  // 編輯既有貼文時，新加的圖要接在舊的後面，不是從 0 重新編號。
+  startPosition = 0
 ): Promise<void> {
   if (imageIds.length === 0) return
   if (imageIds.length > MAX_POST_IMAGES) throw new DiscussionError(`一則貼文最多 ${MAX_POST_IMAGES} 張圖`)
 
   const unique = [...new Set(imageIds)]
   let attached = 0
-  for (const [position, imageId] of unique.entries()) {
+  for (const [index, imageId] of unique.entries()) {
     const rows = await tx
       .update(postImages)
-      .set({ postId, position })
+      .set({ postId, position: startPosition + index })
       .where(and(eq(postImages.id, imageId), eq(postImages.uploadedBy, uploaderId), isNull(postImages.postId)))
       .returning({ id: postImages.id })
     attached += rows.length
   }
   if (attached !== unique.length) throw new DiscussionError("有圖片已經失效，請重新上傳")
+}
+
+// 這則貼文現在有幾張圖、下一張要放在哪個位置。編輯時加圖要接在後面，
+// 而且「加完會不會超過 10 張」要用現有張數一起算。
+export async function countImagesForPost(postId: string): Promise<{ count: number; nextPosition: number }> {
+  const rows = await db
+    .select({ position: postImages.position })
+    .from(postImages)
+    .where(eq(postImages.postId, postId))
+  const maxPosition = rows.reduce((max, row) => Math.max(max, row.position), -1)
+  return { count: rows.length, nextPosition: maxPosition + 1 }
+}
+
+// 單一貼文的圖片（root post 的顯示會用到——那幾頁不是走 enrichRows）。
+export async function fetchImagesForPost(postId: string): Promise<PostImageDTO[]> {
+  const rows = await db
+    .select()
+    .from(postImages)
+    .where(eq(postImages.postId, postId))
+    .orderBy(postImages.position)
+  return rows.map(toImageDTO)
 }
 
 // 讀某些貼文的圖片，一次查完（列表渲染時是批次的，不能一則一次）。
@@ -206,14 +229,27 @@ export async function deleteImagesForPost(postId: string): Promise<void> {
   await purgeImageRows(rows)
 }
 
-// 使用者在編輯貼文時移除某幾張圖。只有貼文作者能移除自己貼文上的圖
-// （跟 editReply 一樣：管理員不能代編他人的發言內容）。
-export async function removeImagesFromPost(postId: string, imageIds: string[], actingUserId: string): Promise<void> {
+// 編輯時移除某幾張圖。權限跟「誰能編輯這則的文字」完全一致：
+//   一般貼文 — 只有作者本人（管理員不能代編他人的發言內容，見 editReply）
+//   root post — 沒有作者，改由 discussion admin 管（見 editRootContent）
+export async function removeImagesFromPost(
+  postId: string,
+  imageIds: string[],
+  actingUserId: string,
+  isAdmin = false
+): Promise<void> {
   if (imageIds.length === 0) return
 
-  const [post] = await db.select({ authorId: posts.authorId }).from(posts).where(eq(posts.id, postId)).limit(1)
+  const [post] = await db
+    .select({ authorId: posts.authorId, replyToId: posts.replyToId })
+    .from(posts)
+    .where(eq(posts.id, postId))
+    .limit(1)
   if (!post) throw new DiscussionError("找不到這則貼文")
-  if (post.authorId !== actingUserId) throw new DiscussionError("沒有權限編輯這則貼文")
+
+  const isRoot = post.replyToId === null
+  const allowed = isRoot ? isAdmin : post.authorId === actingUserId
+  if (!allowed) throw new DiscussionError("沒有權限編輯這則貼文")
 
   const rows = await db
     .select({ id: postImages.id, storageKey: postImages.storageKey, thumbKey: postImages.thumbKey })

@@ -155,14 +155,20 @@ export function DiscussionView({
     })
   }
 
-  function handleEdit(postId: string, content: string) {
+  function handleEdit(postId: string, content: string, images?: PostImageDTO[]) {
     const entry = findEntry(postId)
     if (!entry) return
-    const editedPost: PostDTO = { ...entry.post, content, updatedAt: new Date().toISOString() }
+    const editedPost: PostDTO = {
+      ...entry.post,
+      content,
+      // 編輯時新加的圖接在原本那幾張後面，跟伺服器端的 position 一致。
+      images: [...entry.post.images, ...(images ?? [])],
+      updatedAt: new Date().toISOString(),
+    }
 
     startTransition(async () => {
       addOptimistic({ kind: "patch", postId, changes: { post: editedPost } })
-      const result = await submitEditReply(postId, content)
+      const result = await submitEditReply(postId, content, images?.map((image) => image.id))
       if (result.ok) {
         setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: editedPost } }))
       }

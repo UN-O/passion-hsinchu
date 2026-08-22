@@ -176,14 +176,20 @@ export function DiscussionThread({
     })
   }
 
-  function handleEdit(postId: string, content: string) {
+  function handleEdit(postId: string, content: string, images?: PostImageDTO[]) {
     const entry = findEntry(postId)
     if (!entry) return
-    const editedPost: PostDTO = { ...entry.post, content, updatedAt: new Date().toISOString() }
+    const editedPost: PostDTO = {
+      ...entry.post,
+      content,
+      // 編輯時新加的圖接在原本那幾張後面，跟伺服器端的 position 一致。
+      images: [...entry.post.images, ...(images ?? [])],
+      updatedAt: new Date().toISOString(),
+    }
 
     startTransition(async () => {
       addOptimistic({ kind: "patch", postId, changes: { post: editedPost } })
-      const result = await submitEditReply(postId, content)
+      const result = await submitEditReply(postId, content, images?.map((image) => image.id))
       if (result.ok) {
         setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: editedPost } }))
       }
@@ -293,7 +299,13 @@ export function DiscussionThread({
           （規則 2）。root 不用 patch／optimistic 那一套（不會被讚、刪除），
           直接吃頁面傳進來的 root prop。 */}
       <div className="flex flex-col">
-        <RootContent rootPostId={root.post.id} content={root.post.content} isDiscussionAdmin={isDiscussionAdmin} hasRail />
+        <RootContent
+          rootPostId={root.post.id}
+          content={root.post.content}
+          images={root.post.images}
+          isDiscussionAdmin={isDiscussionAdmin}
+          hasRail
+        />
         {chain.map((item, index) => (
           <PostRow
             key={item.post.id}

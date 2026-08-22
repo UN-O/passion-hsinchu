@@ -6,7 +6,7 @@ import { ListChecks, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { PostImageDTO } from "@/lib/discussion/dto"
 import { MAX_CONTENT_LENGTH, MAX_POLL_OPTIONS, MIN_POLL_OPTIONS } from "@/lib/discussion/constants"
-import { AddImagesButton, AttachmentStrip, useImageAttachments } from "./image-attachments"
+import { AttachmentEditor, useImageAttachments } from "./image-attachments"
 
 // 要回覆的貼文，以及它上面完整的祖先鏈（root 端在最前面）。全部顯示、
 // 不裁切——按下回覆之後應該看得到一路往上的完整脈絡，不是只有正上方那則
@@ -80,7 +80,6 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
         </button>
         <p className="text-sm font-semibold">{replyingTo ? `回覆 ${replyingTo.isDeleted ? "已刪除的貼文" : (replyingTo.authorName ?? "匿名")}` : "發布"}</p>
         <div className="flex items-center gap-3">
-          <AddImagesButton controller={images} disabled={pending} />
           {/* 只有工作人員以上看得到（allowPoll 由呼叫端依 viewer.role 決定，
               server action 也另外擋一次）。放在送出旁邊，跟送出同一個
               「這篇貼文最終長怎樣」的決定點，不是內文裡的次要選項。 */}
@@ -124,11 +123,15 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
           autoFocus
           value={content}
           onChange={(e) => setContent(e.target.value.slice(0, MAX_CONTENT_LENGTH))}
-          placeholder={replyingTo ? "寫下回覆..." : "分享你的心得、筆記，或提出問題..."}
+          placeholder={
+            replyingTo ? "寫下回覆，也可以拍照上傳你的筆記" : "分享你的心得或問題，也可以拍照上傳你的筆記"
+          }
           className="min-h-32 w-full flex-1 resize-none bg-transparent text-base outline-none placeholder:text-muted-foreground"
         />
 
-        <AttachmentStrip controller={images} />
+        {/* 加號的空格子放在輸入框下面，不是 header 的一顆 icon——「這裡可以
+            放圖片」要用一個看得到的格子表達。 */}
+        <AttachmentEditor controller={images} disabled={pending} />
 
         {pollOpen && (
           <div className="flex shrink-0 flex-col gap-2 rounded-2xl border border-border p-4">

@@ -5,8 +5,11 @@ import { BadgeCheck, Pencil } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 
 import { MAX_CONTENT_LENGTH } from "@/lib/discussion/constants"
-import { submitEditRootContent } from "@/lib/discussion/actions"
+import type { PostImageDTO } from "@/lib/discussion/dto"
+import { submitEditRootContent, submitRemovePostImages } from "@/lib/discussion/actions"
 import { Avatar, RailLine } from "./post-row"
+import { AttachmentEditor, useImageAttachments } from "./image-attachments"
+import { PostImages } from "./post-images"
 
 // root post 一律顯示成「PASSION 官方」發文（跟一般回覆的官方旗標是同一顆
 // 徽章、同一個視覺語言，見 post-row.tsx 的 showOfficial），不是另外一種
@@ -15,11 +18,15 @@ import { Avatar, RailLine } from "./post-row"
 export function RootContent({
   rootPostId,
   content,
+  images = [],
   isDiscussionAdmin,
   hasRail = false,
 }: {
   rootPostId: string
   content: string
+  // root 的附圖。跟一般貼文用同一張 post_images 表、同一個顯示元件，
+  // 差別只在「誰可以編輯」——root 沒有作者，改由 discussion admin 管。
+  images?: PostImageDTO[]
   isDiscussionAdmin: boolean
   // 討論串頁（/discussion/[postId]）root 後面接著祖先鏈，兩者中間要接一條
   // 線，視覺上才看得出祖先鏈是接在 root 底下——跟 post-row.tsx 的 EntryBody
@@ -29,24 +36,50 @@ export function RootContent({
 }) {
   const [editing, setEditing] = useState(false)
   const [saved, setSaved] = useState(content)
+  const [savedImages, setSavedImages] = useState(images)
   const [draft, setDraft] = useState(content)
   const [pending, setPending] = useState(false)
+  const newImages = useImageAttachments()
 
   function startEdit() {
     setDraft(saved)
     setEditing(true)
   }
 
+  function cancelEdit() {
+    // 取消＝這次新選的圖沒有人要了，連 R2 一起清掉。
+    newImages.discardAll()
+    setEditing(false)
+  }
+
   async function handleSave() {
     const trimmed = draft.trim()
-    if (!trimmed || pending) return
+    if (!trimmed || pending || newImages.busy) return
     setPending(true)
-    const result = await submitEditRootContent(rootPostId, trimmed)
+    const result = await submitEditRootContent(
+      rootPostId,
+      trimmed,
+      newImages.readyImages.map((image) => image.id)
+    )
     if (result.ok) {
       setSaved(trimmed)
+      // 伺服器回來的是綁定之後的完整清單（含 position 排序），直接採用，
+      // 不要自己在前端拼——不然重新整理之後順序可能跟畫面不一樣。
+      setSavedImages(result.data)
+      // 已經綁到 root 上了，只清本地狀態（discardAll 會把它們從 R2 刪掉）。
+      newImages.clearLocal()
       setEditing(false)
     }
     setPending(false)
+  }
+
+  // root 沒有作者，圖片的刪除權限跟編輯大綱一樣是 discussion admin
+  // （server action 會再擋一次）。
+  async function handleRemoveImage(imageId: string) {
+    const previous = savedImages
+    setSavedImages((prev) => prev.filter((image) => image.id !== imageId))
+    const result = await submitRemovePostImages(rootPostId, [imageId])
+    if (!result.ok) setSavedImages(previous)
   }
 
   return (
@@ -68,17 +101,23 @@ export function RootContent({
               autoFocus
               value={draft}
               onChange={(e) => setDraft(e.target.value.slice(0, MAX_CONTENT_LENGTH))}
-              placeholder="支援 markdown：圖片用 ![說明](網址)、標題用 #、清單用 -"
+              placeholder="支援 markdown：標題用 #、清單用 -。圖片用下面的加號上傳，也可以拍照你的筆記"
               className="min-h-32 w-full resize-none rounded-2xl border border-border bg-transparent p-3 font-mono text-sm outline-none placeholder:text-muted-foreground"
             />
+            <AttachmentEditor
+              controller={newImages}
+              existing={savedImages}
+              onRemoveExisting={handleRemoveImage}
+              disabled={pending}
+            />
             <div className="flex items-center gap-3 self-end text-sm">
-              <button type="button" onClick={() => setEditing(false)} disabled={pending} className="text-muted-foreground hover:text-foreground">
+              <button type="button" onClick={cancelEdit} disabled={pending} className="text-muted-foreground hover:text-foreground">
                 取消
               </button>
               <button
                 type="button"
                 onClick={handleSave}
-                disabled={pending || !draft.trim()}
+                disabled={pending || !draft.trim() || newImages.busy}
                 className="font-semibold text-primary disabled:opacity-40"
               >
                 儲存
@@ -106,6 +145,12 @@ export function RootContent({
               >
                 {saved}
               </ReactMarkdown>
+
+              {savedImages.length > 0 && (
+                <div className="mt-3">
+                  <PostImages images={savedImages} />
+                </div>
+              )}
             </div>
             {isDiscussionAdmin && (
               <button
