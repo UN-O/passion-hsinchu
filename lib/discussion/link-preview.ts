@@ -7,7 +7,7 @@ import { db } from "@/db"
 import { linkPreviews } from "@/db/schema/discussion"
 import { putObject } from "@/lib/r2"
 import type { LinkPreviewDTO } from "./dto"
-import { displayHost, normalizeUrl } from "./links"
+import { displayHost, firstUrlInContent, normalizeUrl } from "./links"
 
 // 連結預覽卡片的伺服器端：抓對方頁面的 <head>、解出 og:* 標籤、把縮圖
 // 收進自己的 R2，然後以網址為單位快取起來。
@@ -334,6 +334,16 @@ export async function fetchCachedPreviews(rawUrls: string[]): Promise<Map<string
     if (dto) result.set(row.url, dto)
   }
   return result
+}
+
+// 單篇內文用的便利版本（root post 的顯示不走 enrichRows，那幾頁各自查）。
+// 一樣只讀快取，不在渲染路徑上發外部請求。
+export async function fetchCachedPreviewForContent(content: string): Promise<LinkPreviewDTO | null> {
+  const url = firstUrlInContent(content)
+  if (!url) return null
+  const normalized = normalizeUrl(url)
+  if (!normalized) return null
+  return (await fetchCachedPreviews([normalized])).get(normalized) ?? null
 }
 
 // 讀取端點要用的：拿 preview id 換 R2 key。

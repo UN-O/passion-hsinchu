@@ -87,3 +87,26 @@ export function displayHost(raw: string): string {
     return raw
   }
 }
+
+// root post 的內文是 markdown（一般回覆是純文字），所以裸網址要另外處理：
+// CommonMark 只有寫成 [文字](網址) 或 <網址> 才會變成連結，直接貼一串
+// https://... 會被當成普通文字印出來。這裡把裸網址包成 <網址>（CommonMark
+// 的 autolink 語法），交給 markdown 自己渲染成 <a>，不用另外加 remark 外掛。
+//
+// 已經是連結的地方不能再包一層，所以先把「不該碰的片段」整段跳過：
+// 程式碼區塊、行內程式碼、[文字](網址)／![說明](網址)、已經寫成 <網址>
+// 的自動連結。
+const MARKDOWN_SKIP = /(```[\s\S]*?```|`[^`\n]*`|!?\[[^\]]*\]\([^)]*\)|<https?:\/\/[^>\s]*>)/g
+
+export function autolinkMarkdown(markdown: string): string {
+  return markdown
+    .split(MARKDOWN_SKIP)
+    .map((segment, index) => {
+      // split 帶捕獲群組時，奇數索引就是被跳過的那些片段，原樣保留。
+      if (index % 2 === 1) return segment
+      return splitContentByUrls(segment)
+        .map((part) => (part.kind === "link" ? `<${part.value}>` : part.value))
+        .join("")
+    })
+    .join("")
+}

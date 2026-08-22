@@ -5,11 +5,13 @@ import { BadgeCheck, Pencil } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 
 import { MAX_CONTENT_LENGTH } from "@/lib/discussion/constants"
-import type { PostImageDTO } from "@/lib/discussion/dto"
+import type { LinkPreviewDTO, PostImageDTO } from "@/lib/discussion/dto"
 import { submitEditRootContent, submitRemovePostImages } from "@/lib/discussion/actions"
 import { Avatar, RailLine } from "./post-row"
 import { AttachmentEditor, useImageAttachments } from "./image-attachments"
 import { PostImages } from "./post-images"
+import { LinkCard } from "./link-card"
+import { autolinkMarkdown, firstUrlInContent } from "@/lib/discussion/links"
 
 // root post 一律顯示成「PASSION 官方」發文（跟一般回覆的官方旗標是同一顆
 // 徽章、同一個視覺語言，見 post-row.tsx 的 showOfficial），不是另外一種
@@ -19,6 +21,7 @@ export function RootContent({
   rootPostId,
   content,
   images = [],
+  linkPreview = null,
   isDiscussionAdmin,
   hasRail = false,
 }: {
@@ -27,6 +30,9 @@ export function RootContent({
   // root 的附圖。跟一般貼文用同一張 post_images 表、同一個顯示元件，
   // 差別只在「誰可以編輯」——root 沒有作者，改由 discussion admin 管。
   images?: PostImageDTO[]
+  // 內文裡第一個網址的預覽卡片（伺服器端快取有的話）。沒有就傳 null，
+  // LinkCard 會自己補抓一次。
+  linkPreview?: LinkPreviewDTO | null
   isDiscussionAdmin: boolean
   // 討論串頁（/discussion/[postId]）root 後面接著祖先鏈，兩者中間要接一條
   // 線，視覺上才看得出祖先鏈是接在 root 底下——跟 post-row.tsx 的 EntryBody
@@ -75,6 +81,8 @@ export function RootContent({
 
   // root 沒有作者，圖片的刪除權限跟編輯大綱一樣是 discussion admin
   // （server action 會再擋一次）。
+  const previewUrl = firstUrlInContent(saved)
+
   async function handleRemoveImage(imageId: string) {
     const previous = savedImages
     setSavedImages((prev) => prev.filter((image) => image.id !== imageId))
@@ -132,7 +140,12 @@ export function RootContent({
                   // eslint-disable-next-line @next/next/no-img-element -- 內容來自 admin 貼的任意網址，不是本地靜態資源
                   img: ({ src, alt }) => <img src={typeof src === "string" ? src : undefined} alt={alt ?? ""} className="w-full rounded-2xl" loading="lazy" />,
                   a: ({ href, children }) => (
-                    <a href={href} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-primary">
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="break-all underline underline-offset-2 hover:text-primary"
+                    >
                       {children}
                     </a>
                   ),
@@ -143,8 +156,18 @@ export function RootContent({
                   ol: ({ children }) => <ol className="list-decimal pl-5">{children}</ol>,
                 }}
               >
-                {saved}
+                {/* 裸網址在 markdown 裡不會自己變成連結，先包成 <網址>
+                    （見 lib/discussion/links.ts 的 autolinkMarkdown）。 */}
+                {autolinkMarkdown(saved)}
               </ReactMarkdown>
+
+              {/* 連結卡片跟一般貼文同一顆元件、同一個規則：只做內文裡
+                  第一個網址。 */}
+              {previewUrl && (
+                <div className="mt-3">
+                  <LinkCard url={previewUrl} initial={linkPreview} />
+                </div>
+              )}
 
               {savedImages.length > 0 && (
                 <div className="mt-3">

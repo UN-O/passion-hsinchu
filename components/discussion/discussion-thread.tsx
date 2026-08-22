@@ -303,6 +303,7 @@ export function DiscussionThread({
           rootPostId={root.post.id}
           content={root.post.content}
           images={root.post.images}
+          linkPreview={root.post.linkPreview}
           isDiscussionAdmin={isDiscussionAdmin}
           hasRail
         />

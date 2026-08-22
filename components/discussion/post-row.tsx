@@ -10,6 +10,16 @@ import { MAX_CONTENT_LENGTH } from "@/lib/discussion/constants"
 import { firstUrlInContent } from "@/lib/discussion/links"
 import type { DiscussionEntry, DiscussionItem, PollDTO, PostImageDTO } from "@/lib/discussion/dto"
 import { PollView } from "./poll-view"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { PostImages } from "./post-images"
 import { ContentWithLinks, LinkCard } from "./link-card"
 import { ZoneBadge } from "./zone-badge"
@@ -168,6 +178,9 @@ function EntryBody({
   const newImages = useImageAttachments()
   const router = useRouter()
   const previewUrl = post.isDeleted ? null : firstUrlInContent(post.content)
+  // 刪除是不可逆的（附圖會連 R2 上的檔案一起刪掉），而垃圾桶就在愛心旁邊
+  // ——手機上很容易點錯，所以中間要有一道確認。
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   function startEdit() {
     setDraft(post.content)
@@ -366,7 +379,7 @@ function EntryBody({
                 {canDelete && (
                   <button
                     type="button"
-                    onClick={() => controller.onDelete(post.id)}
+                    onClick={() => setConfirmingDelete(true)}
                     aria-label="刪除"
                     className="text-muted-foreground hover:text-foreground"
                   >
@@ -378,6 +391,25 @@ function EntryBody({
           </>
         )}
       </div>
+
+      {/* 刪除確認。max-w 的寫法跟 logout-dialog.tsx 一樣，手機窄螢幕不會
+          被切到右邊。 */}
+      <AlertDialog open={confirmingDelete} onOpenChange={setConfirmingDelete}>
+        <AlertDialogContent className="max-w-[calc(100%-2rem)]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>要刪除這則貼文嗎？</AlertDialogTitle>
+            <AlertDialogDescription>
+              {post.images.length > 0
+                ? `刪除之後不能復原，這則貼文的 ${post.images.length} 張圖片也會一起永久刪除。`
+                : "刪除之後不能復原。"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={() => controller.onDelete(post.id)}>刪除</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
