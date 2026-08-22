@@ -5,18 +5,24 @@ export function AboutSection() {
     <section id="about" className="border-t border-border px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-sm font-semibold tracking-[0.2em] text-primary">關於 PASSION</h2>
-        {/* 這裡不套 w-[min(74%,28rem)] 那套慣例：那是給短句（例如經文、
-            禱告文單行標題）用的，這段介紹文句子比較長，74% 寬度在窄螢幕上
-            反而擠出很多只有兩三個字的孤行（例如「五年，」「意，」自己
-            斷成一行），看起來像句子被硬切開。改成用滿版寬度（沿用外層
-            max-w-2xl 容器本身的寬度），交給 body 上已經全站套用的
-            text-wrap:pretty（見 globals.css）決定斷行點；沒有寬度限制時
-            pretty 有更多空間找到不切在標點符號中間的斷法。 */}
+        {/* 不套 w-[min(74%,28rem)]：那是給短句（經文、禱告文單行標題）
+            用的，這段介紹文句子比較長，74% 寬度在窄螢幕上會擠出很多
+            兩三個字的孤行。改用滿版寬度（沿用外層 max-w-2xl 容器），sm
+            以上交給 body 全站套用的 text-wrap:pretty（見 globals.css）
+            決定斷行點。手機（< sm）則改用使用者指定的斷句點強制換行——
+            pretty 是 best-effort heuristic，不保證每次都切在使用者想要
+            的位置，這裡直接用 <br className="sm:hidden" /> 精確對齊；sm
+            以上藏起來，交還給 pretty 處理（桌機原本就沒有孤行問題）。 */}
         <p className={`${genRyuMin.className} mt-6 text-lg leading-relaxed sm:text-xl`}>
           五年，一場屬於新竹地區的營會。
           <br />
-          當我們回望所踏的每一步路時，看見上帝親自顯明了對世代的心意，
-          在我們還不理解祂的計劃時，祂已成就了一切。
+          當我們回望所踏的每一步路時，
+          <br className="sm:hidden" />
+          看見上帝親自顯明了對世代的心意，
+          <br className="sm:hidden" />
+          在我們還不理解祂的計劃時，
+          <br className="sm:hidden" />
+          祂已成就了一切。
         </p>
         <p className={`${genRyuMin.className} mt-10 text-lg font-medium sm:text-xl`}>
           2026，我們將持續回應祂的心意。
