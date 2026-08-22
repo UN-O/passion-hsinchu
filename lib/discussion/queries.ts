@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache"
 import { and, desc, eq, inArray, isNull, ne, notInArray, sql, type SQL } from "drizzle-orm"
 import { alias, type AnyPgColumn } from "drizzle-orm/pg-core"
 
@@ -177,23 +178,45 @@ async function fetchLatestCandidates(
   }))
 }
 
+// 每個 CAMP 討論頁（/camp/meeting/[sessionId]、/camp/devotion/[day]）進場都會
+// 查一次這筆，只是為了決定要不要顯示「小隊」排序選項——營隊期間這兩類頁面
+// 會被大量重複開啟，所以包一層 unstable_cache，減少重複查詢。
+//
+// 目前 camp_team_member 沒有任何後台／server action 會寫入或更新（只能靠
+// Neon SQL editor 手動改，見 CLAUDE.md 的工作人員名單那段是同一套做法），
+// 所以完全沒有 updateTag(CAMP_TEAM_TAG) 這種即時失效的路徑可以掛——TTL 訂
+// 短一點（10 分鐘，而不是 exp/church-list 那種 1 小時）是刻意的：萬一營隊
+// 期間有人被改小隊、換房，最多等 10 分鐘就會反映出來，不用等到活動結束。
+// 之後如果真的做了可以改小隊的後台，記得在那個 action 裡呼叫
+// updateTag(CAMP_TEAM_TAG)，就可以把 TTL 拉長回 1 小時。
+export const CAMP_TEAM_TAG = "camp-team"
+const CAMP_TEAM_TTL_SECONDS = 60 * 10
+
 // 「小隊」篩選只有 CAMP 討論、而且使用者自己有進 camp_team_member 才有意義
 // （工作人員、還沒排進小隊的人都沒有這筆資料）。查不到就回傳 null，呼叫端
 // 當「沒有小隊可篩」處理，不是錯誤。
-export async function getViewerCampTeam(viewerId: string | null): Promise<{ teamName: string } | null> {
-  if (!viewerId) return null
-  // user.enrollment_id 是 better-auth 產生器加的 text 欄位（見 db/schema/auth.ts
-  // 頂端的說明），camp_team_member.enrollment_id 是真的 uuid——兩者型別不同，
-  // Postgres 不會自動轉型，join 條件要自己 cast 掉，不然直接噴
-  // 「operator does not exist: uuid = text」。
-  const [row] = await db
-    .select({ teamName: campTeamMember.teamName })
-    .from(user)
-    .innerJoin(campTeamMember, sql`${campTeamMember.enrollmentId}::text = ${user.enrollmentId}`)
-    .where(eq(user.id, viewerId))
-    .limit(1)
-  return row ?? null
-}
+//
+// viewerId 一定要留在被包住的函式參數裡（不能改成外面 closure 帶進去）：
+// unstable_cache 是拿參數序列化後的值當 cache key 的一部分，這樣才能保證
+// 每個使用者的小隊資料放在各自獨立的快取項目裡，不會查到別人的小隊。
+export const getViewerCampTeam = unstable_cache(
+  async (viewerId: string | null): Promise<{ teamName: string } | null> => {
+    if (!viewerId) return null
+    // user.enrollment_id 是 better-auth 產生器加的 text 欄位（見 db/schema/auth.ts
+    // 頂端的說明），camp_team_member.enrollment_id 是真的 uuid——兩者型別不同，
+    // Postgres 不會自動轉型，join 條件要自己 cast 掉，不然直接噴
+    // 「operator does not exist: uuid = text」。
+    const [row] = await db
+      .select({ teamName: campTeamMember.teamName })
+      .from(user)
+      .innerJoin(campTeamMember, sql`${campTeamMember.enrollmentId}::text = ${user.enrollmentId}`)
+      .where(eq(user.id, viewerId))
+      .limit(1)
+    return row ?? null
+  },
+  ["viewer-camp-team"],
+  { tags: [CAMP_TEAM_TAG], revalidate: CAMP_TEAM_TTL_SECONDS }
+)
 
 // 某個小隊在這個討論裡，有出現在哪些頂層討論串（不管小隊成員的貼文實際上
 // 藏多深）。posts.root_branch_id 對任何深度的貼文都是 O(1) 直接存好「自己
