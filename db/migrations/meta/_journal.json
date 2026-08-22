@@ -43,6 +43,13 @@
       "when": 1787299711980,
       "tag": "0005_eager_lightspeed",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787407845011,
+      "tag": "0006_marvelous_clint_barton",
+      "breakpoints": true
     }
   ]
 }

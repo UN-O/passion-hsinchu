@@ -16,6 +16,7 @@
     "db:sync-roster:apply": "node --env-file=.env --import ./scripts/ts-hook.mjs ./scripts/sync-roster.ts --apply"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1115.0",
     "@neondatabase/serverless": "^1.1.0",
     "@youversion/platform-react-ui": "^2.6.2",
     "better-auth": "^1.6.26",

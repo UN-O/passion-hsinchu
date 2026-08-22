@@ -17,6 +17,7 @@ function makeItem(id: string, overrides?: Partial<DiscussionItem>): DiscussionIt
       isDeleted: false,
       isPinned: false,
       isOfficial: false,
+      images: [],
     },
     stats: { likeCount: 0, directReplyCount: 0 },
     viewer: { hasLiked: false },

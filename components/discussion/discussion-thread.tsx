@@ -4,13 +4,14 @@ import { useOptimistic, useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { DiscussionEntry, DiscussionItem, DiscussionResponse, PollDTO, PostDTO } from "@/lib/discussion/dto"
+import type { DiscussionEntry, DiscussionItem, DiscussionResponse, PollDTO, PostDTO, PostImageDTO } from "@/lib/discussion/dto"
 import {
   loadReplyChain,
   loadThreadReplies,
   submitDeleteReply,
   submitEditReply,
   submitLike,
+  submitRemovePostImages,
   submitReply,
   submitToggleOfficial,
   submitUnlike,
@@ -145,14 +146,14 @@ export function DiscussionThread({
     })
   }
 
-  function handleSubmitReply(content: string, poll?: { allowMultiple: boolean; options: string[] }) {
+  function handleSubmitReply(content: string, poll?: { allowMultiple: boolean; options: string[] }, images?: PostImageDTO[]) {
     const tempId = `pending-${crypto.randomUUID()}`
-    const pendingItem = buildPendingItem(tempId, content, viewer, poll)
+    const pendingItem = buildPendingItem(tempId, content, viewer, poll, images)
     setReplyPending(true)
 
     startTransition(async () => {
       addOptimistic({ kind: "insertReply", item: pendingItem })
-      const result = await submitReply(focusId, content, poll)
+      const result = await submitReply(focusId, content, poll, images?.map((image) => image.id))
       if (result.ok) {
         setBase((prev) => reduce(prev, { kind: "insertReply", item: result.data }))
         setComposerTarget(null)
@@ -186,6 +187,21 @@ export function DiscussionThread({
       if (result.ok) {
         setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: editedPost } }))
       }
+    })
+  }
+
+  // 移除已發布貼文上的某張圖。圖片在 R2 上是真的被刪掉（不可復原）——
+  // 失敗的唯一原因是「不是作者」，那種情況畫面上本來就不會有這顆按鈕，
+  // 所以不特別 rollback。
+  function handleRemoveImage(postId: string, imageId: string) {
+    const entry = findEntry(postId)
+    if (!entry) return
+    const nextPost: PostDTO = { ...entry.post, images: entry.post.images.filter((image) => image.id !== imageId) }
+
+    startTransition(async () => {
+      addOptimistic({ kind: "patch", postId, changes: { post: nextPost } })
+      const result = await submitRemovePostImages(postId, [imageId])
+      if (result.ok) setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: nextPost } }))
     })
   }
 
@@ -259,6 +275,7 @@ export function DiscussionThread({
     onUnpin: () => {},
     onDelete: handleDelete,
     onEdit: handleEdit,
+    onRemoveImage: handleRemoveImage,
     onToggleOfficial: handleToggleOfficial,
     onLoadMoreChildren: handleLoadMoreChildren,
     childLoading: (postId) => childLoadingMap[postId] ?? false,

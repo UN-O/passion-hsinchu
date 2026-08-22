@@ -20,6 +20,7 @@ import {
   votePoll,
   type DiscussionSettingsPatch,
 } from "./mutations"
+import { discardPendingImage, fetchImagesByPostIds, removeImagesFromPost } from "./images"
 import { getOrCreateDiscussionRoot } from "./root"
 import { isDiscussionAdmin } from "./permissions"
 import { DiscussionError } from "./constants"
@@ -127,7 +128,9 @@ export async function loadThreadReplies(
 export async function submitReply(
   parentPostId: string,
   content: string,
-  poll?: { allowMultiple: boolean; options: string[] }
+  poll?: { allowMultiple: boolean; options: string[] },
+  // 已經上傳完成的圖片 id（上傳走 /api/discussion/images，發文時才綁定）
+  imageIds?: string[]
 ): Promise<ActionResult<DiscussionItem>> {
   return toResult(
     (async () => {
@@ -138,7 +141,9 @@ export async function submitReply(
         authorRole: session.user.role,
         content,
         poll,
+        imageIds,
       })
+      const images = await fetchImagesByPostIds([post.id])
       // 新貼文剛建立，讚數/回覆數都是 0，不需要再查一次 enrich。
       return {
         post: {
@@ -152,6 +157,7 @@ export async function submitReply(
           isDeleted: false,
           isPinned: false,
           isOfficial: false,
+          images: images.get(post.id) ?? [],
         },
         stats: { likeCount: 0, directReplyCount: 0 },
         viewer: { hasLiked: false },
@@ -202,6 +208,31 @@ export async function submitToggleOfficial(postId: string, next: boolean): Promi
       const session = await requireClaimedSession()
       if (!isDiscussionAdmin(session)) throw new DiscussionError("沒有權限")
       await toggleOfficial(postId, session.user.id, next)
+      return null
+    })()
+  )
+}
+
+// 使用者在編輯器裡把還沒送出的圖片按掉：立刻連 R2 的檔案一起刪，不用等
+// 孤兒回收（uploadedBy 卡在 WHERE 裡，只能刪自己上傳的）。
+export async function discardImage(imageId: string): Promise<ActionResult<null>> {
+  return toResult(
+    (async () => {
+      const session = await requireClaimedSession()
+      await discardPendingImage(imageId, session.user.id)
+      return null
+    })()
+  )
+}
+
+// 編輯已發布的貼文時移除某幾張圖。只有作者本人可以（跟 submitEditReply
+// 一樣，管理員不能代編他人的發言內容），R2 的檔案一起刪掉。
+export async function submitRemovePostImages(postId: string, imageIds: string[]): Promise<ActionResult<null>> {
+  return toResult(
+    (async () => {
+      const session = await requireClaimedSession()
+      await requirePostFlowAccess(session, postId)
+      await removeImagesFromPost(postId, imageIds, session.user.id)
       return null
     })()
   )

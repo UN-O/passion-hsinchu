@@ -221,3 +221,41 @@ export const discussionSettings = pgTable("discussion_settings", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
+
+// 貼文附圖。圖檔本體放 Cloudflare R2，這張表只存「指標＋顯示需要的中繼資料」
+// （尺寸拿來先撐出正確比例的骨架，避免圖載入後版面跳動）。
+//
+// postId 可以是 NULL：上傳一定發生在貼文送出之前（使用者在編輯器裡先選圖、
+// 壓縮、上傳，最後才按送出），所以先以 postId = NULL 落地一筆「待附加」的
+// 圖片，等 createReply 成功後再 UPDATE 綁上去。沒被綁上的孤兒列由
+// sweepOrphanImages() 定期回收（連 R2 物件一起刪）。
+//
+// 一張圖對應 R2 上兩個物件：原圖（storageKey）跟縮圖（thumbKey）。列表用
+// 縮圖、放大檢視才載原圖，一則貼文最多 10 張時才不會一次吃掉幾 MB 流量。
+export const postImages = pgTable(
+  "post_images",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    postId: uuid("post_id").references(() => posts.id, { onDelete: "cascade" }),
+    // 上傳者。附加到貼文之前，只有上傳者本人能拿它去發文（見 images.ts
+    // attachImagesToPost 的 WHERE 條件）——不然拿到別人的 image id 就能把
+    // 別人上傳的圖掛到自己的貼文上。
+    uploadedBy: text("uploaded_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    storageKey: text("storage_key").notNull().unique(),
+    thumbKey: text("thumb_key").notNull(),
+    // "image/webp"，或瀏覽器不支援 webp 編碼時退回的 "image/jpeg"
+    contentType: text("content_type").notNull(),
+    width: integer("width").notNull(),
+    height: integer("height").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("post_images_post_position_idx").on(table.postId, table.position),
+    // 孤兒回收：找出還沒綁上貼文、而且已經放很久的列
+    index("post_images_pending_idx").on(table.postId, table.createdAt),
+  ]
+)

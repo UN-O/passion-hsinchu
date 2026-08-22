@@ -10,3 +10,27 @@ export const MAX_POLL_OPTIONS = 6
 export const MAX_POLL_OPTION_LENGTH = 80
 
 export class DiscussionError extends Error {}
+
+// 一則貼文最多幾張圖。前端擋、上傳端點擋、附加到貼文時再擋一次。
+export const MAX_POST_IMAGES = 10
+
+// 壓縮之後的目標。原圖長邊 1600px 足夠放大檢視（手機 3x DPI 也還可以），
+// 縮圖 480px 給列表的方格用——列表 10 張全部載原圖會是好幾 MB。
+export const IMAGE_MAX_EDGE = 1600
+export const IMAGE_THUMB_MAX_EDGE = 480
+
+// 壓縮時逐步降畫質，直到檔案小於這個大小為止（見 image-compress.ts）。
+export const IMAGE_TARGET_BYTES = 260 * 1024
+export const IMAGE_THUMB_TARGET_BYTES = 48 * 1024
+
+// 上傳端點的硬上限。壓縮是在瀏覽器做的，但端點不能相信前端——直接打
+// API 的人可以送任何東西進來。
+export const IMAGE_MAX_UPLOAD_BYTES = 2 * 1024 * 1024
+
+// 只收這兩種。webp 是主要格式；jpeg 是給 canvas 不支援 webp 編碼的舊
+// Safari 的退路。
+export const IMAGE_ALLOWED_TYPES = ["image/webp", "image/jpeg"] as const
+export type ImageContentType = (typeof IMAGE_ALLOWED_TYPES)[number]
+
+// 沒被附加到任何貼文的上傳（使用者選了圖但最後沒送出）超過這個時間就回收。
+export const IMAGE_ORPHAN_TTL_MS = 6 * 60 * 60 * 1000

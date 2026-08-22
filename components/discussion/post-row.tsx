@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { MAX_CONTENT_LENGTH } from "@/lib/discussion/constants"
 import type { DiscussionEntry, DiscussionItem, PollDTO } from "@/lib/discussion/dto"
 import { PollView } from "./poll-view"
+import { EditableImageList, PostImages } from "./post-images"
 
 export type PostRowController = {
   viewerId: string
@@ -22,6 +23,9 @@ export type PostRowController = {
   // 發言——見 mutations.ts 的 editReply，WHERE 條件卡死 authorId，沒有
   // isDiscussionAdmin 那條後門）。
   onEdit: (postId: string, content: string) => void
+  // 移除已發布貼文上的某張圖。跟編輯文字一樣只有作者本人能做，而且會連
+  // R2 上的檔案一起刪掉（不可復原），所以只在編輯模式裡才出現入口。
+  onRemoveImage: (postId: string, imageId: string) => void
   onToggleOfficial: (postId: string, next: boolean) => void
   // 展開這則底下的主幹。沒有游標參數：主幹查詢就是從這個節點順著
   // best_direct_child 指標往下走，鏈太長時由鏈尾那則自己再展開一段。
@@ -148,7 +152,9 @@ function EntryBody({
 
   function handleSaveEdit() {
     const trimmed = draft.trim()
-    if (!trimmed) return
+    // 只有圖沒有文字的貼文是合法的（見 mutations.ts editReply），所以
+    // 「清空文字」只在這則還有圖的時候擋不下來。
+    if (!trimmed && post.images.length === 0) return
     // 內容沒變就不用多打一次 server action。
     if (trimmed !== post.content) controller.onEdit(post.id, trimmed)
     setEditing(false)
@@ -176,6 +182,7 @@ function EntryBody({
               onChange={(e) => setDraft(e.target.value.slice(0, MAX_CONTENT_LENGTH))}
               className="min-h-20 w-full resize-none rounded-2xl border border-border bg-transparent p-3 text-sm outline-none"
             />
+            <EditableImageList images={post.images} onRemove={(imageId) => controller.onRemoveImage(post.id, imageId)} />
             <div className="flex items-center gap-3 self-end text-sm">
               <button type="button" onClick={() => setEditing(false)} className="text-muted-foreground hover:text-foreground">
                 取消
@@ -183,7 +190,7 @@ function EntryBody({
               <button
                 type="button"
                 onClick={handleSaveEdit}
-                disabled={!draft.trim()}
+                disabled={!draft.trim() && post.images.length === 0}
                 className="font-semibold text-primary disabled:opacity-40"
               >
                 儲存
@@ -215,8 +222,11 @@ function EntryBody({
                 {post.isPinned && <span className="text-xs text-primary">已置頂</span>}
               </div>
 
-              {!post.isDeleted && <p className="whitespace-pre-wrap text-sm">{post.content}</p>}
+              {!post.isDeleted && post.content && <p className="whitespace-pre-wrap text-sm">{post.content}</p>}
             </Link>
+
+            {/* 附圖放在連結外面：點圖片是放大檢視，不是進到討論串頁。 */}
+            {!post.isDeleted && post.images.length > 0 && <PostImages images={post.images} />}
 
             {entry.poll && !post.isDeleted && (
               <PollView poll={entry.poll} onChange={(next) => controller.onPollChange(post.id, next)} />

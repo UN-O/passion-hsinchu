@@ -14,9 +14,18 @@ import {
   pollVotes,
   replyRank,
 } from "@/db/schema/discussion"
+import { fetchImagesByPostIds } from "./images"
 import { DISCUSSION_RANKING_CONFIG } from "./ranking"
 import { DiscussionError } from "./constants"
-import type { DiscussionEntry, DiscussionItem, DiscussionResponse, MoreRepliesResponse, PollDTO, PostDTO } from "./dto"
+import type {
+  DiscussionEntry,
+  DiscussionItem,
+  DiscussionResponse,
+  MoreRepliesResponse,
+  PollDTO,
+  PostDTO,
+  PostImageDTO,
+} from "./dto"
 
 export type SortMode = "top" | "latest" | "team"
 
@@ -52,7 +61,7 @@ function decodeCursor(raw: string): Cursor {
   }
 }
 
-function toPostDTO(row: CandidateRow, pinnedIds: Set<string>): PostDTO {
+function toPostDTO(row: CandidateRow, pinnedIds: Set<string>, images: PostImageDTO[] = []): PostDTO {
   const isDeleted = row.post.deletedAt !== null
   return {
     id: row.post.id,
@@ -65,6 +74,10 @@ function toPostDTO(row: CandidateRow, pinnedIds: Set<string>): PostDTO {
     isDeleted,
     isPinned: pinnedIds.has(row.post.id),
     isOfficial: row.post.isOfficial,
+    // 已刪除的貼文不吐圖片路徑。圖檔本身在刪除時就已經從 R2 清掉了
+    // （見 images.ts deleteImagesForPost），這裡只是不要讓畫面留下
+    // 一排載不出來的破圖。
+    images: isDeleted ? [] : images,
   }
 }
 
@@ -326,8 +339,9 @@ async function enrichRows(
   const allRows = [...rows, ...featuredRows]
   const allIds = allRows.map((r) => r.post.id)
 
-  const [pollByPostId, likedIds] = await Promise.all([
+  const [pollByPostId, imagesByPostId, likedIds] = await Promise.all([
     fetchPollsByPostIds(allIds, viewerId),
+    fetchImagesByPostIds(allIds),
     viewerId
       ? db
           .select({ postId: postLikes.postId })
@@ -341,7 +355,7 @@ async function enrichRows(
 
   function toEntry(row: CandidateRow): DiscussionEntry {
     return {
-      post: toPostDTO(row, pinnedIds),
+      post: toPostDTO(row, pinnedIds, imagesByPostId.get(row.post.id) ?? []),
       stats: { likeCount: row.likeCount, directReplyCount: row.directReplyCount },
       viewer: { hasLiked: likedSet.has(row.post.id) },
       poll: pollByPostId.get(row.post.id),

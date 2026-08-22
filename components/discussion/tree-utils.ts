@@ -1,4 +1,4 @@
-import type { DiscussionEntry, DiscussionItem, UserRole } from "@/lib/discussion/dto"
+import type { DiscussionEntry, DiscussionItem, PostImageDTO, UserRole } from "@/lib/discussion/dto"
 
 export type ViewerInfo = {
   id: string
@@ -12,7 +12,10 @@ export function buildPendingItem(
   tempId: string,
   content: string,
   author: ViewerInfo,
-  poll?: { allowMultiple: boolean; options: string[] }
+  poll?: { allowMultiple: boolean; options: string[] },
+  // 附圖在送出之前就已經上傳完成（拿得到 id 跟讀取路徑），所以樂觀更新
+  // 的那一則可以直接把圖畫出來，不用等 server action 回來。
+  images: PostImageDTO[] = []
 ): DiscussionItem {
   const now = new Date().toISOString()
   return {
@@ -27,6 +30,7 @@ export function buildPendingItem(
       isDeleted: false,
       isPinned: false,
       isOfficial: false,
+      images,
     },
     stats: { likeCount: 0, directReplyCount: 0 },
     viewer: { hasLiked: false },

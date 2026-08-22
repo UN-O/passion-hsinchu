@@ -4,7 +4,7 @@ import { useOptimistic, useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { DiscussionEntry, DiscussionItem, DiscussionResponse, PollDTO, PostDTO } from "@/lib/discussion/dto"
+import type { DiscussionEntry, DiscussionItem, DiscussionResponse, PollDTO, PostDTO, PostImageDTO } from "@/lib/discussion/dto"
 import {
   loadDiscussion,
   loadReplyChain,
@@ -12,6 +12,7 @@ import {
   submitPin,
   submitDeleteReply,
   submitEditReply,
+  submitRemovePostImages,
   submitReply,
   submitToggleOfficial,
   submitUnlike,
@@ -124,14 +125,14 @@ export function DiscussionView({
     setComposerTarget({ parentId: rootPostId, context: [], allowPoll: viewer.role !== "attendee" })
   }
 
-  function handleSubmitReply(content: string, poll?: { allowMultiple: boolean; options: string[] }) {
+  function handleSubmitReply(content: string, poll?: { allowMultiple: boolean; options: string[] }, images?: PostImageDTO[]) {
     const tempId = `pending-${crypto.randomUUID()}`
-    const pendingItem = buildPendingItem(tempId, content, viewer, poll)
+    const pendingItem = buildPendingItem(tempId, content, viewer, poll, images)
     setReplyPending(true)
 
     startTransition(async () => {
       addOptimistic({ kind: "insertTopLevel", item: pendingItem })
-      const result = await submitReply(rootPostId, content, poll)
+      const result = await submitReply(rootPostId, content, poll, images?.map((image) => image.id))
       if (result.ok) {
         setBase((prev) => reduce(prev, { kind: "insertTopLevel", item: result.data }))
         setComposerTarget(null)
@@ -165,6 +166,22 @@ export function DiscussionView({
       if (result.ok) {
         setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: editedPost } }))
       }
+    })
+  }
+
+  // 移除已發布貼文上的某張圖。圖片在 R2 上是真的被刪掉（不可復原），所以
+  // 樂觀更新之後如果 server 回失敗，畫面上那張圖會在下次載入時回來——
+  // 不特別 rollback，因為失敗的唯一原因是「不是作者」，那種情況畫面上
+  // 本來就不會有這顆按鈕。
+  function handleRemoveImage(postId: string, imageId: string) {
+    const entry = findEntry(postId)
+    if (!entry) return
+    const nextPost: PostDTO = { ...entry.post, images: entry.post.images.filter((image) => image.id !== imageId) }
+
+    startTransition(async () => {
+      addOptimistic({ kind: "patch", postId, changes: { post: nextPost } })
+      const result = await submitRemovePostImages(postId, [imageId])
+      if (result.ok) setBase((prev) => reduce(prev, { kind: "patch", postId, changes: { post: nextPost } }))
     })
   }
 
@@ -267,6 +284,7 @@ export function DiscussionView({
     onUnpin: handleUnpin,
     onDelete: handleDelete,
     onEdit: handleEdit,
+    onRemoveImage: handleRemoveImage,
     onToggleOfficial: handleToggleOfficial,
     onLoadMoreChildren: handleLoadMoreChildren,
     childLoading: (postId) => childLoadingMap[postId] ?? false,

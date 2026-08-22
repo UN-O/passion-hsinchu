@@ -8,17 +8,20 @@ import {
   discussionSettings,
   pollOptions,
   polls,
+  postImages,
   postLikes,
   posts,
   pollVotes,
   replyRank,
 } from "@/db/schema/discussion"
+import { attachImagesToPost, deleteImagesForPost } from "./images"
 import { applyRankingForNewReply, propagateScoreChange, recomputeBestDirectChild, type Tx } from "./ranking-updates"
 import {
   DiscussionError,
   MAX_CONTENT_LENGTH,
   MAX_POLL_OPTIONS,
   MAX_POLL_OPTION_LENGTH,
+  MAX_POST_IMAGES,
   MIN_POLL_OPTIONS,
 } from "./constants"
 
@@ -34,11 +37,17 @@ export type CreateReplyInput = {
   authorRole: UserRole
   content: string
   poll?: { allowMultiple: boolean; options: string[] }
+  // 已經上傳完成、還沒被附加到任何貼文的圖片 id（見 lib/discussion/images.ts）
+  imageIds?: string[]
 }
 
 export async function createReply(input: CreateReplyInput) {
   const content = input.content.trim()
-  if (!content) throw new DiscussionError("內容不能是空的")
+  const imageIds = input.imageIds ?? []
+  // 有圖的時候可以只有圖沒有文字（Threads 也是這樣），但兩個都空就不是
+  // 一則貼文。
+  if (!content && imageIds.length === 0) throw new DiscussionError("內容不能是空的")
+  if (imageIds.length > MAX_POST_IMAGES) throw new DiscussionError(`一則貼文最多 ${MAX_POST_IMAGES} 張圖`)
   if (content.length > MAX_CONTENT_LENGTH) throw new DiscussionError(`內容不能超過 ${MAX_CONTENT_LENGTH} 字`)
 
   let pollOptionLabels: string[] | null = null
@@ -114,6 +123,11 @@ export async function createReply(input: CreateReplyInput) {
       })
       .returning()
 
+    // 圖片跟貼文在同一個 transaction 裡綁定：綁不上（id 不是自己的、或
+    // 已經被別的貼文用掉了）就整筆 rollback，不會產生一則「本來有圖、
+    // 結果只剩文字」的貼文。
+    await attachImagesToPost(tx, id, imageIds, input.authorId)
+
     if (pollOptionLabels) {
       await tx.insert(polls).values({ postId: id, allowMultiple: input.poll!.allowMultiple })
       await tx.insert(pollOptions).values(
@@ -140,8 +154,17 @@ async function isAuthorStaff(authorId: string | null): Promise<boolean> {
 
 export async function editReply(postId: string, authorId: string, content: string): Promise<void> {
   const trimmed = content.trim()
-  if (!trimmed) throw new DiscussionError("內容不能是空的")
   if (trimmed.length > MAX_CONTENT_LENGTH) throw new DiscussionError(`內容不能超過 ${MAX_CONTENT_LENGTH} 字`)
+  // 只有圖沒有文字的貼文是合法的（createReply 也允許），所以「清空文字」
+  // 只在這則貼文還有圖的時候才放行。
+  if (!trimmed) {
+    const [image] = await db
+      .select({ id: postImages.id })
+      .from(postImages)
+      .where(eq(postImages.postId, postId))
+      .limit(1)
+    if (!image) throw new DiscussionError("內容不能是空的")
+  }
 
   const rows = await db
     .update(posts)
@@ -240,6 +263,12 @@ export async function softDeleteReply(
     const [{ replyToId }] = rows
     if (replyToId) await recomputeBestDirectChild(tx, replyToId)
   })
+
+  // 貼文本身是 soft delete（保留 tree 結構），但圖片是真的刪掉——R2 上的
+  // 檔案留著等於沒刪。放在 transaction 外面：R2 是外部服務，把它拉進
+  // transaction 只會讓資料庫的鎖等在網路上；而且刪貼文已經成功了，圖片
+  // 清理失敗不該讓使用者看到「刪除失敗」再按一次。
+  await deleteImagesForPost(postId)
 }
 
 export async function likePost(postId: string, userId: string): Promise<{ likeCount: number }> {

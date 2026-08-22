@@ -4,7 +4,9 @@ import { useState } from "react"
 import { ListChecks, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import type { PostImageDTO } from "@/lib/discussion/dto"
 import { MAX_CONTENT_LENGTH, MAX_POLL_OPTIONS, MIN_POLL_OPTIONS } from "@/lib/discussion/constants"
+import { AddImagesButton, AttachmentStrip, useImageAttachments } from "./image-attachments"
 
 // 要回覆的貼文，以及它上面完整的祖先鏈（root 端在最前面）。全部顯示、
 // 不裁切——按下回覆之後應該看得到一路往上的完整脈絡，不是只有正上方那則
@@ -25,7 +27,7 @@ export type ComposerTarget = {
 type ComposerOverlayProps = {
   target: ComposerTarget | null
   pending: boolean
-  onSubmit: (content: string, poll?: { allowMultiple: boolean; options: string[] }) => void
+  onSubmit: (content: string, poll?: { allowMultiple: boolean; options: string[] }, images?: PostImageDTO[]) => void
   onClose: () => void
 }
 
@@ -42,26 +44,43 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
   const [pollOpen, setPollOpen] = useState(false)
   const [pollOptions, setPollOptions] = useState<string[]>(["", ""])
   const [pollAllowMultiple, setPollAllowMultiple] = useState(false)
+  // hook 一定要在 early return 之前呼叫（target 是 null 時這個元件不畫東西，
+  // 但 hook 的順序不能因此改變）。
+  const images = useImageAttachments()
 
   if (!target) return null
 
   const trimmedOptions = pollOptions.map((o) => o.trim()).filter(Boolean)
-  const canSubmit = content.trim().length > 0 && (!pollOpen || trimmedOptions.length >= MIN_POLL_OPTIONS) && !pending
+  // 只有圖沒有文字也可以送出（server 端的 createReply 同樣允許）；但還在
+  // 壓縮／上傳的圖不能送——那些圖還沒有 id，送出去就會掉。
+  const hasBody = content.trim().length > 0 || images.readyImages.length > 0
+  const canSubmit = hasBody && (!pollOpen || trimmedOptions.length >= MIN_POLL_OPTIONS) && !images.busy && !pending
   const replyingTo = target.context[target.context.length - 1]
 
   function handleSubmit() {
     if (!canSubmit) return
-    onSubmit(content.trim(), pollOpen ? { allowMultiple: pollAllowMultiple, options: trimmedOptions } : undefined)
+    onSubmit(
+      content.trim(),
+      pollOpen ? { allowMultiple: pollAllowMultiple, options: trimmedOptions } : undefined,
+      images.readyImages
+    )
+  }
+
+  // 取消發文＝這些圖沒有人要了，連 R2 的檔案一起清掉，不留孤兒。
+  function handleClose() {
+    images.discardAll()
+    onClose()
   }
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-        <button type="button" onClick={onClose} disabled={pending} className="text-sm text-muted-foreground hover:text-foreground">
+        <button type="button" onClick={handleClose} disabled={pending} className="text-sm text-muted-foreground hover:text-foreground">
           取消
         </button>
         <p className="text-sm font-semibold">{replyingTo ? `回覆 ${replyingTo.isDeleted ? "已刪除的貼文" : (replyingTo.authorName ?? "匿名")}` : "發布"}</p>
         <div className="flex items-center gap-3">
+          <AddImagesButton controller={images} disabled={pending} />
           {/* 只有工作人員以上看得到（allowPoll 由呼叫端依 viewer.role 決定，
               server action 也另外擋一次）。放在送出旁邊，跟送出同一個
               「這篇貼文最終長怎樣」的決定點，不是內文裡的次要選項。 */}
@@ -82,7 +101,7 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
             disabled={!canSubmit}
             className={cn("text-sm font-semibold text-primary disabled:opacity-40", pending && "opacity-70")}
           >
-            送出
+            {images.busy ? "處理圖片中" : "送出"}
           </button>
         </div>
       </div>
@@ -108,6 +127,8 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
           placeholder={replyingTo ? "寫下回覆..." : "分享你的心得、筆記，或提出問題..."}
           className="min-h-32 w-full flex-1 resize-none bg-transparent text-base outline-none placeholder:text-muted-foreground"
         />
+
+        <AttachmentStrip controller={images} />
 
         {pollOpen && (
           <div className="flex shrink-0 flex-col gap-2 rounded-2xl border border-border p-4">
