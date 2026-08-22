@@ -3,6 +3,7 @@
 import { unstable_rethrow } from "next/navigation"
 
 import { assertFlowAccess, requireClaimedSession, type AppSession } from "@/lib/session"
+import { fetchPublicProfile } from "@/lib/profile"
 import type {
   DiscussionResponse,
   DiscussionItem,
@@ -156,14 +157,19 @@ export async function submitReply(
         poll,
         imageIds,
       })
-      const images = await fetchImagesByPostIds([post.id])
+      const [images, profile] = await Promise.all([
+        fetchImagesByPostIds([post.id]),
+        fetchPublicProfile(session.user.id),
+      ])
       // 新貼文剛建立，讚數/回覆數都是 0，不需要再查一次 enrich。
       return {
         post: {
           id: post.id,
           authorId: post.authorId,
-          authorName: session.user.name,
+          authorName: profile?.displayName ?? session.user.name,
           authorRole: session.user.role,
+          authorAvatarUrl: profile?.avatarUrl ?? null,
+          authorZone: profile?.zone ?? null,
           content: post.content,
           createdAt: post.createdAt.toISOString(),
           updatedAt: post.updatedAt.toISOString(),

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { isDiscussionAdmin } from "@/lib/discussion/permissions"
 import { getAncestorChain, getDiscussionPage, getPostContext } from "@/lib/discussion/queries"
 import { flowForRootKey, getRegisteredRoot } from "@/lib/discussion/root-registry"
+import { fetchPublicProfile } from "@/lib/profile"
 import { assertFlowAccess, requireClaimedSession } from "@/lib/session"
 
 export const metadata: Metadata = {
@@ -40,7 +41,8 @@ export default async function DiscussionThreadPage({ params }: { params: Promise
   assertFlowAccess(session, flow)
 
   const viewerId = session.user.id
-  const [chain, replies] = await Promise.all([
+  const [viewerProfile, chain, replies] = await Promise.all([
+    fetchPublicProfile(viewerId),
     getAncestorChain(postId, viewerId),
     // 焦點貼文的直接子回覆。這裡的 rootPostId 參數就是「列出誰底下的直接
     // 子回覆」，對一般貼文一樣成立。
@@ -86,7 +88,13 @@ export default async function DiscussionThreadPage({ params }: { params: Promise
             root={root}
             ancestors={ancestors}
             focus={focus}
-            viewer={{ id: session.user.id, name: session.user.name, role: session.user.role }}
+            viewer={{
+              id: session.user.id,
+              name: viewerProfile?.displayName ?? session.user.name,
+              role: session.user.role,
+              avatarUrl: viewerProfile?.avatarUrl ?? null,
+              zone: viewerProfile?.zone ?? null,
+            }}
             isDiscussionAdmin={isDiscussionAdmin(session)}
             initialReplies={replies}
           />

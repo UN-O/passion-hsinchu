@@ -1,9 +1,13 @@
+import type { ExpRegion } from "@/lib/exp-regions"
 import type { DiscussionEntry, DiscussionItem, PostImageDTO, UserRole } from "@/lib/discussion/dto"
 
 export type ViewerInfo = {
   id: string
+  // 顯示名稱（勇者名優先，見 lib/profile.ts）
   name: string
   role: UserRole
+  avatarUrl: string | null
+  zone: ExpRegion | null
 }
 
 // 送出回覆時先放進畫面的暫時項目（樂觀更新）。server action 回來之後會被
@@ -24,6 +28,8 @@ export function buildPendingItem(
       authorId: author.id,
       authorName: author.name,
       authorRole: author.role,
+      authorAvatarUrl: author.avatarUrl,
+      authorZone: author.zone,
       content,
       createdAt: now,
       updatedAt: now,

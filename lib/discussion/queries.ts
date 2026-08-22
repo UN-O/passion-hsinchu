@@ -14,6 +14,7 @@ import {
   pollVotes,
   replyRank,
 } from "@/db/schema/discussion"
+import { fetchPublicProfiles, type PublicProfile } from "@/lib/profile"
 import { fetchImagesByPostIds } from "./images"
 import { fetchCachedPreviews } from "./link-preview"
 import { firstUrlInContent, normalizeUrl } from "./links"
@@ -68,14 +69,18 @@ function toPostDTO(
   row: CandidateRow,
   pinnedIds: Set<string>,
   images: PostImageDTO[] = [],
-  linkPreview: LinkPreviewDTO | null = null
+  linkPreview: LinkPreviewDTO | null = null,
+  profile?: PublicProfile
 ): PostDTO {
   const isDeleted = row.post.deletedAt !== null
   return {
     id: row.post.id,
     authorId: row.post.authorId,
-    authorName: row.authorName,
+    // 顯示名稱優先用個人資料（勇者名）；查不到才退回 user.name。
+    authorName: profile?.displayName ?? row.authorName,
     authorRole: row.authorRole,
+    authorAvatarUrl: isDeleted ? null : (profile?.avatarUrl ?? null),
+    authorZone: isDeleted ? null : (profile?.zone ?? null),
     content: isDeleted ? "" : row.post.content,
     createdAt: row.post.createdAt.toISOString(),
     updatedAt: row.post.updatedAt.toISOString(),
@@ -350,10 +355,13 @@ async function enrichRows(
 
   // 連結預覽只讀快取（fetchCachedPreviews 不會發外部請求）——列表要立刻
   // 回得出來，沒抓過的連結由前端自己補打一次 server action。
-  const [pollByPostId, imagesByPostId, previewsByUrl, likedIds] = await Promise.all([
+  const authorIds = allRows.map((r) => r.post.authorId).filter((id): id is string => id !== null)
+
+  const [pollByPostId, imagesByPostId, previewsByUrl, profilesByUserId, likedIds] = await Promise.all([
     fetchPollsByPostIds(allIds, viewerId),
     fetchImagesByPostIds(allIds),
     fetchCachedPreviews(allRows.map((r) => firstUrlInContent(r.post.content)).filter((u): u is string => u !== null)),
+    fetchPublicProfiles(authorIds),
     viewerId
       ? db
           .select({ postId: postLikes.postId })
@@ -373,7 +381,13 @@ async function enrichRows(
 
   function toEntry(row: CandidateRow): DiscussionEntry {
     return {
-      post: toPostDTO(row, pinnedIds, imagesByPostId.get(row.post.id) ?? [], previewFor(row.post.content)),
+      post: toPostDTO(
+        row,
+        pinnedIds,
+        imagesByPostId.get(row.post.id) ?? [],
+        previewFor(row.post.content),
+        row.post.authorId ? profilesByUserId.get(row.post.authorId) : undefined
+      ),
       stats: { likeCount: row.likeCount, directReplyCount: row.directReplyCount },
       viewer: { hasLiked: likedSet.has(row.post.id) },
       poll: pollByPostId.get(row.post.id),

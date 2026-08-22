@@ -11,6 +11,8 @@ function makeItem(id: string, overrides?: Partial<DiscussionItem>): DiscussionIt
       authorId: "user-1",
       authorName: "測試",
       authorRole: "attendee",
+      authorAvatarUrl: null,
+      authorZone: null,
       content: "內容",
       createdAt: "2026-08-20T00:00:00.000Z",
       updatedAt: "2026-08-20T00:00:00.000Z",

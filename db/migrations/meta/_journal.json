@@ -57,6 +57,13 @@
       "when": 1787410880658,
       "tag": "0007_odd_madrox",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787412015509,
+      "tag": "0008_low_veda",
+      "breakpoints": true
     }
   ]
 }

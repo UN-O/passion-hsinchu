@@ -8,6 +8,7 @@ import { ScrollBlackout } from "@/components/camp-scroll-blackout"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampSidebar } from "@/components/camp-sidebar"
 import { CampZoneIcons } from "@/components/camp-zone-icons"
+import { CAMP_ZONE_META } from "@/lib/camp-zones"
 import { SquadCourageCard } from "@/components/squad-courage-card"
 import { IgStoriesSection } from "@/components/ig-stories-section"
 import { getActiveIgStories } from "@/lib/instagram-stories"
@@ -32,9 +33,9 @@ const UNASSIGNED_SQUAD_NAME = "尚未分隊"
 // color 用 dataviz skill 的分類色票，在深色底下跑過六項檢查（validate_palette.js
 // --mode dark --surface "#0a0a0a" --pairs all）確認可分辨，對應各區 icon 的主色調。
 const ZONE_META = [
-  { key: "groundhog", title: "土撥鼠區", icon: "/images/zone-icon-1.webp", color: "#008300" },
-  { key: "clownfish", title: "尼莫魚區", icon: "/images/zone-icon-2.webp", color: "#9333ea" },
-  { key: "bee", title: "熊蜂區", icon: "/images/zone-icon-3.webp", color: "#3987e5" },
+  { key: "groundhog", ...CAMP_ZONE_META.groundhog },
+  { key: "clownfish", ...CAMP_ZONE_META.clownfish },
+  { key: "bee", ...CAMP_ZONE_META.bee },
 ] as const
 
 function SectionCard({
@@ -80,11 +81,14 @@ export async function CampMissionHome({
   meetingHref = "/camp/meeting",
   heroName = "",
   enrollmentId = null,
+  avatarUrl = null,
 }: {
   profileHref?: string
   meetingHref?: string
   heroName?: string
   enrollmentId?: string | null
+  // 自己上傳的／Google 的頭像。沒有就退回姓名第一個字的預設圖。
+  avatarUrl?: string | null
 } = {}) {
   const [totals, teamInfo] = await Promise.all([getRegionTotals(), getCampTeamInfo(enrollmentId)])
   const { room: roomNumber, teamName } = teamInfo
@@ -114,7 +118,7 @@ export async function CampMissionHome({
             className="flex size-10 items-center justify-center overflow-hidden rounded-full border border-border bg-background"
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- data URI 頭像，next/image 優化不到 */}
-            <img src={heroAvatarDataUri(heroName)} alt="個人資料" className="size-full object-cover" />
+            <img src={avatarUrl ?? heroAvatarDataUri(heroName)} alt="個人資料" className="size-full object-cover" />
           </Link>
         }
       />

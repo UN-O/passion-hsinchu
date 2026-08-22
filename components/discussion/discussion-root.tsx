@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 import { getOrCreateDiscussionRoot } from "@/lib/discussion/root"
 import { getDiscussionPage, getViewerCampTeam } from "@/lib/discussion/queries"
 import { isDiscussionAdmin } from "@/lib/discussion/permissions"
+import { fetchPublicProfile } from "@/lib/profile"
 import { flowForRootKey } from "@/lib/discussion/root-registry"
 import type { AppSession } from "@/lib/session"
 import { DiscussionView } from "./discussion-view"
@@ -23,6 +24,7 @@ export async function DiscussionRoot({
   header?: ReactNode
 }) {
   const root = await getOrCreateDiscussionRoot(rootKey)
+  const viewerProfile = await fetchPublicProfile(session.user.id)
   const initial = await getDiscussionPage({ rootPostId: root.id, viewerId: session.user.id, sort: "top" })
   // 「小隊」篩選只有 CAMP 討論、而且使用者自己有進小隊名單才有意義——
   // CONFERENCE 討論不查這筆，省一次不必要的 db 往返。
@@ -39,7 +41,13 @@ export async function DiscussionRoot({
       <DiscussionView
         rootKey={rootKey}
         rootPostId={root.id}
-        viewer={{ id: session.user.id, name: session.user.name, role: session.user.role }}
+        viewer={{
+          id: session.user.id,
+          name: viewerProfile?.displayName ?? session.user.name,
+          role: session.user.role,
+          avatarUrl: viewerProfile?.avatarUrl ?? null,
+          zone: viewerProfile?.zone ?? null,
+        }}
         isDiscussionAdmin={isDiscussionAdmin(session)}
         initial={initial}
         showTeamFilter={showTeamFilter}

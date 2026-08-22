@@ -1,3 +1,5 @@
+import type { ExpRegion } from "@/lib/exp-regions"
+
 export type UserRole = "attendee" | "staff" | "admin"
 
 // 附圖。圖檔在私有的 R2 bucket 裡，所以這裡給的是站上讀取端點的路徑，
@@ -27,8 +29,13 @@ export type LinkPreviewDTO = {
 export type PostDTO = {
   id: string
   authorId: string | null
+  // 顯示名稱：有勇者名就是勇者名，不是報名時的本名（見 lib/profile.ts）
   authorName: string | null
   authorRole: UserRole | null
+  // 頭像網址。null＝沒有上傳也沒有 Google 頭像，畫面上退回姓名第一個字。
+  authorAvatarUrl: string | null
+  // CAMP 分隊名單上的分區，名字後面掛一個區域 icon 徽章用。
+  authorZone: ExpRegion | null
   content: string
   createdAt: string
   updatedAt: string

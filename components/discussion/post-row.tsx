@@ -12,6 +12,7 @@ import type { DiscussionEntry, DiscussionItem, PollDTO, PostImageDTO } from "@/l
 import { PollView } from "./poll-view"
 import { PostImages } from "./post-images"
 import { ContentWithLinks, LinkCard } from "./link-card"
+import { ZoneBadge } from "./zone-badge"
 import { AttachmentEditor, useImageAttachments } from "./image-attachments"
 
 export type PostRowController = {
@@ -97,17 +98,32 @@ function formatRelativeTime(iso: string): string {
   return formatAbsoluteTime(iso)
 }
 
-// 頭貼先用姓名的第一個字當佔位，之後如果有真的大頭貼圖檔案再換掉這裡。
+// 頭貼。優先序跟 lib/profile.ts 一致：自己上傳的 > Google 帳號的 >
+// 姓名第一個字。圖載不出來（檔案被刪、離線）時退回文字，不留一塊破圖。
 // export 給 root-content.tsx 用——root post 也要用同一顆頭貼（「PASSION
 // 官方」發文），不是另外刻一份。
-export function Avatar({ name, size }: { name: string | null; size: number }) {
+export function Avatar({ name, size, src }: { name: string | null; size: number; src?: string | null }) {
   const initial = name?.trim().slice(0, 1) || "?"
+  const [failed, setFailed] = useState(false)
+
   return (
     <div
-      className="flex shrink-0 items-center justify-center rounded-full border border-border bg-muted font-semibold text-foreground"
+      className="flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted font-semibold text-foreground"
       style={{ width: size, height: size, fontSize: size <= AVATAR_NESTED ? 11 : 13 }}
     >
-      {initial}
+      {src && !failed ? (
+        // eslint-disable-next-line @next/next/no-img-element -- 頭像來自站上的讀取端點或 Google，不是本地靜態資源
+        <img
+          src={src}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailed(true)}
+          className="size-full object-cover"
+        />
+      ) : (
+        initial
+      )}
     </div>
   )
 }
@@ -181,7 +197,7 @@ function EntryBody({
   return (
     <div className="flex" style={{ gap: RAIL_GAP }}>
       <div className="flex flex-col items-center" style={{ width: avatarSize }}>
-        <Avatar name={displayName} size={avatarSize} />
+        <Avatar name={displayName} size={avatarSize} src={showOfficial ? null : post.authorAvatarUrl} />
         {hasRail && <RailLine />}
       </div>
 
@@ -239,6 +255,8 @@ function EntryBody({
                 >
                   {showOfficial && <BadgeCheck className="size-3.5" strokeWidth={2} />}
                   {post.isDeleted ? "已刪除的貼文" : (displayName ?? "匿名")}
+                  {/* 分區徽章緊跟在名字後面，高度等於字級（見 zone-badge.tsx） */}
+                  {!post.isDeleted && !showOfficial && post.authorZone && <ZoneBadge zone={post.authorZone} />}
                 </span>
                 <span className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</span>
                 {!showOfficial && post.authorRole && post.authorRole !== "attendee" && !post.isDeleted && (

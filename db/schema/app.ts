@@ -143,3 +143,21 @@ export const campTeamMember = pgTable(
     index("camp_team_member_zone_team_name_idx").on(table.zone, table.teamName),
   ]
 )
+
+// 使用者自己設定的個人化資料。刻意不加在 auth.ts 的 user 表上：那張表是
+// `@better-auth/cli generate` 產生的，重新產生時手動加的欄位會被蓋掉
+// （檔頭那段警告就是這麼來的）。
+//
+// 勇者名沒有放在這裡——它是開場測驗的產物，已經存在 flow_progress.payload
+// 的 heroName（見 lib/session.ts），改名就是改那一筆，不另外開一個會跟它
+// 對不起來的第二份。
+export const userProfile = pgTable("user_profile", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  // 自己上傳的大頭貼在 R2 的 key（跟討論區附圖同一個 bucket、不同前綴）。
+  // NULL＝沒上傳過，這時候退回 Google 帳號的頭像，再退回姓名第一個字。
+  avatarKey: text("avatar_key"),
+  avatarUpdatedAt: timestamp("avatar_updated_at", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})

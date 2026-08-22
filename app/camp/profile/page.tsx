@@ -5,8 +5,10 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampHeroCardPanel } from "@/components/camp-hero-card-panel"
+import { CampProfileEditor } from "@/components/camp-profile-editor"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
 import { getCampProfileResult } from "@/lib/opening-camp-content"
+import { fetchPublicProfile } from "@/lib/profile"
 import { requireFlowAccess } from "@/lib/session"
 
 export const metadata: Metadata = {
@@ -21,7 +23,9 @@ const HERO_TRAIT_FALLBACK = "尚未設定"
 export default async function CampProfilePage() {
   const session = await requireFlowAccess("camp")
   // 「勇者姓名」跟頭像都沿用開場測驗打的勇者 ID，不是報名時的本名。
-  const heroName = session.campQuizResult?.heroName || session.user.name
+  // 兩者現在都可以在這一頁自己改（見 components/camp-profile-editor.tsx）。
+  const profile = await fetchPublicProfile(session.user.id)
+  const heroName = profile?.displayName || session.campQuizResult?.heroName || session.user.name
 
   return (
     <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
@@ -37,17 +41,13 @@ export default async function CampProfilePage() {
       />
 
       <div className="mt-10 flex flex-col items-center gap-6 text-center">
-        {/* eslint-disable-next-line @next/next/no-img-element -- data URI 頭像，next/image 優化不到 */}
-        <img
-          src={heroAvatarDataUri(heroName)}
-          alt="勇者頭像"
-          className="size-40 rounded-full border border-border object-cover"
+        <CampProfileEditor
+          initialHeroName={heroName}
+          initialAvatarUrl={profile?.avatarUrl ?? null}
+          initialAvatarSource={profile?.avatarSource ?? null}
+          fallbackAvatarUrl={heroAvatarDataUri(heroName)}
+          zone={profile?.zone ?? null}
         />
-
-        <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">勇者姓名</p>
-          <p className="text-2xl font-bold">{heroName}</p>
-        </div>
 
         {session.campQuizResult ? (
           <CampHeroCardPanel
