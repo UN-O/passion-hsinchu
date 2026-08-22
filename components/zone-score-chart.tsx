@@ -102,10 +102,11 @@ function ZoneBar({ zone, max }: { zone: ZoneScore; max: number }) {
 export function ZoneScoreChart({ zones }: { zones: ZoneScore[] }) {
   const rawMax = Math.max(...zones.map((zone) => zone.total), 0)
 
-  if (rawMax === 0) {
-    return <p className="text-base text-muted-foreground">還沒有開始計分。</p>
-  }
-
+  // 全部都還沒計分（rawMax === 0）也不要整塊換成一行字——圖表骨架（底線、
+  // icon、區名）照樣留著，只是長條長度會是 0（ZoneBar 裡 heightPct 算出來
+  // 就是 0，niceMax(0) 保底回傳 10 避免除以 0），長條自然「降下來」貼平
+  // 底線，不用另外判斷。
+  //
   // 量尺上限以「三區平均」抓一個好看的整數，而不是直接看最高分那區——
   // 三區分數如果都差不多高（例如都在 1000 上下），量尺就會跟著拉低，
   // 長條看起來才會飽滿，不會因為湊到下一個整數量級（1000 → 2000）
