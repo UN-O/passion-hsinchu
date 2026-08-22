@@ -33,13 +33,19 @@ export function HeroSection({ session }: { session: AppSession | null }) {
         <h1 className="sr-only">
           PASSION《{siteConfig.themeZh}》{siteConfig.themeEn}
         </h1>
+        {/* max-w-xs sm:max-w-2xl 跟底下按鈕容器（see 下方 max-w-xs
+            sm:max-w-none）手機寬度對齊——圖片本身沒有留白邊界（bbox
+            量過整張圖 0~2200px 都是實際內容），純粹是容器寬度沒對齊，
+            手機版原本圖片跟著整個內距寬度撐開，比按鈕的 max-w-xs 還寬，
+            左右邊緣才會超出按鈕。桌面版按鈕改成一排、寬度不固定，圖片
+            用 max-w-2xl 抓一個合理大小就好，不用硬要像素對齊。 */}
         <Image
           src="/images/hero-title-visual.webp"
           alt={`PASSION《${siteConfig.themeZh}》${siteConfig.themeEn}`}
           width={2200}
           height={333}
           priority
-          className="h-auto w-full max-w-2xl"
+          className="h-auto w-full max-w-xs sm:max-w-2xl"
         />
 
         <p className="mt-6 text-base text-muted-foreground sm:text-lg">
