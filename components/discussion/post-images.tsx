@@ -6,28 +6,34 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { PostImageDTO } from "@/lib/discussion/dto"
 
-// 貼文附圖的顯示。排版跟首頁「宣傳圖文」（components/gallery-section.tsx）
-// 同一套：方格縮圖 + 點開全螢幕檢視，左右切換、Esc 關閉。
+// 貼文附圖的顯示。點開的全螢幕檢視跟首頁「宣傳圖文」
+// （components/gallery-section.tsx）同一套：左右切換、Esc 關閉。
 //
-// 兩個差別是為了討論串的情境：
-//   1. 只有一張圖時不切方格，用圖片本身的比例（貼一張截圖時被裁成正方形
-//      通常就看不到重點了）。
-//   2. 縮圖跟原圖是兩個不同的檔案（見 lib/discussion/images.ts）——列表載
-//      480px 的縮圖，放大檢視才載 1600px 的原圖。
+// 列表上的排法則是為了討論串調整過的：所有圖片排成**一列**、高度統一、
+// 超過寬度就水平捲動，不換行也不做方格矩陣。理由是貼文是一則接一則往下
+// 讀的，一則貼文貼了 10 張圖時如果攤成三欄的格子，會把後面的討論推到很
+// 下面；一列縮圖佔的垂直空間是固定的，滑動成本由「想看圖的人」自己付。
+//
+// 每張縮圖保留自己的長寬比（高度統一、寬度自己算），所以不會被裁掉重點；
+// 只有比例極端的圖（長截圖、全景）會被夾在下面的上下限之間。
 
-// 載入前先用同尺寸的骨架佔位，圖片載完再換掉——不然圖片一張一張跳出來
-// 會把底下的內容一直往下推。
-function Thumb({
-  image,
-  className,
-  ratio,
-  onOpen,
-}: {
-  image: PostImageDTO
-  className?: string
-  ratio?: string
-  onOpen: () => void
-}) {
+// 縮圖列的高度。手機 160px、大螢幕 208px——一則貼文的圖不該比它的文字
+// 還搶版面，想看細節是點開全螢幕檢視的事。
+const ROW_HEIGHT = "h-40 sm:h-52"
+
+// 縮圖的長寬比上下限。太窄的長截圖會變成一條細線、太寬的全景會一張圖就
+// 吃掉整列，兩種都夾住（點開之後還是看得到完整比例）。
+const MIN_RATIO = 0.6
+const MAX_RATIO = 1.9
+
+function clampRatio(width: number, height: number): number {
+  if (!width || !height) return 1
+  return Math.min(Math.max(width / height, MIN_RATIO), MAX_RATIO)
+}
+
+// 一張縮圖。載入前先用同尺寸的骨架佔位，圖片載完再淡進來——不然圖片
+// 一張一張跳出來會把底下的內容一直往下推。
+function Thumb({ image, onOpen }: { image: PostImageDTO; onOpen: () => void }) {
   const [loaded, setLoaded] = useState(false)
 
   return (
@@ -35,8 +41,8 @@ function Thumb({
       type="button"
       onClick={onOpen}
       aria-label="放大檢視圖片"
-      className={cn("relative overflow-hidden rounded-2xl bg-muted", className)}
-      style={ratio ? { aspectRatio: ratio } : undefined}
+      className={cn("relative shrink-0 overflow-hidden rounded-2xl bg-muted", ROW_HEIGHT)}
+      style={{ aspectRatio: clampRatio(image.width, image.height) }}
     >
       {!loaded && <span className="absolute inset-0 animate-pulse bg-muted" aria-hidden />}
       {/* 圖片來自站上的讀取端點（會驗權限），不是本地靜態資源，next/image
@@ -81,26 +87,15 @@ export function PostImages({ images }: { images: PostImageDTO[] }) {
 
   if (images.length === 0) return null
 
-  const single = images.length === 1 ? images[0] : null
-
   return (
     <>
-      {single ? (
-        <Thumb
-          image={single}
-          onOpen={() => setOpenIndex(0)}
-          className="w-full"
-          // 極端長寬比的圖（長截圖、全景）夾在 3:4 到 16:9 之間，不讓一張圖
-          // 佔掉整個畫面；點開之後看得到完整比例。
-          ratio={`${single.width} / ${Math.min(Math.max(single.height, single.width * 0.5625), single.width * 1.34)}`}
-        />
-      ) : (
-        <div className={cn("grid gap-2", images.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
-          {images.map((image, index) => (
-            <Thumb key={image.id} image={image} onOpen={() => setOpenIndex(index)} className="aspect-square" />
-          ))}
-        </div>
-      )}
+      {/* 一列、水平捲動。只有一張圖時同樣走這條路——高度一樣被 ROW_HEIGHT
+          夾住，不會因為只有一張就撐滿整個版面。 */}
+      <div className="flex gap-2 overflow-x-auto">
+        {images.map((image, index) => (
+          <Thumb key={image.id} image={image} onOpen={() => setOpenIndex(index)} />
+        ))}
+      </div>
 
       {openIndex !== null && (
         <div
