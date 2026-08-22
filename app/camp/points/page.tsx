@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
+import { AnimatedDigits } from "@/components/animated-digits"
 import { getRegionTotals } from "@/lib/exp"
 import { EXP_REGIONS } from "@/lib/exp-regions"
 import { requireFlowAccess } from "@/lib/session"
@@ -41,9 +42,13 @@ export default async function CampPointsPage() {
             <li key={region.key} className="flex flex-col gap-3">
               <div className="flex items-baseline justify-between gap-4">
                 <span className="text-lg sm:text-xl">{region.label}</span>
-                <span className="text-3xl font-bold text-primary sm:text-4xl">
-                  {region.total.toLocaleString("en-US")}
-                </span>
+                {/* AnimatedDigits：分數變動時逐位數字滾動，跟首頁儀表板
+                    的各區積分（zone-score-chart.tsx）同一套元件。 */}
+                <AnimatedDigits
+                  value={region.total}
+                  storageKey={`camp-points-page-digits:${region.key}`}
+                  className="text-3xl font-bold text-primary sm:text-4xl"
+                />
               </div>
               <div className="h-2 rounded-r-[4px] bg-foreground/5">
                 {/* 0 分不要畫出一小截棒子，那看起來像已經有分了 */}

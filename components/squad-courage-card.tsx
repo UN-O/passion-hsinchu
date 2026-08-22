@@ -5,6 +5,7 @@ import { ArrowUp } from "lucide-react"
 
 import { mantouSans } from "@/app/fonts/mantou-sans"
 import { dinEngschrift } from "@/app/fonts/din-engschrift"
+import { AnimatedDigits } from "@/components/animated-digits"
 
 // 記錄「上次看到的勇氣值」，跟 zone-score-chart.tsx 的計分動畫同一套邏輯：
 // 有加分（目前總分 > 上次看到的總分）才顯示綠色徽章，顯示過一次就把總分存回去，
@@ -46,12 +47,15 @@ export function SquadCourageCard({ squadName, total }: { squadName: string; tota
           到重疊或被裁掉。 */}
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
         <div className="flex items-end gap-2 sm:gap-3">
-          <p
+          {/* 用獨立的 storageKey（-digits 後綴）：AnimatedDigits 自己內部
+              也會讀寫 localStorage 記上次的值來做滾動動畫，跟上面判斷要
+              不要顯示綠色徽章用的 STORAGE_KEY 分開，兩邊互不干擾。 */}
+          <AnimatedDigits
+            value={total}
+            storageKey={`${STORAGE_KEY}-digits`}
             className={`${dinEngschrift.className} text-5xl font-bold tracking-wider text-primary sm:text-6xl`}
             style={{ transform: "skewX(-5deg)" }}
-          >
-            {total.toLocaleString("en-US")}
-          </p>
+          />
           <span className="pb-1 text-sm text-muted-foreground sm:pb-1.5">勇氣值</span>
         </div>
         <p

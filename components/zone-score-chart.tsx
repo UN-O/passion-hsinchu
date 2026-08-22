@@ -4,6 +4,7 @@ import Image from "next/image"
 import { useEffect, useState } from "react"
 
 import { dinEngschrift } from "@/app/fonts/din-engschrift"
+import { AnimatedDigits } from "@/components/animated-digits"
 
 export type ZoneScore = {
   key: string
@@ -73,13 +74,19 @@ function ZoneBar({ zone, max }: { zone: ZoneScore; max: number }) {
 
   return (
     <div className="flex h-full flex-col items-center justify-end gap-1.5">
-      {displayValue > 0 && (
-        <span
+      {/* 數字改用 AnimatedDigits 自己的「上次看到的分數→這次的分數」滾動
+          動畫（見 animated-digits.tsx），不是吃長條那套 60fps 逐幀更新的
+          displayValue——兩邊各自動畫、各自的時間軸，數字滾動用短促的
+          CSS transition，長條用 1.6 秒的 ease-in 慢慢長高，感覺上更有
+          層次，不用勉強兜成同一條時間軸。storageKey 跟長條的
+          STORAGE_PREFIX 分開，避免兩邊互相干擾對方的「上次看到」記錄。 */}
+      {zone.total > 0 && (
+        <AnimatedDigits
+          value={zone.total}
+          storageKey={`${STORAGE_PREFIX}digits:${zone.key}`}
           className={`${dinEngschrift.className} text-primary text-[clamp(1.125rem,4.5vw,1.75rem)] leading-none font-bold tracking-wider tabular-nums`}
           style={{ transform: "skewX(-5deg)" }}
-        >
-          {displayValue.toLocaleString("en-US")}
-        </span>
+        />
       )}
       <div
         className="w-full max-w-16 rounded-t-[4px] sm:max-w-20"
