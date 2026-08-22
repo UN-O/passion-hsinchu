@@ -75,6 +75,72 @@
   --sidebar-ring: #f6ed8e;
 }
 
+/* layout.tsx 的 viewport.colorScheme 已經宣告 "light dark"，但實測
+   Samsung Internet 仍然會對這個網站套用它自己的「網頁自動深色模式」
+   （整頁變成詭異的橘棕色，使用者截圖回報，即使宣告了 color-scheme 也一樣）。
+   Chromium 系瀏覽器判斷一個網站「有沒有自己處理深色模式」的其中一個訊號，
+   是頁面的 CSS 裡有沒有實際寫 @media (prefers-color-scheme) 規則——只有
+   meta 標籤沒有搭配這個，部分瀏覽器（實測包含 Samsung Internet）還是會
+   判定為「這個網站沒有自己的深色樣式」而套用自動深色濾鏡。這裡的值刻意
+   跟 :root／.dark 完全一樣（本來就是深色為主的網站，OS 深色模式下不需要
+   換成別的顏色），純粹是為了讓瀏覽器偵測到「這裡有作者自訂的深色樣式」
+   而放棄套用它自己的濾鏡，藉此维持原本設計的顏色不被系統深色模式覆蓋。 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: #f6ed8e;
+    --primary-foreground: oklch(0.145 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --destructive-foreground: oklch(0.985 0 0);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: #f6ed8e;
+    --sidebar: oklch(0.145 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: #f6ed8e;
+    --sidebar-primary-foreground: oklch(0.145 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: #f6ed8e;
+  }
+
+  /* camp-theme 是刻意的淺黃色主題，在系統深色模式下也要維持淺黃色，
+     不要被拉回這個網站預設的深色——同一個原因寫兩次是為了讓瀏覽器的
+     深色模式偵測邏輯在 .camp-theme 範圍內也看得到明確覆寫，不會判定
+     這塊沒有處理深色模式。 */
+  .camp-theme {
+    --background: #feed74;
+    --foreground: oklch(0.205 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.205 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.205 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: #feed74;
+    --secondary: oklch(0 0 0 / 8%);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(1 0 0);
+    --muted-foreground: oklch(0.45 0 0);
+    --accent: oklch(0 0 0 / 8%);
+    --accent-foreground: oklch(0.205 0 0);
+    --border: oklch(0 0 0 / 12%);
+    --input: oklch(0 0 0 / 15%);
+    --ring: oklch(0.205 0 0);
+  }
+}
+
 /* camp 系列頁面（/camp/*）用淺黃色主題，跟其餘頁面（conference、opening）的深色
    主題分開。用 CSS 變數 scoped override，不是切全站 light/dark：元件都還是用同一套
    語意化 token（bg-background、text-foreground、border-border...），不用個別改色，
