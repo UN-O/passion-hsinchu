@@ -15,16 +15,12 @@ import { getActiveIgStories } from "@/lib/instagram-stories"
 import { ZoneScoreChart } from "@/components/zone-score-chart"
 import { CampCountdownCard } from "@/components/camp-countdown-card"
 import { CampMeetingSessions } from "@/components/camp-meeting-sessions"
-import { getRegionTotals } from "@/lib/exp"
+import { getRegionTotals, getTeamTotals } from "@/lib/exp"
 import { getCampTeamInfo } from "@/lib/camp-team"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
 import { campZoneScreens, getNextCampMeetingSession } from "@/lib/opening-camp-content"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
-// 勇氣值目前後端還沒有這個模型（只有各區總分，沒有分小隊的勇氣值），
-// 先固定 0，之後接上真正的小隊積分再換掉。
-const PLACEHOLDER_SQUAD_COURAGE_POINTS = 0
-const PLACEHOLDER_USER_ZONE_KEY = "clownfish"
 // 還沒分到隊（camp_team_member 查不到）時顯示的預設文字。
 const UNASSIGNED_SQUAD_NAME = "尚未分隊"
 
@@ -90,12 +86,19 @@ export async function CampMissionHome({
   // 自己上傳的／Google 的頭像。沒有就退回姓名第一個字的預設圖。
   avatarUrl?: string | null
 } = {}) {
-  const [totals, teamInfo] = await Promise.all([getRegionTotals(), getCampTeamInfo(enrollmentId)])
-  const { room: roomNumber, teamName } = teamInfo
+  const [totals, teamTotals, teamInfo] = await Promise.all([
+    getRegionTotals(),
+    getTeamTotals(),
+    getCampTeamInfo(enrollmentId),
+  ])
+  const { room: roomNumber, teamName, zone } = teamInfo
+  // 還沒分到隊時 zone 是 null，withUserZoneInMiddle 找不到對應的 key 會
+  // 原樣回傳（見它自己的 fallback），三區維持預設順序，不會炸。
   const zoneScores = withUserZoneInMiddle(
-    ZONE_META.map((zone) => ({ ...zone, total: totals[zone.key] })),
-    PLACEHOLDER_USER_ZONE_KEY
+    ZONE_META.map((zoneMeta) => ({ ...zoneMeta, total: totals[zoneMeta.key] })),
+    zone ?? ""
   )
+  const squadCouragePoints = teamName ? (teamTotals[teamName] ?? 0) : 0
   // 只在 4 場正式 SESSION 裡挑，因為卡片點進去的 /camp/meeting 現在專門
   // 顯示這 4 場，兩邊的「下一場」要對得起來（大地競賽／辯論場／Podcast
   // 不算聚會，見 lib/opening-camp-content.ts 的 CAMP_MEETING_SESSION_IDS）。
@@ -138,7 +141,7 @@ export async function CampMissionHome({
       <CampCountdownCard />
 
       <SectionCard variant="glass" className="mt-6">
-        <SquadCourageCard squadName={teamName ?? UNASSIGNED_SQUAD_NAME} total={PLACEHOLDER_SQUAD_COURAGE_POINTS} />
+        <SquadCourageCard squadName={teamName ?? UNASSIGNED_SQUAD_NAME} total={squadCouragePoints} />
       </SectionCard>
 
       <SectionCard variant="glass" className="mt-6 flex flex-col gap-2">

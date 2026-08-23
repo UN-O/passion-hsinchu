@@ -8,22 +8,29 @@ import {
   EXP_AMOUNT_PRESETS,
   EXP_REASON_MAX_LENGTH,
   EXP_REASON_PRESETS,
-  EXP_REGIONS,
-  type ExpRegion,
 } from "@/lib/exp-regions"
+import { CAMP_TEAMS } from "@/lib/camp-teams"
+import { CAMP_ZONE_META } from "@/lib/camp-zones"
 import { cn } from "@/lib/utils"
 import { awardPoints } from "./actions"
 import { emptyAward, type AwardedSummary } from "./state"
 
-type Step = "region" | "amount" | "reason"
+type Step = "team" | "amount" | "reason"
 
-const STEPS: Step[] = ["region", "amount", "reason"]
+const STEPS: Step[] = ["team", "amount", "reason"]
 
 const STEP_TITLES: Record<Step, string> = {
-  region: "加分給哪一區？",
+  team: "加分給哪一隊？",
   amount: "加幾分？",
   reason: "原因",
 }
+
+// 依 CAMP_TEAMS 原本的順序（土撥鼠、尼莫魚、熊蜂各 3 隊）分組顯示，
+// 隊員選隊時才看得出自己那一區有哪幾隊。
+const TEAMS_BY_REGION = CAMP_TEAMS.reduce<Record<string, string[]>>((acc, team) => {
+  ;(acc[team.region] ??= []).push(team.name)
+  return acc
+}, {})
 
 // 上限是 100000，六位數。數字鍵盤直接擋在輸入長度，比按完才報錯好。
 const MAX_DIGITS = String(EXP_AMOUNT_MAX).length
@@ -44,8 +51,8 @@ function choiceClass(selected: boolean, extra?: string) {
 
 export function AwardFlow() {
   const [open, setOpen] = useState(false)
-  const [step, setStep] = useState<Step>("region")
-  const [regions, setRegions] = useState<ExpRegion[]>([])
+  const [step, setStep] = useState<Step>("team")
+  const [teams, setTeams] = useState<string[]>([])
   const [amount, setAmount] = useState("")
   const [reason, setReason] = useState("")
   const [state, formAction, pending] = useActionState(awardPoints, emptyAward)
@@ -62,8 +69,8 @@ export function AwardFlow() {
   // 要再加一筆時才清就夠了。在 effect 裡 setState 會多跑一輪 render，
   // eslint 的 react-hooks/set-state-in-effect 也會擋。
   function resetInputs() {
-    setStep("region")
-    setRegions([])
+    setStep("team")
+    setTeams([])
     setAmount("")
     setReason("")
   }
@@ -79,9 +86,9 @@ export function AwardFlow() {
     setOpen(false)
   }
 
-  function toggleRegion(region: ExpRegion) {
-    setRegions((current) =>
-      current.includes(region) ? current.filter((r) => r !== region) : [...current, region]
+  function toggleTeam(teamName: string) {
+    setTeams((current) =>
+      current.includes(teamName) ? current.filter((t) => t !== teamName) : [...current, teamName]
     )
   }
 
@@ -94,7 +101,7 @@ export function AwardFlow() {
 
   const stepIndex = STEPS.indexOf(step)
   const canGoNext =
-    step === "region" ? regions.length > 0 : step === "amount" ? amount !== "" : true
+    step === "team" ? teams.length > 0 : step === "amount" ? amount !== "" : true
 
   if (!open) {
     return (
@@ -140,8 +147,8 @@ export function AwardFlow() {
           />
         ) : (
           <form action={formAction} className="flex flex-1 flex-col overflow-hidden">
-            {regions.map((region) => (
-              <input key={region} type="hidden" name="regions" value={region} />
+            {teams.map((teamName) => (
+              <input key={teamName} type="hidden" name="teams" value={teamName} />
             ))}
             <input type="hidden" name="amount" value={amount} />
             <input type="hidden" name="reason" value={reason} />
@@ -156,9 +163,7 @@ export function AwardFlow() {
             {/* 這個區塊要能在極窄螢幕內部自己捲動，外層 overlay 才不用捲——
                 header 跟下面的按鈕永遠留在畫面上。 */}
             <div className="mt-6 flex-1 overflow-y-auto sm:mt-10">
-              {step === "region" && (
-                <RegionStep selected={regions} onToggle={toggleRegion} />
-              )}
+              {step === "team" && <TeamStep selected={teams} onToggle={toggleTeam} />}
               {step === "amount" && (
                 <AmountStep
                   amount={amount}
@@ -170,7 +175,7 @@ export function AwardFlow() {
               )}
               {step === "reason" && <ReasonStep reason={reason} onChange={setReason} />}
 
-              <Summary regions={regions} amount={amount} reason={reason} step={step} />
+              <Summary teams={teams} amount={amount} reason={reason} step={step} />
             </div>
 
             {state.error && <p className="mt-4 shrink-0 text-sm text-destructive">{state.error}</p>}
@@ -222,30 +227,39 @@ export function AwardFlow() {
   )
 }
 
-function RegionStep({
+function TeamStep({
   selected,
   onToggle,
 }: {
-  selected: ExpRegion[]
-  onToggle: (region: ExpRegion) => void
+  selected: string[]
+  onToggle: (teamName: string) => void
 }) {
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground">可以複選，選到的每一區都會各加一次分。</p>
-      {EXP_REGIONS.map((region) => {
-        const isSelected = selected.includes(region.key)
-        return (
-          <button
-            key={region.key}
-            type="button"
-            aria-pressed={isSelected}
-            onClick={() => onToggle(region.key)}
-            className={choiceClass(isSelected, "h-20 text-xl sm:h-24 sm:text-2xl")}
-          >
-            {region.label}
-          </button>
-        )
-      })}
+    <div className="flex flex-col gap-6">
+      <p className="text-sm text-muted-foreground">可以複選，選到的每一隊都會各加一次分。</p>
+      {(Object.keys(TEAMS_BY_REGION) as (keyof typeof CAMP_ZONE_META)[]).map((region) => (
+        <div key={region} className="flex flex-col gap-3">
+          <p className="text-sm font-medium text-muted-foreground">
+            {CAMP_ZONE_META[region].title}
+          </p>
+          <div className="flex flex-col gap-3">
+            {TEAMS_BY_REGION[region].map((teamName) => {
+              const isSelected = selected.includes(teamName)
+              return (
+                <button
+                  key={teamName}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => onToggle(teamName)}
+                  className={choiceClass(isSelected, "h-16 text-lg sm:h-20 sm:text-xl")}
+                >
+                  {teamName}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -353,24 +367,23 @@ function ReasonStep({ reason, onChange }: { reason: string; onChange: (value: st
 }
 
 function Summary({
-  regions,
+  teams,
   amount,
   reason,
   step,
 }: {
-  regions: ExpRegion[]
+  teams: string[]
   amount: string
   reason: string
   step: Step
 }) {
-  if (step === "region") return null
+  if (step === "team") return null
 
-  const labels = EXP_REGIONS.filter((region) => regions.includes(region.key)).map((r) => r.label)
   const trimmed = reason.trim()
 
   return (
     <p className="mt-6 border-t border-border pt-4 text-sm text-muted-foreground sm:mt-10">
-      {labels.join("、")}
+      {teams.join("、")}
       {amount !== "" && ` 各 +${Number(amount).toLocaleString("en-US")} 分`}
       {trimmed && `／${trimmed}`}
     </p>
@@ -422,7 +435,7 @@ function DoneStep({
       <p className="mt-6 text-5xl font-bold text-primary sm:text-6xl">
         +{awarded.amount.toLocaleString("en-US")}
       </p>
-      <p className="mt-4 text-lg">{awarded.regions.join("、")}</p>
+      <p className="mt-4 text-lg">{awarded.teams.join("、")}</p>
       {awarded.reason && <p className="mt-2 text-sm text-muted-foreground">{awarded.reason}</p>}
 
       <div className="mt-auto flex flex-col gap-3 pt-12 sm:flex-row">

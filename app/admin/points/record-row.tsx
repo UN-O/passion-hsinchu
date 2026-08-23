@@ -4,13 +4,16 @@ import { useActionState, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { EXP_AMOUNT_MAX, EXP_REGIONS, type ExpRegion } from "@/lib/exp-regions"
+import { EXP_AMOUNT_MAX } from "@/lib/exp-regions"
+import { CAMP_TEAMS } from "@/lib/camp-teams"
 import { editExpRecord, removeExpRecord } from "./actions"
 import { emptyRecord } from "./state"
 
 export type RecordRowData = {
   id: string
-  region: ExpRegion
+  // 舊資料（team_name 補上之前加的分）沒有隊名，退回顯示區名。
+  teamName: string | null
+  regionLabel: string
   amount: number
   reason: string | null
   createdByName: string
@@ -23,12 +26,12 @@ export function RecordRow({ row }: { row: RecordRowData }) {
   const [editState, editAction, editPending] = useActionState(editExpRecord, emptyRecord)
   const [deleteState, deleteAction, deletePending] = useActionState(removeExpRecord, emptyRecord)
 
-  const regionLabel = EXP_REGIONS.find((region) => region.key === row.region)?.label ?? row.region
+  const label = row.teamName ?? row.regionLabel
 
   return (
     <div className="flex flex-col gap-3 border-b border-border pb-6">
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <span className="text-base font-medium">{regionLabel}</span>
+        <span className="text-base font-medium">{label}</span>
         <span className="text-base font-semibold text-primary tabular-nums">
           +{row.amount.toLocaleString("en-US")}
         </span>
@@ -43,14 +46,14 @@ export function RecordRow({ row }: { row: RecordRowData }) {
           <input type="hidden" name="id" value={row.id} />
 
           <select
-            name="region"
-            defaultValue={row.region}
-            aria-label="分區"
+            name="team"
+            defaultValue={row.teamName ?? CAMP_TEAMS[0].name}
+            aria-label="小隊"
             className="h-9 rounded-3xl border border-transparent bg-input/50 px-3 text-sm outline-none focus-visible:border-ring"
           >
-            {EXP_REGIONS.map((region) => (
-              <option key={region.key} value={region.key} className="bg-background">
-                {region.label}
+            {CAMP_TEAMS.map((team) => (
+              <option key={team.name} value={team.name} className="bg-background">
+                {team.name}
               </option>
             ))}
           </select>

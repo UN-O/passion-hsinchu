@@ -5,12 +5,12 @@
 // useActionState 的初始 state 若變成函式，畫面第一次渲染就會炸。
 // 詳細的踩坑記錄見 app/admin/enrollment/state.ts。
 
-// 成功時記下這次加了多少分、加給哪幾區，用來畫完成回饋。
+// 成功時記下這次加了多少分、加給哪幾隊，用來畫完成回饋。
 export type AwardedSummary = {
   // 每次成功都換一個值，client 端用它判斷「這是不是一筆新的結果」，
   // 才能在連續加分時重新顯示完成畫面。
   token: string
-  regions: string[]
+  teams: string[]
   amount: number
   reason: string | null
 }

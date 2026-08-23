@@ -9,14 +9,8 @@ import {
   deleteExpRecord,
   updateExpRecord,
 } from "@/lib/exp"
-import {
-  EXP_AMOUNT_MAX,
-  EXP_AMOUNT_MIN,
-  EXP_REASON_MAX_LENGTH,
-  expRegionLabel,
-  isExpRegion,
-  type ExpRegion,
-} from "@/lib/exp-regions"
+import { EXP_AMOUNT_MAX, EXP_AMOUNT_MIN, EXP_REASON_MAX_LENGTH } from "@/lib/exp-regions"
+import { isCampTeamName } from "@/lib/camp-teams"
 import { requireStaff } from "@/lib/session"
 // 只能匯入，不要從這裡再匯出：這個檔案是 "use server"，非函式的 export
 // 會被編譯成 server reference（見 state.ts 的說明）。
@@ -60,10 +54,10 @@ export async function awardPoints(
   // layout 也擋了一層，但權限檢查要放在真的會寫資料的地方
   const session = await requireStaff()
 
-  const regions = formData.getAll("regions").filter(isExpRegion) as ExpRegion[]
-  // 同一區被送兩次就會寫兩列、加兩次分
-  const unique = [...new Set(regions)]
-  if (unique.length === 0) return { ...emptyAward, error: "至少要選一個分區" }
+  const teams = formData.getAll("teams").filter(isCampTeamName)
+  // 同一隊被送兩次就會寫兩列、加兩次分
+  const unique = [...new Set(teams)]
+  if (unique.length === 0) return { ...emptyAward, error: "至少要選一隊" }
 
   const amount = parseAmount(formData.get("amount"))
   if (typeof amount === "string") return { ...emptyAward, error: amount }
@@ -72,7 +66,7 @@ export async function awardPoints(
 
   try {
     await createExpRecords({
-      regions: unique,
+      teams: unique,
       amount,
       reason,
       createdBy: session.user.id,
@@ -89,7 +83,7 @@ export async function awardPoints(
     error: null,
     awarded: {
       token: randomUUID(),
-      regions: unique.map(expRegionLabel),
+      teams: unique,
       amount,
       reason,
     },
@@ -105,8 +99,8 @@ export async function editExpRecord(
   const id = String(formData.get("id") ?? "").trim()
   if (!id) return { error: "找不到這筆記錄", message: null }
 
-  const region = formData.get("region")
-  if (!isExpRegion(region)) return { error: "分區不正確", message: null }
+  const teamName = formData.get("team")
+  if (!isCampTeamName(teamName)) return { error: "小隊不正確", message: null }
 
   const amount = parseAmount(formData.get("amount"))
   if (typeof amount === "string") return { error: amount, message: null }
@@ -114,7 +108,7 @@ export async function editExpRecord(
   const reason = parseReason(formData.get("reason"))
 
   try {
-    const updated = await updateExpRecord(id, { region, amount, reason })
+    const updated = await updateExpRecord(id, { teamName, amount, reason })
     if (!updated) return { error: "這筆記錄已經不在了，請重新整理", message: null }
   } catch (error) {
     const text = error instanceof Error ? error.message : String(error)

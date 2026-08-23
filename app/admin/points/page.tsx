@@ -2,6 +2,7 @@ import Link from "next/link"
 
 import { ExpRegionChart } from "@/components/exp-region-chart"
 import { countExpRecords, getRegionStats, listExpRecords } from "@/lib/exp"
+import { EXP_REGIONS } from "@/lib/exp-regions"
 import { requireStaff } from "@/lib/session"
 import { AwardFlow } from "./award-flow"
 import { RecordRow } from "./record-row"
@@ -43,7 +44,7 @@ export default async function AdminPointsPage({
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <h1 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">CAMP 加分</h1>
       <p className="mt-3 text-sm text-muted-foreground">
-        分數是區的總分，不記到個人。只有 CAMP 有加分，不會有扣分。
+        分數是隊的總分，不記到個人。只有 CAMP 有加分，不會有扣分。
       </p>
 
       <section className="mt-12">
@@ -86,7 +87,10 @@ export default async function AdminPointsPage({
                   key={record.id}
                   row={{
                     id: record.id,
-                    region: record.region,
+                    teamName: record.teamName,
+                    regionLabel:
+                      EXP_REGIONS.find((region) => region.key === record.region)?.label ??
+                      record.region,
                     amount: record.amount,
                     reason: record.reason,
                     createdByName: record.createdByName,

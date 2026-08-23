@@ -89,11 +89,19 @@ export const claimMerges = pgTable("claim_merges", {
 // 多選分區時一區寫一列，這樣修正與刪除的單位跟畫面上看到的一列一致。
 //
 // 不會有扣分，所以修正與刪除都直接改這張表，不需要沖銷列。
+//
+// team_name（隊名，見 lib/camp-teams.ts 的固定 9 隊清單）是後來加的：
+// 後台加分改成選「隊」不是選「區」，region 一樣照填（從隊名反推），
+// 舊邏輯（各區總分）完全不用動，team_name 純粹讓 lib/exp.ts 多算一份
+// 「各隊總分」給首頁「勇氣值」卡片用。nullable 是因為舊資料、或之後如果
+// 又出現不屬於特定隊的整區加分，team_name 允許留空，那筆只算進區的總分、
+// 不會被算進任何一隊。
 export const expRecord = pgTable(
   "exp_record",
   {
     id: uuid("id").defaultRandom().primaryKey(),
     region: text("region", { enum: ["bee", "clownfish", "groundhog"] }).notNull(),
+    teamName: text("team_name"),
     amount: integer("amount").notNull(),
     reason: text("reason"),
     // 帳號被刪掉時記錄要留著（總分不能因此少一塊），所以是 set null 而不是 cascade。
@@ -106,6 +114,9 @@ export const expRecord = pgTable(
   (table) => [
     // 總分是 group by region 的聚合
     index("exp_record_region_idx").on(table.region),
+    // 各隊總分是 group by team_name 的聚合，跟上面 region 那個索引分開，
+    // 兩種聚合方式都常態在查（首頁勇氣值卡片每次都要算）。
+    index("exp_record_team_name_idx").on(table.teamName),
     // 記錄列表一律照時間新到舊排
     index("exp_record_created_at_idx").on(table.createdAt),
   ]
