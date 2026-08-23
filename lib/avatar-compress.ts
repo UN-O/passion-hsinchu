@@ -56,20 +56,27 @@ export async function compressAvatar(file: File): Promise<Blob> {
   ctx.drawImage(source, sx, sy, edge, edge, 0, 0, AVATAR_SIZE, AVATAR_SIZE)
   if ("close" in source) source.close()
 
-  const toBlob = (quality: number) =>
+  const toBlob = (type: string, quality: number) =>
     new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("圖片壓縮失敗"))), "image/webp", quality)
+      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("圖片壓縮失敗"))), type, quality)
     })
 
+  let type = "image/webp"
   let quality = 0.85
-  let blob = await toBlob(quality)
-  // canvas 不支援 WebP 編碼時規格規定它默默退回 PNG。伺服器只收 WebP
-  // （檔頭會驗），所以這裡就直接說清楚，不要送一個一定會被退回的檔案。
-  if (blob.type !== "image/webp") throw new Error("這個瀏覽器不支援 WebP，請換一個瀏覽器上傳")
+  let blob = await toBlob(type, quality)
+  // canvas 不支援 WebP 編碼時規格規定它默默退回 PNG（例如 iOS Safari／
+  // 所有 iOS 上的瀏覽器，因為都是同一顆 WebKit 引擎）——照片存成 PNG
+  // 會比原圖還大，所以偵測到就改用 JPEG 重編一次，跟
+  // lib/discussion/image-compress.ts 同一套退路。
+  if (blob.type !== type) {
+    type = "image/jpeg"
+    blob = await toBlob(type, quality)
+    if (blob.type !== type) throw new Error("這個瀏覽器不支援圖片壓縮")
+  }
 
   while (blob.size > TARGET_BYTES && quality > 0.5) {
     quality -= 0.15
-    blob = await toBlob(quality)
+    blob = await toBlob(type, quality)
   }
   return blob
 }

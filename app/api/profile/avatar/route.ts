@@ -27,7 +27,9 @@ export async function POST(request: Request) {
   if (file.size > AVATAR_MAX_BYTES) return NextResponse.json({ ok: false, error: "圖片太大了" }, { status: 413 })
 
   const bytes = new Uint8Array(await file.arrayBuffer())
-  // RIFF....WEBP。宣稱的 content-type 是前端寫的，不能拿來當真。
+  // 宣稱的 content-type 是前端寫的，不能拿來當真，要看 magic bytes。
+  // webp 是主要格式；jpeg 是給 canvas 不支援 webp 編碼的 iOS／舊 Safari
+  // 的退路（見 lib/avatar-compress.ts），跟討論區附圖同一套規則。
   const isWebp =
     bytes.length > 12 &&
     bytes[0] === 0x52 &&
@@ -38,10 +40,13 @@ export async function POST(request: Request) {
     bytes[9] === 0x45 &&
     bytes[10] === 0x42 &&
     bytes[11] === 0x50
-  if (!isWebp) return NextResponse.json({ ok: false, error: "圖片格式不正確" }, { status: 400 })
+  // JPEG: FF D8 FF
+  const isJpeg = bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff
+  if (!isWebp && !isJpeg) return NextResponse.json({ ok: false, error: "圖片格式不正確" }, { status: 400 })
+  const contentType = isWebp ? "image/webp" : "image/jpeg"
 
   try {
-    const url = await saveAvatar(session.user.id, bytes, "image/webp")
+    const url = await saveAvatar(session.user.id, bytes, contentType)
     return NextResponse.json({ ok: true, url })
   } catch (error) {
     console.error("[profile] 頭像上傳失敗", error)

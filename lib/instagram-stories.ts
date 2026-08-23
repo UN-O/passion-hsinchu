@@ -75,12 +75,17 @@ export async function getIgStoryForRead(id: string): Promise<{ storageKey: strin
   return row ?? null
 }
 
-export const IG_STORY_MAX_UPLOAD_BYTES = 2 * 1024 * 1024
+// 前端不再縮小尺寸、不再為了壓到某個檔案大小而降畫質（見
+// lib/ig-story-compress.ts），所以上限要跟著放寬——手機截圖原始解析度
+// 轉存 webp／jpeg 常見落在 3~6MB。這條路只有工作人員能打（requireStaff），
+// 不是公開端點，放寬上限不會被拿來灌爆 R2。
+export const IG_STORY_MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 
 // 檔頭 magic bytes 檢查，跟大頭貼／討論區附圖同一套規則：宣稱的
-// content-type 是前端寫的，不能拿來當真。
-function isWebp(bytes: Uint8Array): boolean {
-  return (
+// content-type 是前端寫的，不能拿來當真。webp 是主要格式；jpeg 是給
+// canvas 不支援 webp 編碼的 iOS／舊 Safari 的退路（見 lib/ig-story-compress.ts）。
+function sniffContentType(bytes: Uint8Array): "image/webp" | "image/jpeg" | null {
+  if (
     bytes.length > 12 &&
     bytes[0] === 0x52 &&
     bytes[1] === 0x49 &&
@@ -90,7 +95,11 @@ function isWebp(bytes: Uint8Array): boolean {
     bytes[9] === 0x45 &&
     bytes[10] === 0x42 &&
     bytes[11] === 0x50
-  )
+  ) {
+    return "image/webp"
+  }
+  if (bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg"
+  return null
 }
 
 export type UploadIgStoryInput = {
@@ -104,17 +113,19 @@ export type UploadIgStoryInput = {
 export async function uploadIgStory(input: UploadIgStoryInput): Promise<{ id: string }> {
   if (input.bytes.byteLength === 0) throw new IgStoryError("圖片是空的")
   if (input.bytes.byteLength > IG_STORY_MAX_UPLOAD_BYTES) throw new IgStoryError("圖片太大了")
-  if (!isWebp(input.bytes)) throw new IgStoryError("只接受 WebP 圖片")
+  const contentType = sniffContentType(input.bytes)
+  if (!contentType) throw new IgStoryError("只接受 WebP 或 JPEG 圖片")
 
   const id = randomUUID()
-  const storageKey = `ig-story/${id}.webp`
-  await putObject(storageKey, input.bytes, "image/webp")
+  const ext = contentType === "image/webp" ? "webp" : "jpg"
+  const storageKey = `ig-story/${id}.${ext}`
+  await putObject(storageKey, input.bytes, contentType)
 
   try {
     await db.insert(igStory).values({
       id,
       storageKey,
-      contentType: "image/webp",
+      contentType,
       byteSize: input.bytes.byteLength,
       uploadedBy: input.uploaderId,
       uploadedByName: input.uploaderName,

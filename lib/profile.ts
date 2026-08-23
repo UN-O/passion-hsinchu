@@ -100,7 +100,8 @@ export async function getAvatarKey(userId: string): Promise<string | null> {
 // 上傳／替換自己的頭像。舊的那張直接從 R2 刪掉——一個人只會有一張現行
 // 頭像，留著舊檔只是佔空間而且沒有任何地方會再指到它。
 export async function saveAvatar(userId: string, bytes: Uint8Array, contentType: string): Promise<string> {
-  const key = `avatar/${userId}/${randomUUID()}.webp`
+  const ext = contentType === "image/webp" ? "webp" : "jpg"
+  const key = `avatar/${userId}/${randomUUID()}.${ext}`
   await putObject(key, bytes, contentType)
 
   const previousKey = await getAvatarKey(userId)

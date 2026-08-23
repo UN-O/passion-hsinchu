@@ -46,7 +46,7 @@ export function CampProfileEditor({
 
       setAvatarStatus("uploading")
       const form = new FormData()
-      form.append("avatar", blob, "avatar.webp")
+      form.append("avatar", blob, blob.type === "image/webp" ? "avatar.webp" : "avatar.jpg")
       const response = await fetch("/api/profile/avatar", { method: "POST", body: form })
       const payload = (await response.json()) as { ok: true; url: string } | { ok: false; error: string }
 

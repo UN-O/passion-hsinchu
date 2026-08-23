@@ -23,7 +23,7 @@ export function IgStoryUploadForm() {
 
       setStatus("uploading")
       const form = new FormData()
-      form.append("image", blob, "ig-story.webp")
+      form.append("image", blob, blob.type === "image/webp" ? "ig-story.webp" : "ig-story.jpg")
       const response = await fetch("/api/ig-stories", { method: "POST", body: form })
       const payload = (await response.json()) as { ok: true } | { ok: false; error: string }
 
