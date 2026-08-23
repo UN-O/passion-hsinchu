@@ -5,6 +5,7 @@ import { useOptimistic, useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { DiscussionEntry, DiscussionItem, DiscussionResponse, PollDTO, PostDTO, PostImageDTO } from "@/lib/discussion/dto"
+import type { BiblePassage } from "@/lib/bible"
 import {
   loadReplyChain,
   loadThreadReplies,
@@ -58,6 +59,7 @@ function reduce(state: ThreadData, action: Action): ThreadData {
 
 export function DiscussionThread({
   root,
+  rootBibleReading = null,
   ancestors,
   focus,
   viewer,
@@ -65,6 +67,8 @@ export function DiscussionThread({
   initialReplies,
 }: {
   root: DiscussionItem
+  // root 的閱讀模式段落，伺服器端已經查好（見 lib/discussion/bible-reading.ts）。
+  rootBibleReading?: BiblePassage | null
   ancestors: DiscussionItem[]
   focus: DiscussionItem
   viewer: ViewerInfo
@@ -304,6 +308,7 @@ export function DiscussionThread({
           content={root.post.content}
           images={root.post.images}
           linkPreview={root.post.linkPreview}
+          bibleReading={rootBibleReading}
           isDiscussionAdmin={isDiscussionAdmin}
           hasRail
         />

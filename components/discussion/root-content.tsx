@@ -1,12 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { BadgeCheck, Pencil } from "lucide-react"
+import { BadgeCheck, BookOpen, Pencil, X } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 
 import { MAX_CONTENT_LENGTH } from "@/lib/discussion/constants"
 import type { LinkPreviewDTO, PostImageDTO } from "@/lib/discussion/dto"
-import { submitEditRootContent, submitRemovePostImages } from "@/lib/discussion/actions"
+import { submitClearRootBibleReading, submitEditRootContent, submitRemovePostImages, submitSetRootBibleReading } from "@/lib/discussion/actions"
+import type { BiblePassage, BibleReference, BibleVersionKey } from "@/lib/bible"
+import { ReferencePills } from "@/components/bible/reference-pills"
+import { ChapterVerseSelect } from "@/components/bible/chapter-verse-select"
+import { PassageCardClient } from "@/components/bible/passage-card-client"
 import { Avatar, RailLine } from "./post-row"
 import { AttachmentEditor, useImageAttachments } from "./image-attachments"
 import { PostImages } from "./post-images"
@@ -22,6 +26,7 @@ export function RootContent({
   content,
   images = [],
   linkPreview = null,
+  bibleReading = null,
   isDiscussionAdmin,
   hasRail = false,
 }: {
@@ -33,6 +38,11 @@ export function RootContent({
   // 內文裡第一個網址的預覽卡片（伺服器端快取有的話）。沒有就傳 null，
   // LinkCard 會自己補抓一次。
   linkPreview?: LinkPreviewDTO | null
+  // 閱讀模式：管理者選好的固定經文段落，獨立於 content 之外（見
+  // db/schema/discussion.ts 的 rootBibleReadings）。呼叫端已經把實際經文
+  // 文字查好、傳進來——這裡不自己 fetch，跟 images/linkPreview 同一個
+  // 「伺服器端先查好」的做法。null＝還沒設定。
+  bibleReading?: BiblePassage | null
   isDiscussionAdmin: boolean
   // 討論串頁（/discussion/[postId]）root 後面接著祖先鏈，兩者中間要接一條
   // 線，視覺上才看得出祖先鏈是接在 root 底下——跟 post-row.tsx 的 EntryBody
@@ -46,6 +56,35 @@ export function RootContent({
   const [draft, setDraft] = useState(content)
   const [pending, setPending] = useState(false)
   const newImages = useImageAttachments()
+
+  const [reading, setReading] = useState(bibleReading)
+  const [configuringReading, setConfiguringReading] = useState(false)
+  const [draftVersion, setDraftVersion] = useState<BibleVersionKey>(reading?.version ?? "unv")
+  const [draftBook, setDraftBook] = useState(reading?.reference.book ?? "JHN")
+  const [draftChapter, setDraftChapter] = useState(reading?.reference.chapter ?? 3)
+
+  function startConfiguringReading() {
+    setDraftVersion(reading?.version ?? "unv")
+    setDraftBook(reading?.reference.book ?? "JHN")
+    setDraftChapter(reading?.reference.chapter ?? 3)
+    setConfiguringReading(true)
+  }
+
+  async function handleConfirmReading(reference: BibleReference) {
+    const result = await submitSetRootBibleReading(rootPostId, draftVersion, reference)
+    if (result.ok) {
+      setReading(result.data)
+      setConfiguringReading(false)
+    }
+  }
+
+  async function handleClearReading() {
+    const result = await submitClearRootBibleReading(rootPostId)
+    if (result.ok) {
+      setReading(null)
+      setConfiguringReading(false)
+    }
+  }
 
   function startEdit() {
     setDraft(saved)
@@ -184,6 +223,74 @@ export function RootContent({
               >
                 <Pencil className="size-4" strokeWidth={1.75} />
               </button>
+            )}
+          </div>
+        )}
+
+        {/* 閱讀模式：獨立於上面的 content，管理者選好固定段落給大家看。
+            點經文裡的節可以標記／複製／比較版本；版本徽章本身也是下拉選單，
+            讀者可以自己換版本讀同一段（見 passage-card.tsx）。 */}
+        {(reading || isDiscussionAdmin) && (
+          <div className="flex flex-col gap-2">
+            {configuringReading ? (
+              <div className="flex flex-col gap-3 rounded-2xl border border-border p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">設定閱讀經文</p>
+                  <button type="button" onClick={() => setConfiguringReading(false)} aria-label="關閉" className="text-muted-foreground hover:text-foreground">
+                    <X className="size-4" />
+                  </button>
+                </div>
+
+                <ReferencePills
+                  book={draftBook}
+                  chapter={draftChapter}
+                  version={draftVersion}
+                  onBookChapterChange={(b, c) => {
+                    setDraftBook(b)
+                    setDraftChapter(c)
+                  }}
+                  onVersionChange={setDraftVersion}
+                />
+
+                <ChapterVerseSelect
+                  version={draftVersion}
+                  book={draftBook}
+                  chapter={draftChapter}
+                  confirmLabel="設為閱讀段落"
+                  onConfirm={handleConfirmReading}
+                />
+
+                {reading && (
+                  <button type="button" onClick={handleClearReading} className="self-start text-sm text-destructive">
+                    移除閱讀段落
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-start gap-2">
+                <div className="min-w-0 flex-1">
+                  {reading ? (
+                    <PassageCardClient
+                      key={`${reading.version}-${reading.reference.book}-${reading.reference.chapter}-${reading.reference.verseStart}-${reading.reference.verseEnd ?? ""}`}
+                      version={reading.version}
+                      reference={reading.reference}
+                      initialPassage={reading}
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">還沒設定閱讀經文。</p>
+                  )}
+                </div>
+                {isDiscussionAdmin && (
+                  <button
+                    type="button"
+                    onClick={startConfiguringReading}
+                    aria-label="設定閱讀經文"
+                    className="shrink-0 text-muted-foreground hover:text-foreground"
+                  >
+                    <BookOpen className="size-4" strokeWidth={1.75} />
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}

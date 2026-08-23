@@ -12,6 +12,7 @@ import { SessionSelect } from "@/components/session-select"
 import { campSessionRootKey } from "@/lib/discussion/root-registry"
 import { fetchImagesForPost } from "@/lib/discussion/images"
 import { fetchCachedPreviewForContent } from "@/lib/discussion/link-preview"
+import { getRootBiblePassage } from "@/lib/discussion/bible-reading"
 import { getOrCreateDiscussionRoot } from "@/lib/discussion/root"
 import { isDiscussionAdmin } from "@/lib/discussion/permissions"
 import {
@@ -47,6 +48,7 @@ export default async function CampMeetingSessionPage({ params }: { params: Promi
   // root 的附圖不走 enrichRows（這頁的 root 是自己查的），另外撈一次。
   const rootImages = root ? await fetchImagesForPost(root.id) : []
   const rootPreview = root ? await fetchCachedPreviewForContent(root.content) : null
+  const rootBibleReading = root ? await getRootBiblePassage(root.id) : null
 
   return (
     <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
@@ -106,6 +108,7 @@ export default async function CampMeetingSessionPage({ params }: { params: Promi
                 content={root.content}
                 images={rootImages}
                 linkPreview={rootPreview}
+                bibleReading={rootBibleReading}
                 isDiscussionAdmin={isDiscussionAdmin(session)}
               />
             }

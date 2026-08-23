@@ -222,6 +222,29 @@ export const discussionSettings = pgTable("discussion_settings", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
+// root post 的閱讀模式段落——管理者選好固定的一段經文，獨立於 content
+// 之外顯示（見 components/bible/ 的聖經模組，跟 quote 模式不同：quote
+// 是文字直接寫進 content，這個是結構化資料，因為要給所有訪客看同一段、
+// 而且要能重新編輯）。一個 root 最多一段，所以 rootPostId 當 primary key，
+// 不像 postImages 那樣一對多。
+//
+// 和合本／現代中文譯本走 lib/bible/fhl.ts（信望愛 API，授權還在跟台灣
+// 聖經公會確認中），NIV 走 lib/bible/bolls.ts（沒有 Biblica 正式授權，
+// 是刻意的風險取捨，見該檔案開頭註解）——這裡只存「使用者選了哪個版本／
+// 哪一段」，實際經文文字每次顯示時才即時查詢，不快取進資料庫。
+export const rootBibleReadings = pgTable("root_bible_readings", {
+  rootPostId: uuid("root_post_id")
+    .primaryKey()
+    .references(() => posts.id, { onDelete: "cascade" }),
+  version: text("version", { enum: ["unv", "tcv2019", "niv"] }).notNull(),
+  book: text("book").notNull(),
+  chapter: integer("chapter").notNull(),
+  verseStart: integer("verse_start").notNull(),
+  verseEnd: integer("verse_end"),
+  updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 // 貼文附圖。圖檔本體放 Cloudflare R2，這張表只存「指標＋顯示需要的中繼資料」
 // （尺寸拿來先撐出正確比例的骨架，避免圖載入後版面跳動）。
 //

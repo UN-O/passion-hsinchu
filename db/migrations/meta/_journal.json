@@ -78,6 +78,13 @@
       "when": 1787464558399,
       "tag": "0010_slippery_maverick",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1787488836705,
+      "tag": "0011_worthless_scarlet_spider",
+      "breakpoints": true
     }
   ]
 }

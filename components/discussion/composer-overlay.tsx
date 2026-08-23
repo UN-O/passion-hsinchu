@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import type { PostImageDTO } from "@/lib/discussion/dto"
 import { MAX_CONTENT_LENGTH, MAX_POLL_OPTIONS, MIN_POLL_OPTIONS } from "@/lib/discussion/constants"
 import { AttachmentEditor, useImageAttachments } from "./image-attachments"
+import { BibleQuotePicker } from "@/components/bible/bible-quote-picker"
 
 // 要回覆的貼文，以及它上面完整的祖先鏈（root 端在最前面）。全部顯示、
 // 不裁切——按下回覆之後應該看得到一路往上的完整脈絡，不是只有正上方那則
@@ -134,8 +135,14 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
 
         {/* 加號的空格子緊接在輸入框下面（不是 header 的一顆 icon，也不是
             版面最底部）——鍵盤跳出來時還看得到，「這裡可以放圖片」要用一個
-            看得到的格子表達。 */}
-        <AttachmentEditor controller={images} disabled={pending} />
+            看得到的格子表達。經文用同樣尺寸的格子並排在旁邊。 */}
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <AttachmentEditor controller={images} disabled={pending} />
+          <BibleQuotePicker
+            disabled={pending}
+            onInsert={(text) => setContent((prev) => (prev ? `${prev}\n\n${text}` : text).slice(0, MAX_CONTENT_LENGTH))}
+          />
+        </div>
 
         {pollOpen && (
           <div className="flex shrink-0 flex-col gap-2 rounded-2xl border border-border p-4">

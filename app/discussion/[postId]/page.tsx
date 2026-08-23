@@ -9,6 +9,7 @@ import { DiscussionThread } from "@/components/discussion/discussion-thread"
 import { cn } from "@/lib/utils"
 import { isDiscussionAdmin } from "@/lib/discussion/permissions"
 import { getAncestorChain, getDiscussionPage, getPostContext } from "@/lib/discussion/queries"
+import { getRootBiblePassage } from "@/lib/discussion/bible-reading"
 import { flowForRootKey, getRegisteredRoot } from "@/lib/discussion/root-registry"
 import { fetchPublicProfile } from "@/lib/profile"
 import { assertFlowAccess, requireClaimedSession } from "@/lib/session"
@@ -60,6 +61,7 @@ export default async function DiscussionThreadPage({ params }: { params: Promise
   const root = chain[0]
   const ancestors = chain.slice(1, -1)
   const rootDefinition = context.rootKey ? getRegisteredRoot(context.rootKey) : null
+  const rootBibleReading = await getRootBiblePassage(root.post.id)
 
   // 這是一條通用路由，不在 app/camp/layout.tsx 底下，本來不會套用 CAMP 的
   // 淺黃 camp-theme（那層 class 只包在 /camp/* 的頁面外面）。CAMP 的貼文
@@ -86,6 +88,7 @@ export default async function DiscussionThreadPage({ params }: { params: Promise
         <div className="mt-10 flex flex-col bg-background py-6 text-foreground">
           <DiscussionThread
             root={root}
+            rootBibleReading={rootBibleReading}
             ancestors={ancestors}
             focus={focus}
             viewer={{

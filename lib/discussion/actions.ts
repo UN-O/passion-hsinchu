@@ -37,7 +37,9 @@ import {
 import { ensureLinkPreview } from "./link-preview"
 import { getOrCreateDiscussionRoot } from "./root"
 import { isDiscussionAdmin } from "./permissions"
+import { clearRootBibleReading, getRootBiblePassage, setRootBibleReading } from "./bible-reading"
 import { DiscussionError } from "./constants"
+import type { BiblePassage, BibleReference, BibleVersionKey } from "@/lib/bible"
 
 // 每個 client component 呼叫的 server action 都各自獨立驗證 session，
 // 不依賴「這個元件是從哪個已經被 requireFlowAccess 擋過的頁面 render 出來的」
@@ -216,6 +218,34 @@ export async function submitEditRootContent(
       // root 的顯示不是走 enrichRows（那幾頁是 server component 各自查的），
       // 所以編輯完直接把最新的圖片清單回給呼叫端，不用整頁重新整理。
       return fetchImagesForPost(rootPostId)
+    })()
+  )
+}
+
+// 閱讀模式：只有 discussion admin 能設定／清除 root 的固定段落——跟
+// submitEditRootContent 同一個權限模型（root 沒有作者，不能比對 authorId）。
+export async function submitSetRootBibleReading(
+  rootPostId: string,
+  version: BibleVersionKey,
+  reference: BibleReference
+): Promise<ActionResult<BiblePassage | null>> {
+  return toResult(
+    (async () => {
+      const session = await requireClaimedSession()
+      if (!isDiscussionAdmin(session)) throw new DiscussionError("沒有權限")
+      await setRootBibleReading(rootPostId, version, reference, session.user.id)
+      return getRootBiblePassage(rootPostId)
+    })()
+  )
+}
+
+export async function submitClearRootBibleReading(rootPostId: string): Promise<ActionResult<null>> {
+  return toResult(
+    (async () => {
+      const session = await requireClaimedSession()
+      if (!isDiscussionAdmin(session)) throw new DiscussionError("沒有權限")
+      await clearRootBibleReading(rootPostId)
+      return null
     })()
   )
 }

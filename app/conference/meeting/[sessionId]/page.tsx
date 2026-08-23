@@ -13,6 +13,7 @@ import { SessionSelect } from "@/components/session-select"
 import { conferenceSessionRootKey } from "@/lib/discussion/root-registry"
 import { fetchImagesForPost } from "@/lib/discussion/images"
 import { fetchCachedPreviewForContent } from "@/lib/discussion/link-preview"
+import { getRootBiblePassage } from "@/lib/discussion/bible-reading"
 import { getOrCreateDiscussionRoot } from "@/lib/discussion/root"
 import { isDiscussionAdmin } from "@/lib/discussion/permissions"
 import { conferenceSessions, getNextConferenceSession } from "@/lib/opening-conference-content"
@@ -42,6 +43,7 @@ export default async function ConferenceMeetingSessionPage({
   // root 的附圖不走 enrichRows（這頁的 root 是自己查的），另外撈一次。
   const rootImages = await fetchImagesForPost(root.id)
   const rootPreview = await fetchCachedPreviewForContent(root.content)
+  const rootBibleReading = await getRootBiblePassage(root.id)
 
   return (
     <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
@@ -103,6 +105,7 @@ export default async function ConferenceMeetingSessionPage({
               content={root.content}
               images={rootImages}
               linkPreview={rootPreview}
+              bibleReading={rootBibleReading}
               isDiscussionAdmin={isDiscussionAdmin(session)}
             />
           }
