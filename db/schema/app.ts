@@ -155,6 +155,32 @@ export const campTeamMember = pgTable(
   ]
 )
 
+// 官方 IG 限時動態的手動上傳紀錄。原本是直接把截圖丟進 public/images/、
+// 在 lib/instagram-stories.ts 寫死一個陣列（見那個檔案舊版的說明），
+// 每次換圖都要改程式碼、跑一次部署——現在改成後台 /admin/ig-stories 直接
+// 上傳，圖存 R2（跟大頭貼、討論區附圖同一個 bucket，storage_key 前綴
+// "ig-story/" 區分），這張表只記後台管理跟前台顯示要用的中繼資料。
+//
+// 跟真正的 IG 限動一樣是 24 小時後自動下架（見 getActiveIgStories 的
+// STORY_TTL_MS），不用手動刪除，但後台仍然可以提早刪掉貼錯的圖。
+export const igStory = pgTable(
+  "ig_story",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    storageKey: text("storage_key").notNull(),
+    contentType: text("content_type").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    // 帳號被刪掉時記錄要留著，所以是 set null 而不是 cascade。
+    uploadedBy: text("uploaded_by").references(() => user.id, { onDelete: "set null" }),
+    uploadedByName: text("uploaded_by_name").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    // 列表一律照上傳時間新到舊排，過期判斷也是拿這欄跟 24 小時比較。
+    index("ig_story_created_at_idx").on(table.createdAt),
+  ]
+)
+
 // 使用者自己設定的個人化資料。刻意不加在 auth.ts 的 user 表上：那張表是
 // `@better-auth/cli generate` 產生的，重新產生時手動加的欄位會被蓋掉
 // （檔頭那段警告就是這麼來的）。

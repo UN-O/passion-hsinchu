@@ -71,6 +71,13 @@
       "when": 1787463144938,
       "tag": "0009_same_wild_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787464558399,
+      "tag": "0010_slippery_maverick",
+      "breakpoints": true
     }
   ]
 }

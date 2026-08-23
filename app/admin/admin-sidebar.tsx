@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils"
 const NAV_ITEMS = [
   { href: "/admin/enrollment", label: "名冊管理" },
   { href: "/admin/points", label: "CAMP 加分" },
+  { href: "/admin/ig-stories", label: "IG 限動上傳" },
 ] as const
 
 // 使用者完成開場後，/camp、/conference 會直接換成任務主頁，

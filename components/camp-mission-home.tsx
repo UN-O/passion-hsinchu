@@ -86,10 +86,12 @@ export async function CampMissionHome({
   // 自己上傳的／Google 的頭像。沒有就退回姓名第一個字的預設圖。
   avatarUrl?: string | null
 } = {}) {
-  const [totals, teamTotals, teamInfo] = await Promise.all([
+  const [totals, teamTotals, teamInfo, activeIgStories] = await Promise.all([
     getRegionTotals(),
     getTeamTotals(),
     getCampTeamInfo(enrollmentId),
+    // 過期（上傳超過 24 小時）的限動先在伺服器端濾掉，client 不用自己重算。
+    getActiveIgStories(),
   ])
   const { room: roomNumber, teamName, zone } = teamInfo
   // 還沒分到隊時 zone 是 null，withUserZoneInMiddle 找不到對應的 key 會
@@ -103,8 +105,6 @@ export async function CampMissionHome({
   // 顯示這 4 場，兩邊的「下一場」要對得起來（大地競賽／辯論場／Podcast
   // 不算聚會，見 lib/opening-camp-content.ts 的 CAMP_MEETING_SESSION_IDS）。
   const nextSession = getNextCampMeetingSession()
-  // 過期（上傳超過 24 小時）的限動先在伺服器端濾掉，client 不用自己重算。
-  const activeIgStories = getActiveIgStories()
 
   return (
     <ScrollBlackout>
