@@ -1,6 +1,5 @@
 import Image from "next/image"
 import Link from "next/link"
-import { Instagram } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { CampLiquidGlassFilter } from "@/components/camp-liquid-glass-filter"
@@ -184,15 +183,7 @@ export async function CampMissionHome({
         </div>
       </Link>
 
-      {activeIgStories.length > 0 && (
-        <SectionCard variant="glass" className="mt-6 flex flex-col gap-2">
-          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Instagram className="size-4" />
-            官方 IG 限時動態
-          </p>
-          <IgStoriesSection stories={activeIgStories} />
-        </SectionCard>
-      )}
+      {activeIgStories.length > 0 && <IgStoriesSection stories={activeIgStories} className="mt-6" />}
     </main>
     </ScrollBlackout>
   )

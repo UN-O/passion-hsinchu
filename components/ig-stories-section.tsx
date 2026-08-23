@@ -1,63 +1,98 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
+import { ChevronDown, ChevronUp, Instagram } from "lucide-react"
 
-import { ImmersiveScreen } from "@/components/immersive/immersive-screen"
+import { cn } from "@/lib/utils"
 import type { IgStory } from "@/lib/instagram-stories"
 
-// 官方 IG 限時動態：首頁顯示最新一張的縮圖（stories[0]，呼叫端已經照
-// 上傳時間排序＋濾掉過期的，見 lib/instagram-stories.ts），點下去用跟
-// 營會守則同一套 ImmersiveScreen 開全螢幕瀏覽，點一下畫面切下一篇，
-// 操作方式跟真正的 IG 限動一樣。scrim 關掉：這裡單純看照片，不像
-// 營會守則疊文字需要暗化底圖維持可讀度。onBack 只是關掉這個 client
-// state，不是導頁（ImmersiveScreen 預設的 router.back() 在這裡不對，
-// 這個瀏覽器是疊在首頁上的 client 狀態，不是真的換路由）。
-export function IgStoriesSection({ stories }: { stories: IgStory[] }) {
-  const [open, setOpen] = useState(false)
+// 官方 IG 限時動態：卡片本身就是完整的瀏覽器，不再是「點進去才看得到」的
+// 按鈕——圖片直接填滿整張卡片（無 padding），自動輪播，也可以用右側的
+// 上/下箭頭手動切換。故意不做成 <button>／<Link>：這裡就是內容本身，不是
+// 通往別處的入口，不需要、也不應該讓人「點進去」。
+const AUTO_ADVANCE_MS = 4000
+
+export function IgStoriesSection({ stories, className }: { stories: IgStory[]; className?: string }) {
   const [index, setIndex] = useState(0)
+
+  // 換一批限動（例如過期／有新的上傳）時，索引可能超出新陣列範圍，要退回
+  // 第一張——用 render 期間調整 state 的寫法（React 建議的作法，見
+  // immersive-progress.tsx 同樣的處理），不要用 effect 裡 setState 觸發
+  // 多一次 render。
+  const storiesKey = stories.map((story) => story.id).join(",")
+  const [prevStoriesKey, setPrevStoriesKey] = useState(storiesKey)
+  if (storiesKey !== prevStoriesKey) {
+    setPrevStoriesKey(storiesKey)
+    setIndex(0)
+  }
+
+  // 依賴 index：手動切換後從頭重新倒數，跟真正的 IG 限動一樣，不會切完
+  // 馬上又被自動輪播跳走。
+  useEffect(() => {
+    if (stories.length <= 1) return
+    const timer = setInterval(() => {
+      setIndex((current) => (current + 1) % stories.length)
+    }, AUTO_ADVANCE_MS)
+    return () => clearInterval(timer)
+  }, [stories.length, index])
 
   if (stories.length === 0) return null
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => {
-          setIndex(0)
-          setOpen(true)
-        }}
-        aria-label="官方 IG 限時動態"
-        className="relative block aspect-[9/16] w-full overflow-hidden rounded-2xl border border-border bg-muted/40"
-      >
-        <Image
-          src={stories[0].image}
-          alt="官方 IG 限時動態"
-          fill
-          sizes="(min-width: 640px) 640px, 100vw"
-          className="object-cover"
-        />
-      </button>
+  const goTo = (next: number) => setIndex((next + stories.length) % stories.length)
 
-      {open && (
-        // fixed inset-0：ImmersiveScreen 本來假設自己是整個頁面唯一內容（像
-        // 營會守則那樣獨立一個 route），這裡是疊在首頁其他區塊中間，若不脫離
-        // 文件流會被排到卡片原本的位置，要往下捲才看得到，不是真正的全螢幕
-        // 疊層。用 fixed 蓋住整個 viewport，打開當下立刻鋪滿螢幕。
-        <div className="fixed inset-0 z-50">
-          <ImmersiveScreen
-            background={{ type: "image", src: stories[index].image }}
-            scrim={false}
-            totalSteps={stories.length}
-            index={index}
-            onIndexChange={setIndex}
-            progress={{ mode: "manual", value: 1, fillClassName: "bg-white" }}
-            onBack={() => setOpen(false)}
+  return (
+    <div
+      className={cn(
+        "relative aspect-[9/16] w-full overflow-hidden rounded-3xl border-2 border-white/50",
+        className
+      )}
+    >
+      <Image
+        src={stories[index].image}
+        alt="官方 IG 限時動態"
+        fill
+        sizes="(min-width: 640px) 640px, 100vw"
+        className="object-cover"
+      />
+
+      <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-black/60 to-transparent p-4">
+        {stories.length > 1 && (
+          <div className="flex gap-1">
+            {stories.map((story, i) => (
+              <div
+                key={story.id}
+                className={cn("h-1 flex-1 rounded-full", i === index ? "bg-primary" : "bg-white/30")}
+              />
+            ))}
+          </div>
+        )}
+        <p className="mt-3 flex items-center gap-1.5 text-sm text-white">
+          <Instagram className="size-4" />
+          官方 IG 限時動態
+        </p>
+      </div>
+
+      {stories.length > 1 && (
+        <div className="absolute inset-y-0 right-3 flex flex-col justify-center gap-2">
+          <button
+            type="button"
+            aria-label="上一則"
+            onClick={() => goTo(index - 1)}
+            className="flex size-8 items-center justify-center rounded-full border border-white/30 bg-black/20 text-white transition-colors hover:border-white/60"
           >
-            {null}
-          </ImmersiveScreen>
+            <ChevronUp className="size-4" />
+          </button>
+          <button
+            type="button"
+            aria-label="下一則"
+            onClick={() => goTo(index + 1)}
+            className="flex size-8 items-center justify-center rounded-full border border-white/30 bg-black/20 text-white transition-colors hover:border-white/60"
+          >
+            <ChevronDown className="size-4" />
+          </button>
         </div>
       )}
-    </>
+    </div>
   )
 }
