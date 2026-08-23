@@ -7,6 +7,8 @@ import { discussionSettings, posts } from "@/db/schema/discussion"
 import { DISCUSSION_ROOT_TAG } from "./constants"
 import { getRegisteredRoot } from "./root-registry"
 import { seedOfficialQuestions } from "./mutations"
+import { seedRootBibleReading } from "./bible-reading"
+import type { BibleReference, BibleVersionKey } from "@/lib/bible"
 
 export type DiscussionRoot = typeof posts.$inferSelect
 
@@ -90,7 +92,16 @@ export async function getOrCreateDiscussionRoot(rootKey: string): Promise<Discus
 // posts.root_key」機制決定誰是贏家：只有真的插進那筆 root 的 request
 // 才會執行 seedOfficialQuestions，天生防重——併發下第二個 request 一定會
 // 撞到 unique index、拿到空陣列，直接跳過播種、回查既有那筆。
-export async function getOrCreateDevotionRoot(rootKey: string, questions: string[]): Promise<DiscussionRoot> {
+// content／bibleReading 是「第一次建立時」的初始值，來自 lib/devotion-content.ts
+// 的 entry——之後 root 就是一篇正常、admin 可以編輯的 root post 了（跟
+// camp/conference 聚會頁同一個 RootContent），不會再回頭讀 devotion-content.ts
+// 的 intro/closing/reference。root 已經存在時這兩個參數不會被用到。
+export async function getOrCreateDevotionRoot(
+  rootKey: string,
+  questions: string[],
+  content: string,
+  bibleReading: { version: BibleVersionKey; reference: BibleReference } | null
+): Promise<DiscussionRoot> {
   const definition = getRegisteredRoot(rootKey)
   if (!definition) {
     throw new Error(`未知的討論 root key："${rootKey}"，請先在 root-registry.ts 註冊`)
@@ -108,7 +119,7 @@ export async function getOrCreateDevotionRoot(rootKey: string, questions: string
       .values({
         id,
         authorId: null,
-        content: definition.title,
+        content,
         replyToId: null,
         rootPostId: id,
         rootBranchId: null,
@@ -122,6 +133,7 @@ export async function getOrCreateDevotionRoot(rootKey: string, questions: string
     if (inserted.length > 0) {
       await tx.insert(discussionSettings).values({ rootPostId: id }).onConflictDoNothing()
       await seedOfficialQuestions(tx, id, questions)
+      if (bibleReading) await seedRootBibleReading(tx, id, bibleReading.version, bibleReading.reference)
       return inserted[0]
     }
 

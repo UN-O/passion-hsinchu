@@ -19,6 +19,14 @@ export type DevotionEntry = {
   revealISO: string
 }
 
+// root post 第一次建立時的初始 content（markdown）——只有那一次會用到，
+// 之後 admin 要改內文就直接在畫面上編輯，不會再回頭讀這裡（見
+// lib/discussion/root.ts 的 getOrCreateDevotionRoot）。closing 用 **粗體**
+// 呼應原本「結語加粗」的排版。
+export function buildDevotionContent(entry: DevotionEntry): string {
+  return [entry.intro, entry.closing ? `**${entry.closing}**` : null].filter(Boolean).join("\n\n")
+}
+
 // 靈修內容目前只拿到部分場次的資料（第二、三天早上），先放已經確定的，
 // 其餘（例如第一天早上）等資料到齊再補進這個陣列，不要編造內容。
 // 導言／問題／結語來自 2026第一篇晨更.docx／2026第二篇晨更-若芸.docx。

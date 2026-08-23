@@ -25,16 +25,25 @@ export function VerseToolbar({
 
   return (
     <>
-      {/* 手機：畫面最底下的 fixed 功能表 */}
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-2 border-t border-border bg-background p-3 sm:hidden">
+      {/* 手機：畫面最底下的 fixed 功能表。z-50 要蓋過 bottom-composer-bar.tsx
+          那顆同樣 fixed 在最底下的留言列（z-40）——兩個一起出現時，選經文
+          的動作列要贏，不然點下去的其實是被蓋住的留言列，看起來就像完全
+          點不動。 */}
+      <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between gap-2 border-t border-border bg-background p-3 sm:hidden">
         <ToolbarButtons onHighlight={onHighlight} onCopy={onCopy} onCompare={onCompare} count={count} />
-        <button type="button" onClick={onClear} aria-label="取消選取" className="text-muted-foreground hover:text-foreground">
+        <button
+          type="button"
+          onClick={onClear}
+          aria-label="取消選取"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"
+        >
           <X className="size-5" strokeWidth={1.75} />
         </button>
       </div>
 
-      {/* 電腦：貼齊卡片右下角的浮動列 */}
-      <div className="absolute bottom-3 right-3 z-10 hidden items-center gap-1 rounded-full border border-border bg-card p-1 sm:flex">
+      {/* 電腦：貼齊卡片右下角的浮動列。同樣拉高 z-index——卡片如果剛好貼近
+          畫面底部，也會被 bottom-composer-bar.tsx 蓋住。 */}
+      <div className="absolute bottom-3 right-3 z-50 hidden items-center gap-1 rounded-full border border-border bg-card p-1 sm:flex">
         <ToolbarButtons onHighlight={onHighlight} onCopy={onCopy} onCompare={onCompare} count={count} compact />
         <button
           type="button"

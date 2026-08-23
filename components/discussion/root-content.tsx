@@ -129,6 +129,53 @@ export function RootContent({
     if (!result.ok) setSavedImages(previous)
   }
 
+  // 編輯內文時大頭貼改放在輸入框「上面」（一列橫的），不是像平常顯示那樣
+  // 放在左邊、把內文欄用 flex row 往右擠出一段視覺縮排——那樣會讓 textarea
+  // 的實際寬度變窄，在手機上會觸發自動放大頁面（跟 composer 那邊 textarea
+  // 字級要 >= 16px 是同一類「輸入框行為要對手機友善」的考量，這裡是寬度
+  // 而不是字級）。這個排版只在編輯狀態用，平常顯示還是頭貼在左、跟其他
+  // 貼文同一個視覺語言。
+  if (editing) {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <Avatar name="PASSION 官方" size={32} />
+          <span className="flex items-center gap-1 text-sm font-semibold text-primary">
+            <BadgeCheck className="size-3.5" strokeWidth={2} />
+            PASSION 官方
+          </span>
+        </div>
+
+        <textarea
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value.slice(0, MAX_CONTENT_LENGTH))}
+          placeholder="支援 markdown：標題用 #、清單用 -。圖片用下面的加號上傳，也可以拍照你的筆記"
+          className="min-h-32 w-full resize-none rounded-2xl border border-border bg-transparent p-3 font-mono text-sm outline-none placeholder:text-muted-foreground"
+        />
+        <AttachmentEditor
+          controller={newImages}
+          existing={savedImages}
+          onRemoveExisting={handleRemoveImage}
+          disabled={pending}
+        />
+        <div className="flex items-center gap-3 self-end text-sm">
+          <button type="button" onClick={cancelEdit} disabled={pending} className="text-muted-foreground hover:text-foreground">
+            取消
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={pending || !draft.trim() || newImages.busy}
+            className="font-semibold text-primary disabled:opacity-40"
+          >
+            儲存
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex gap-3">
       <div className="flex flex-col items-center">
@@ -142,90 +189,59 @@ export function RootContent({
           PASSION 官方
         </span>
 
-        {editing ? (
-          <div className="flex flex-col gap-2">
-            <textarea
-              autoFocus
-              value={draft}
-              onChange={(e) => setDraft(e.target.value.slice(0, MAX_CONTENT_LENGTH))}
-              placeholder="支援 markdown：標題用 #、清單用 -。圖片用下面的加號上傳，也可以拍照你的筆記"
-              className="min-h-32 w-full resize-none rounded-2xl border border-border bg-transparent p-3 font-mono text-sm outline-none placeholder:text-muted-foreground"
-            />
-            <AttachmentEditor
-              controller={newImages}
-              existing={savedImages}
-              onRemoveExisting={handleRemoveImage}
-              disabled={pending}
-            />
-            <div className="flex items-center gap-3 self-end text-sm">
-              <button type="button" onClick={cancelEdit} disabled={pending} className="text-muted-foreground hover:text-foreground">
-                取消
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={pending || !draft.trim() || newImages.busy}
-                className="font-semibold text-primary disabled:opacity-40"
-              >
-                儲存
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-start gap-2">
-            <div className="min-w-0 flex-1 text-sm leading-relaxed [&>*+*]:mt-3">
-              <ReactMarkdown
-                components={{
-                  // eslint-disable-next-line @next/next/no-img-element -- 內容來自 admin 貼的任意網址，不是本地靜態資源
-                  img: ({ src, alt }) => <img src={typeof src === "string" ? src : undefined} alt={alt ?? ""} className="w-full rounded-2xl" loading="lazy" />,
-                  a: ({ href, children }) => (
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow"
-                      className="break-all underline underline-offset-2 hover:text-primary"
-                    >
-                      {children}
-                    </a>
-                  ),
-                  h1: ({ children }) => <p className="text-xl font-bold">{children}</p>,
-                  h2: ({ children }) => <p className="text-lg font-bold">{children}</p>,
-                  h3: ({ children }) => <p className="text-base font-bold">{children}</p>,
-                  ul: ({ children }) => <ul className="list-disc pl-5">{children}</ul>,
-                  ol: ({ children }) => <ol className="list-decimal pl-5">{children}</ol>,
-                }}
-              >
-                {/* 裸網址在 markdown 裡不會自己變成連結，先包成 <網址>
-                    （見 lib/discussion/links.ts 的 autolinkMarkdown）。 */}
-                {autolinkMarkdown(saved)}
-              </ReactMarkdown>
+        <div className="flex items-start gap-2">
+          <div className="min-w-0 flex-1 text-sm leading-relaxed [&>*+*]:mt-3">
+            <ReactMarkdown
+              components={{
+                // eslint-disable-next-line @next/next/no-img-element -- 內容來自 admin 貼的任意網址，不是本地靜態資源
+                img: ({ src, alt }) => <img src={typeof src === "string" ? src : undefined} alt={alt ?? ""} className="w-full rounded-2xl" loading="lazy" />,
+                a: ({ href, children }) => (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="break-all underline underline-offset-2 hover:text-primary"
+                  >
+                    {children}
+                  </a>
+                ),
+                h1: ({ children }) => <p className="text-xl font-bold">{children}</p>,
+                h2: ({ children }) => <p className="text-lg font-bold">{children}</p>,
+                h3: ({ children }) => <p className="text-base font-bold">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc pl-5">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal pl-5">{children}</ol>,
+              }}
+            >
+              {/* 裸網址在 markdown 裡不會自己變成連結，先包成 <網址>
+                  （見 lib/discussion/links.ts 的 autolinkMarkdown）。 */}
+              {autolinkMarkdown(saved)}
+            </ReactMarkdown>
 
-              {/* 連結卡片跟一般貼文同一顆元件、同一個規則：只做內文裡
-                  第一個網址。 */}
-              {previewUrl && (
-                <div className="mt-3">
-                  <LinkCard url={previewUrl} initial={linkPreview} />
-                </div>
-              )}
+            {/* 連結卡片跟一般貼文同一顆元件、同一個規則：只做內文裡
+                第一個網址。 */}
+            {previewUrl && (
+              <div className="mt-3">
+                <LinkCard url={previewUrl} initial={linkPreview} />
+              </div>
+            )}
 
-              {savedImages.length > 0 && (
-                <div className="mt-3">
-                  <PostImages images={savedImages} />
-                </div>
-              )}
-            </div>
-            {isDiscussionAdmin && (
-              <button
-                type="button"
-                onClick={startEdit}
-                aria-label="編輯大綱文字"
-                className="shrink-0 text-muted-foreground hover:text-foreground"
-              >
-                <Pencil className="size-4" strokeWidth={1.75} />
-              </button>
+            {savedImages.length > 0 && (
+              <div className="mt-3">
+                <PostImages images={savedImages} />
+              </div>
             )}
           </div>
-        )}
+          {isDiscussionAdmin && (
+            <button
+              type="button"
+              onClick={startEdit}
+              aria-label="編輯大綱文字"
+              className="shrink-0 text-muted-foreground hover:text-foreground"
+            >
+              <Pencil className="size-4" strokeWidth={1.75} />
+            </button>
+          )}
+        </div>
 
         {/* 閱讀模式：獨立於上面的 content，管理者選好固定段落給大家看。
             點經文裡的節可以標記／複製／比較版本；版本徽章本身也是下拉選單，

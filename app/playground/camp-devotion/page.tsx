@@ -5,16 +5,22 @@ import { Button } from "@/components/ui/button"
 import { PassionLogoHeader } from "@/components/passion-logo-header"
 import { CampDevotionContent } from "@/components/camp-devotion-content"
 import { CampDevotionDaySelect } from "@/components/camp-devotion-day-select"
-import { DEVOTION_ENTRIES } from "@/lib/devotion-content"
+import { DEVOTION_ENTRIES, buildDevotionContent } from "@/lib/devotion-content"
+import { fetchPassage, parseReferenceString } from "@/lib/bible"
 
 // 只預覽 Day 2 那份內容－設計預覽不用登入、不接討論串，跟真正的
 // /camp/devotion/[day] 頁面不同。套 camp-theme（真正的 /camp/* 頁面都有
 // 這層黃色主題，playground 沒有共用 layout，這裡自己包一層預覽才準）。
 //
-// 自建版聖經模組（和合本／現代中文譯本／NIV，三種模式）改在
-// /playground/bible-module 單獨比較——這頁還是原本 YouVersion 版的
-// CampDevotionContent，兩邊還沒合併，等授權確認後再決定要不要換。
-export default function CampDevotionPlaygroundPage() {
+// 靈修內容現在是真正的 root post（見 components/camp-devotion-content.tsx），
+// 但這頁刻意不去查資料庫、不建立真的 root——只是打經文 API（外部服務，
+// 不是 DB）湊出跟真正頁面一樣的資料形狀，rootPostId 是假的，admin 編輯
+// 存檔會失敗（這裡本來就只是預覽畫面，不是真的可以操作的頁面）。
+export default async function CampDevotionPlaygroundPage() {
+  const entry = DEVOTION_ENTRIES[0]
+  const reference = parseReferenceString(entry.reference)
+  const bibleReading = reference ? await fetchPassage(entry.version, reference) : null
+
   return (
     <div className="camp-theme min-h-screen bg-background text-foreground">
       <main className="mx-auto max-w-2xl px-[6%] pb-16 sm:px-8 sm:pb-24">
@@ -28,11 +34,20 @@ export default function CampDevotionPlaygroundPage() {
           <p className="text-sm text-muted-foreground">靈修內容</p>
           <CampDevotionDaySelect
             items={DEVOTION_ENTRIES.map((e) => ({ id: e.id, label: e.id.toUpperCase() }))}
-            activeId={DEVOTION_ENTRIES[0].id}
+            activeId={entry.id}
           />
         </div>
         <div className="mt-4">
-          <CampDevotionContent entry={DEVOTION_ENTRIES[0]} isStaff />
+          <CampDevotionContent
+            entry={entry}
+            isStaff
+            rootPostId="playground-fake-root"
+            content={buildDevotionContent(entry)}
+            images={[]}
+            linkPreview={null}
+            bibleReading={bibleReading}
+            isDiscussionAdmin
+          />
         </div>
       </main>
     </div>

@@ -4,19 +4,36 @@ import { useEffect, useState } from "react"
 
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 import type { DevotionEntry } from "@/lib/devotion-content"
-import { parseReferenceString } from "@/lib/bible"
-import { PassageCardClient } from "@/components/bible/passage-card-client"
+import type { BiblePassage } from "@/lib/bible"
+import type { LinkPreviewDTO, PostImageDTO } from "@/lib/discussion/dto"
+import { RootContent } from "@/components/discussion/root-content"
 
-// 靈修內容區：經文＋導言＋結語，整合在討論串 root 的顯示區塊裡（跟
-// RootContent 視覺上同一塊）。引導問題不在這裡——那些是 root 底下置頂的
-// 官方回覆，顯示在下面接著的 DiscussionRoot 裡，不是這個元件的內容。
-// 一天一個路由（/camp/devotion/[day]），不再是同一頁裡切換 DAY2/DAY3 的
-// tab，所以這裡只吃「單一天」的 entry，沒有 tab 切換狀態。
-//
-// 經文走自建的聖經模組（見 components/bible/），不是寫死的文字——顯示
-// 用的版本可以讓讀者自己切換，也不用再申請 YouVersion App Key。只在
-// revealed 之後才掛載 PassageCardClient，公布時間到之前不會提早查經文。
-export function CampDevotionContent({ entry, isStaff }: { entry: DevotionEntry; isStaff: boolean }) {
+// 靈修內容現在就是一篇正常的 root post（跟 camp/conference 聚會頁同一套
+// RootContent：content／經文／附圖都是真的存在資料庫的東西，admin 可以
+// 編輯、閱讀模式的段落也能改），不是另外寫死一份文字。這個元件只多負責
+// 一件 RootContent 沒有的事：DAY2／DAY3 的公布時間閘門——公布前只顯示
+// 「尚未公布」，不會提早爆雷；day 標題保留原本的手寫體斜角樣式，所以
+// 沒有直接把它塞進 content markdown 裡，是頁面層級的裝飾，不是「文章
+// 本身」的一部分。
+export function CampDevotionContent({
+  entry,
+  isStaff,
+  rootPostId,
+  content,
+  images,
+  linkPreview,
+  bibleReading,
+  isDiscussionAdmin,
+}: {
+  entry: DevotionEntry
+  isStaff: boolean
+  rootPostId: string
+  content: string
+  images: PostImageDTO[]
+  linkPreview: LinkPreviewDTO | null
+  bibleReading: BiblePassage | null
+  isDiscussionAdmin: boolean
+}) {
   const [revealed, setRevealed] = useState(isStaff)
 
   useEffect(() => {
@@ -40,8 +57,6 @@ export function CampDevotionContent({ entry, isStaff }: { entry: DevotionEntry; 
     )
   }
 
-  const reference = parseReferenceString(entry.reference)
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
@@ -56,21 +71,14 @@ export function CampDevotionContent({ entry, isStaff }: { entry: DevotionEntry; 
         </p>
       </div>
 
-      {reference ? (
-        <PassageCardClient version={entry.version} reference={reference} />
-      ) : (
-        <p className="text-sm text-muted-foreground">經文參照格式錯誤。</p>
-      )}
-
-      {entry.intro && (
-        <div className="flex flex-col gap-2 text-base">
-          {entry.intro.split("\n").map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
-        </div>
-      )}
-
-      {entry.closing && <p className="text-base font-bold">{entry.closing}</p>}
+      <RootContent
+        rootPostId={rootPostId}
+        content={content}
+        images={images}
+        linkPreview={linkPreview}
+        bibleReading={bibleReading}
+        isDiscussionAdmin={isDiscussionAdmin}
+      />
     </div>
   )
 }

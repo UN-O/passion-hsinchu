@@ -33,7 +33,9 @@ export function VerseList({
                 onClick={interactive ? () => onToggleVerse?.(v.verse) : undefined}
                 className={cn(
                   interactive && "cursor-pointer rounded",
-                  selected?.has(v.verse) && "bg-muted",
+                  // 選取中（還沒按動作列）：虛線底線＋比 bg-muted 明顯的灰
+                  // （bg-muted 在卡片底色上幾乎看不出來，見使用者回報）。
+                  selected?.has(v.verse) && "bg-foreground/10 underline decoration-2 decoration-dashed decoration-muted-foreground underline-offset-4",
                   highlighted?.has(v.verse) && "bg-primary/25"
                 )}
               >
