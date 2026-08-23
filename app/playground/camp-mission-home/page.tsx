@@ -1,4 +1,5 @@
 import { CampMissionHome } from "@/components/camp-mission-home"
+import { assertPlaygroundEnabled } from "@/lib/playground-guard"
 
 // CampMissionHome 是真正的伺服器元件，會直接查資料庫（分區積分、小隊
 // 積分、房號…）。這頁沒有 session/headers 可以讓 Next 自動判斷要動態
@@ -9,5 +10,7 @@ import { CampMissionHome } from "@/components/camp-mission-home"
 export const dynamic = "force-dynamic"
 
 export default function CampMissionHomePlaygroundPage() {
+  // 這頁會查資料庫，proxy.ts 之外自己再擋一次，見 lib/playground-guard.ts。
+  assertPlaygroundEnabled()
   return <CampMissionHome profileHref="/playground/camp-profile" meetingHref="/playground/camp-meeting" />
 }

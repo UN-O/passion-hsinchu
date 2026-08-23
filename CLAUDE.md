@@ -8,6 +8,55 @@ Next.js + Tailwind v4 + shadcn/ui。
 
 UI 元件用 `pnpm dlx shadcn@latest add <component>` 安裝，加入後依 style.md 調整樣式。
 
+## Playground 預覽頁（只能存在於開發環境）
+
+`app/playground/*`（`camp-mission-home`、`camp-profile`、`camp-meeting`、
+`conference-mission-home`…）是**不用登入就能看到正式元件長什麼樣**的預覽頁，
+純粹方便本機開發時看畫面／截圖，不是另一套系統，跟正式路由（`/camp`、
+`/conference`）render 的是**同一個元件**，差別只在 playground 版不經過
+`requireFlowAccess`／session。
+
+**這個 repo 是 public 的，網址本身可以直接被外部人士猜到或用搜尋引擎找到，
+而這些頁面有幾個會直接查資料庫**（`camp-mission-home`、
+`conference-mission-home`）。所以規則是：
+
+- **正式環境（`NODE_ENV=production`）下，任何人在任何情況都不可以打到
+  `/playground/*`。** 這件事由 [proxy.ts](proxy.ts) 擋（Next 16 把 middleware.ts
+  改名成 proxy.ts，一個專案只認一支，不要另外建 middleware.ts），擋在路由
+  最前面，根本不會進到頁面程式碼。
+- 放行需要**兩個條件同時成立**：`NODE_ENV !== "production"` **且**
+  `.env` 裡的 `ENABLE_PLAYGROUND=true`。兩個都要，不是任何一個就夠——就算
+  以後有人不小心在正式環境的環境變數設定裡也設了 `ENABLE_PLAYGROUND=true`，
+  `NODE_ENV` 那道還是會擋下來。不要把這個改成只看其中一個條件。
+- **有實際查資料庫的 playground 頁面**（目前是 `camp-mission-home`，會查
+  分區／小隊積分、IG 限動）**要額外呼叫 `assertPlaygroundEnabled()`**
+  （見 [lib/playground-guard.ts](lib/playground-guard.ts)）在頁面自己這層再擋一次，
+  不能只靠 proxy.ts——跟 `requireStaff()` 一樣的道理，外層的路由關卡以後
+  可能因為 Next.js 版本更新而失效，真的查得到資料庫的地方不能只有一層。
+  純靜態內容、不查資料庫的 playground 頁不需要加這個。
+- 新增 playground 頁面時，是否要動資料庫決定要不要加 `assertPlaygroundEnabled()`；
+  路由層的擋一律交給 proxy.ts 的 matcher 管，不要自己在頁面外再加其他判斷。
+- playground 頁面看到的資料常常是預設值／假資料（例如勇氣值卡片會顯示
+  「尚未分隊」），不代表正式流程跑起來也會這樣。
+
+## 測試：不要測兩次
+
+**要驗證登入後的畫面跟資料，走真正的 `/camp`、`/conference` 路由，不要先在
+playground 測一次、之後又要在真的登入流程裡再測一次**——這是重複勞動，
+而且 playground 看到的假資料不代表真正登入後長那樣，等於白測。
+
+- **學員端功能**：直接用測試帳號登入 `/claim` 走完整流程，不用先在
+  playground 看過一輪。正式流程用「教會 + 姓名」對 `enrollment` 表
+  （`lib/enrollment.ts` 的 `findEnrollment`）比對登入，不是帳號密碼。
+  資料庫裡留了一筆測試用的假資料：
+  - 教會：新竹浸信會
+  - 姓名：測試學員
+- **後台／staff 功能**（`requireStaff()` 擋住的端點、`/admin/*`）：這類角色是
+  用 Google 登入的 email 對 `staff_allowlist` 表比對出來的（見「工作人員
+  名單」），沒有一組通用測試帳密可以直接冒充。**遇到需要驗證後台功能時，
+  請使用者自己在本機登入 `localhost` 讓你接手測**，不要試圖用 playground
+  的假資料繞過，也不要自己編造 staff session。
+
 ## 分支
 
 **一律在 `2026` 分支上開發。** 不要另開 `claude/*` 分支。
