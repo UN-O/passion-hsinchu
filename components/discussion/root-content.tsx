@@ -184,53 +184,14 @@ export function RootContent({
       </div>
 
       <div className={`flex min-w-0 flex-1 flex-col gap-2 ${hasRail ? "pb-3" : ""}`}>
-        <span className="flex items-center gap-1 text-sm font-semibold text-primary">
-          <BadgeCheck className="size-3.5" strokeWidth={2} />
-          PASSION 官方
-        </span>
-
-        <div className="flex items-start gap-2">
-          <div className="min-w-0 flex-1 text-sm leading-relaxed [&>*+*]:mt-3">
-            <ReactMarkdown
-              components={{
-                // eslint-disable-next-line @next/next/no-img-element -- 內容來自 admin 貼的任意網址，不是本地靜態資源
-                img: ({ src, alt }) => <img src={typeof src === "string" ? src : undefined} alt={alt ?? ""} className="w-full rounded-2xl" loading="lazy" />,
-                a: ({ href, children }) => (
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className="break-all underline underline-offset-2 hover:text-primary"
-                  >
-                    {children}
-                  </a>
-                ),
-                h1: ({ children }) => <p className="text-xl font-bold">{children}</p>,
-                h2: ({ children }) => <p className="text-lg font-bold">{children}</p>,
-                h3: ({ children }) => <p className="text-base font-bold">{children}</p>,
-                ul: ({ children }) => <ul className="list-disc pl-5">{children}</ul>,
-                ol: ({ children }) => <ol className="list-decimal pl-5">{children}</ol>,
-              }}
-            >
-              {/* 裸網址在 markdown 裡不會自己變成連結，先包成 <網址>
-                  （見 lib/discussion/links.ts 的 autolinkMarkdown）。 */}
-              {autolinkMarkdown(saved)}
-            </ReactMarkdown>
-
-            {/* 連結卡片跟一般貼文同一顆元件、同一個規則：只做內文裡
-                第一個網址。 */}
-            {previewUrl && (
-              <div className="mt-3">
-                <LinkCard url={previewUrl} initial={linkPreview} />
-              </div>
-            )}
-
-            {savedImages.length > 0 && (
-              <div className="mt-3">
-                <PostImages images={savedImages} />
-              </div>
-            )}
-          </div>
+        {/* 編輯按鈕跟 PASSION 官方徽章同一列（justify-between），不是放在
+            內文旁邊另外佔一欄——那樣會把內文欄用 flex row 擠出一段寬度，
+            文章實際可用寬度變窄（使用者截圖回報過這個問題）。 */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="flex items-center gap-1 text-sm font-semibold text-primary">
+            <BadgeCheck className="size-3.5" strokeWidth={2} />
+            PASSION 官方
+          </span>
           {isDiscussionAdmin && (
             <button
               type="button"
@@ -240,6 +201,48 @@ export function RootContent({
             >
               <Pencil className="size-4" strokeWidth={1.75} />
             </button>
+          )}
+        </div>
+
+        <div className="min-w-0 text-sm leading-relaxed [&>*+*]:mt-3">
+          <ReactMarkdown
+            components={{
+              // eslint-disable-next-line @next/next/no-img-element -- 內容來自 admin 貼的任意網址，不是本地靜態資源
+              img: ({ src, alt }) => <img src={typeof src === "string" ? src : undefined} alt={alt ?? ""} className="w-full rounded-2xl" loading="lazy" />,
+              a: ({ href, children }) => (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="break-all underline underline-offset-2 hover:text-primary"
+                >
+                  {children}
+                </a>
+              ),
+              h1: ({ children }) => <p className="text-xl font-bold">{children}</p>,
+              h2: ({ children }) => <p className="text-lg font-bold">{children}</p>,
+              h3: ({ children }) => <p className="text-base font-bold">{children}</p>,
+              ul: ({ children }) => <ul className="list-disc pl-5">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal pl-5">{children}</ol>,
+            }}
+          >
+            {/* 裸網址在 markdown 裡不會自己變成連結，先包成 <網址>
+                （見 lib/discussion/links.ts 的 autolinkMarkdown）。 */}
+            {autolinkMarkdown(saved)}
+          </ReactMarkdown>
+
+          {/* 連結卡片跟一般貼文同一顆元件、同一個規則：只做內文裡
+              第一個網址。 */}
+          {previewUrl && (
+            <div className="mt-3">
+              <LinkCard url={previewUrl} initial={linkPreview} />
+            </div>
+          )}
+
+          {savedImages.length > 0 && (
+            <div className="mt-3">
+              <PostImages images={savedImages} />
+            </div>
           )}
         </div>
 
@@ -283,28 +286,26 @@ export function RootContent({
                 )}
               </div>
             ) : (
-              <div className="flex items-start gap-2">
-                <div className="min-w-0 flex-1">
-                  {reading ? (
-                    <PassageCardClient
-                      key={`${reading.version}-${reading.reference.book}-${reading.reference.chapter}-${reading.reference.verseStart}-${reading.reference.verseEnd ?? ""}`}
-                      version={reading.version}
-                      reference={reading.reference}
-                      initialPassage={reading}
-                    />
-                  ) : (
-                    <p className="text-sm text-muted-foreground">還沒設定閱讀經文。</p>
-                  )}
-                </div>
+              <div className="flex flex-col gap-2">
+                {/* 設定按鈕跟內容同一欄往下疊，不是放旁邊另外佔一欄——
+                    理由跟上面編輯內文的按鈕一樣：不要把卡片寬度往內擠。 */}
                 {isDiscussionAdmin && (
                   <button
                     type="button"
                     onClick={startConfiguringReading}
-                    aria-label="設定閱讀經文"
-                    className="shrink-0 text-muted-foreground hover:text-foreground"
+                    className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                   >
                     <BookOpen className="size-4" strokeWidth={1.75} />
+                    {reading ? "設定閱讀經文" : "還沒設定閱讀經文，點一下設定"}
                   </button>
+                )}
+                {reading && (
+                  <PassageCardClient
+                    key={`${reading.version}-${reading.reference.book}-${reading.reference.chapter}-${reading.reference.verseStart}-${reading.reference.verseEnd ?? ""}`}
+                    version={reading.version}
+                    reference={reading.reference}
+                    initialPassage={reading}
+                  />
                 )}
               </div>
             )}

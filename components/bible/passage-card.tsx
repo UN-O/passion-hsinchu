@@ -1,3 +1,5 @@
+import { ArrowUpRight } from "lucide-react"
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { BIBLE_VERSIONS } from "@/lib/bible"
 import type { BiblePassage, BibleVersionKey } from "@/lib/bible"
@@ -53,7 +55,18 @@ export function PassageCard({
 
       <PassageBody passage={passage} interactive={interactive} />
 
-      <p className="text-xs text-muted-foreground">{passage.versionLabel}</p>
+      {/* 版本已經在上面那顆徽章顯示過了，這裡改成連到自由模式的「閱讀
+          整章」——只有登入的人打得開（見 app/bible/page.tsx），開新分頁
+          接著往下讀整章，不是留在原地的一行重複文字。 */}
+      <a
+        href={`/bible?book=${passage.reference.book}&chapter=${passage.reference.chapter}&version=${passage.version}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex w-fit items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+      >
+        閱讀整章
+        <ArrowUpRight className="size-3.5" strokeWidth={1.75} />
+      </a>
     </div>
   )
 }
