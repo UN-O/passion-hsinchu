@@ -305,6 +305,11 @@ export function RootContent({
                     version={reading.version}
                     reference={reading.reference}
                     initialPassage={reading}
+                    // 閱讀模式掛在 root post 底下，經文字級要跟上面的內文
+                    // 一致（text-sm leading-relaxed，見上面內文那個 div）——
+                    // 自由模式（bible-free-reader.tsx）不傳這個，維持原本
+                    // text-base leading-loose 的預設值。
+                    textClassName="text-sm leading-relaxed"
                   />
                 )}
               </div>

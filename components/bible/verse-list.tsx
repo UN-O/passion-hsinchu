@@ -12,12 +12,18 @@ export function VerseList({
   selected,
   highlighted,
   onToggleVerse,
+  // 閱讀模式（掛在 root post 底下）要跟貼文本身的字級一致（text-sm
+  // leading-relaxed，見 root-content.tsx 的內文），自由模式維持原本比較
+  // 好讀的 text-base leading-loose——預設值就是自由模式那組，閱讀模式
+  // 由 passage-card.tsx 一路往下傳 textClassName 覆寫。
+  textClassName = "text-base leading-loose",
 }: {
   verses: BibleVerse[]
   interactive?: boolean
   selected?: Set<number>
   highlighted?: Set<number>
   onToggleVerse?: (verse: number) => void
+  textClassName?: string
 }) {
   const sections = groupByHeading(verses)
 
@@ -26,7 +32,7 @@ export function VerseList({
       {sections.map((section, i) => (
         <div key={i} className="min-w-0">
           {section.heading && <p className="mb-1 text-sm font-semibold break-words">{section.heading}</p>}
-          <p className="min-w-0 text-base leading-loose break-words">
+          <p className={cn("min-w-0 break-words", textClassName)}>
             {section.verses.map((v) => (
               <span
                 key={v.verse}

@@ -18,10 +18,12 @@ export function PassageCard({
   passage,
   interactive = false,
   onVersionChange,
+  textClassName,
 }: {
   passage: BiblePassage
   interactive?: boolean
   onVersionChange?: (version: BibleVersionKey) => void
+  textClassName?: string
 }) {
   return (
     <div className="flex w-full min-w-0 flex-col gap-4 rounded-2xl border border-border bg-card p-5 text-card-foreground sm:p-6">
@@ -53,7 +55,7 @@ export function PassageCard({
         )}
       </div>
 
-      <PassageBody passage={passage} interactive={interactive} />
+      <PassageBody passage={passage} interactive={interactive} textClassName={textClassName} />
 
       {/* 版本已經在上面那顆徽章顯示過了，這裡改成連到自由模式的「閱讀
           整章」——只有登入的人打得開（見 app/bible/page.tsx），開新分頁

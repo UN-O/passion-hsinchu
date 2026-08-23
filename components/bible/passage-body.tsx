@@ -11,7 +11,15 @@ import { CompareVersionsDialog } from "./compare-versions-dialog"
 // 跳出動作列（VerseToolbar）。「標記」是純畫面互動、不存資料庫——重整頁面
 // 或跨裝置不會保留，跟社群 App 常見的「螢光筆」功能不是同一回事，是刻意
 // 先做輕量版。
-export function PassageBody({ passage, interactive = false }: { passage: BiblePassage; interactive?: boolean }) {
+export function PassageBody({
+  passage,
+  interactive = false,
+  textClassName,
+}: {
+  passage: BiblePassage
+  interactive?: boolean
+  textClassName?: string
+}) {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [highlighted, setHighlighted] = useState<Set<number>>(new Set())
   const [compareOpen, setCompareOpen] = useState(false)
@@ -50,7 +58,14 @@ export function PassageBody({ passage, interactive = false }: { passage: BiblePa
 
   return (
     <div className={interactive ? "relative w-full min-w-0" : "w-full min-w-0"}>
-      <VerseList verses={passage.verses} interactive={interactive} selected={selected} highlighted={highlighted} onToggleVerse={toggleVerse} />
+      <VerseList
+        verses={passage.verses}
+        interactive={interactive}
+        selected={selected}
+        highlighted={highlighted}
+        onToggleVerse={toggleVerse}
+        textClassName={textClassName}
+      />
 
       {interactive && (
         <VerseToolbar

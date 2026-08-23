@@ -20,12 +20,14 @@ export function PassageCardClient({
   interactive = true,
   initialPassage,
   allowVersionChange = true,
+  textClassName,
 }: {
   version: BibleVersionKey
   reference: BibleReference
   interactive?: boolean
   initialPassage?: BiblePassage | null
   allowVersionChange?: boolean
+  textClassName?: string
 }) {
   const [version, setVersion] = useState(initialVersion)
   const [passage, setPassage] = useState<BiblePassage | null>(initialPassage ?? null)
@@ -56,5 +58,12 @@ export function PassageCardClient({
   if (loading) return <p className="text-sm text-muted-foreground">查詢中…</p>
   if (!passage) return <p className="text-sm text-muted-foreground">尚未連接，或查無 {referenceToLabel(reference)}。</p>
 
-  return <PassageCard passage={passage} interactive={interactive} onVersionChange={allowVersionChange ? setVersion : undefined} />
+  return (
+    <PassageCard
+      passage={passage}
+      interactive={interactive}
+      onVersionChange={allowVersionChange ? setVersion : undefined}
+      textClassName={textClassName}
+    />
+  )
 }
