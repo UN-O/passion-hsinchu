@@ -49,7 +49,7 @@ export function PassageBody({ passage, interactive = false }: { passage: BiblePa
   }
 
   return (
-    <div className={interactive ? "relative" : undefined}>
+    <div className={interactive ? "relative w-full min-w-0" : "w-full min-w-0"}>
       <VerseList verses={passage.verses} interactive={interactive} selected={selected} highlighted={highlighted} onToggleVerse={toggleVerse} />
 
       {interactive && (

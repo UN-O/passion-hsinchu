@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 import type { DevotionEntry } from "@/lib/devotion-content"
+import { parseReferenceString } from "@/lib/bible"
+import { PassageCardClient } from "@/components/bible/passage-card-client"
 
 // 靈修內容區：經文＋導言＋結語，整合在討論串 root 的顯示區塊裡（跟
 // RootContent 視覺上同一塊）。引導問題不在這裡——那些是 root 底下置頂的
@@ -11,8 +13,9 @@ import type { DevotionEntry } from "@/lib/devotion-content"
 // 一天一個路由（/camp/devotion/[day]），不再是同一頁裡切換 DAY2/DAY3 的
 // tab，所以這裡只吃「單一天」的 entry，沒有 tab 切換狀態。
 //
-// 經文原本串 YouVersion Platform API 即時抓取，改回固定文字（entry.verseText，
-// 見 lib/devotion-content.ts）——不用再申請 App Key、不依賴第三方服務。
+// 經文走自建的聖經模組（見 components/bible/），不是寫死的文字——顯示
+// 用的版本可以讓讀者自己切換，也不用再申請 YouVersion App Key。只在
+// revealed 之後才掛載 PassageCardClient，公布時間到之前不會提早查經文。
 export function CampDevotionContent({ entry, isStaff }: { entry: DevotionEntry; isStaff: boolean }) {
   const [revealed, setRevealed] = useState(isStaff)
 
@@ -37,6 +40,8 @@ export function CampDevotionContent({ entry, isStaff }: { entry: DevotionEntry; 
     )
   }
 
+  const reference = parseReferenceString(entry.reference)
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
@@ -51,12 +56,11 @@ export function CampDevotionContent({ entry, isStaff }: { entry: DevotionEntry; 
         </p>
       </div>
 
-      <div className="flex flex-col gap-2 rounded-2xl border border-border bg-muted/20 p-4 text-base">
-        <p className="text-sm font-medium text-muted-foreground">{entry.verseLabel}</p>
-        {entry.verseText.map((verse, index) => (
-          <p key={index}>{verse}</p>
-        ))}
-      </div>
+      {reference ? (
+        <PassageCardClient version={entry.version} reference={reference} />
+      ) : (
+        <p className="text-sm text-muted-foreground">經文參照格式錯誤。</p>
+      )}
 
       {entry.intro && (
         <div className="flex flex-col gap-2 text-base">

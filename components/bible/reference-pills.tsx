@@ -26,7 +26,7 @@ export function ReferencePills({
   const bookMeta = BOOK_BY_CODE.get(book)
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex w-full min-w-0 flex-wrap items-center gap-2">
       <button
         type="button"
         onClick={() => setPickerOpen(true)}

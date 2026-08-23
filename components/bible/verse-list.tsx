@@ -22,11 +22,11 @@ export function VerseList({
   const sections = groupByHeading(verses)
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex min-w-0 w-full flex-col gap-3">
       {sections.map((section, i) => (
-        <div key={i}>
-          {section.heading && <p className="mb-1 text-sm font-semibold">{section.heading}</p>}
-          <p className="text-base leading-loose">
+        <div key={i} className="min-w-0">
+          {section.heading && <p className="mb-1 text-sm font-semibold break-words">{section.heading}</p>}
+          <p className="min-w-0 text-base leading-loose break-words">
             {section.verses.map((v) => (
               <span
                 key={v.verse}

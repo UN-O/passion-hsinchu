@@ -47,7 +47,7 @@ export function BibleQuotePicker({ onInsert, disabled }: { onInsert: (text: stri
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-border p-4">
+    <div className="flex w-full min-w-0 basis-full flex-col gap-3 rounded-2xl border border-border p-4">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium">加入經文</p>
         <button type="button" onClick={() => setOpen(false)} aria-label="關閉" className="text-muted-foreground hover:text-foreground">

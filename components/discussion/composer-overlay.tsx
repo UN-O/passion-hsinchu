@@ -106,7 +106,7 @@ export function ComposerOverlay({ target, pending, onSubmit, onClose }: Composer
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto px-4 py-4">
         {/* 完整的祖先鏈，一路排到最上層（不裁切）——按下回覆要看得到整段
             脈絡，不是只有正上方那則的三行預覽。 */}
         {target.context.length > 0 && (

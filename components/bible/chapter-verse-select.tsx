@@ -63,8 +63,8 @@ export function ChapterVerseSelect({
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="max-h-80 overflow-y-auto rounded-xl border border-border p-3">
+    <div className="flex w-full min-w-0 flex-col gap-3">
+      <div className="max-h-80 w-full min-w-0 overflow-y-auto rounded-xl border border-border p-3">
         {loading && <p className="text-sm text-muted-foreground">查詢中…</p>}
         {!loading && !passage && <p className="text-sm text-muted-foreground">尚未連接，或查無此章。</p>}
         {!loading && passage && <VerseList verses={passage.verses} interactive selected={selected} onToggleVerse={toggleVerse} />}

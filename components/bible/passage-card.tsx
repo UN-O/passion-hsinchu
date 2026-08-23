@@ -22,7 +22,7 @@ export function PassageCard({
   onVersionChange?: (version: BibleVersionKey) => void
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 text-card-foreground sm:p-6">
+    <div className="flex w-full min-w-0 flex-col gap-4 rounded-2xl border border-border bg-card p-5 text-card-foreground sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
           {passage.bookLabel} {passage.reference.chapter}
