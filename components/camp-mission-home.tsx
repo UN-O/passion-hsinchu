@@ -17,7 +17,7 @@ import { CampMeetingSessions } from "@/components/camp-meeting-sessions"
 import { getRegionTotals, getTeamTotals } from "@/lib/exp"
 import { getCampTeamInfo } from "@/lib/camp-team"
 import { heroAvatarDataUri } from "@/lib/hero-card-visuals"
-import { campZoneScreens, getNextCampMeetingSession } from "@/lib/opening-camp-content"
+import { campZoneScreens } from "@/lib/opening-camp-content"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
 
 // 還沒分到隊（camp_team_member 查不到）時顯示的預設文字。
@@ -100,10 +100,6 @@ export async function CampMissionHome({
     zone ?? ""
   )
   const squadCouragePoints = teamName ? (teamTotals[teamName] ?? 0) : 0
-  // 只在 4 場正式 SESSION 裡挑，因為卡片點進去的 /camp/meeting 現在專門
-  // 顯示這 4 場，兩邊的「下一場」要對得起來（大地競賽／辯論場／Podcast
-  // 不算聚會，見 lib/opening-camp-content.ts 的 CAMP_MEETING_SESSION_IDS）。
-  const nextSession = getNextCampMeetingSession()
 
   return (
     <ScrollBlackout>
@@ -148,11 +144,12 @@ export async function CampMissionHome({
         <ZoneScoreChart zones={zoneScores} />
       </SectionCard>
 
-      {/* 背景只在「即將開始」那張卡片整個露出來（沒被 sticky logo 列蓋到、
-          也沒被畫面下緣切到）時才變黑，只要卡片被切掉一點點就變回黃色
-          （見 camp-scroll-blackout.tsx）。ScrollBlackoutTrigger 包在
-          camp-meeting-sessions.tsx 裡面、只包住卡片本身。 */}
-      <CampMeetingSessions nextSession={nextSession} meetingHref={meetingHref} />
+      {/* 「活動筆記」：6 場正式聚會的卡片清單。背景只在目前最該被注意的
+          那張卡片（正在進行／即將開始）整個露出來（沒被 sticky logo 列
+          蓋到、也沒被畫面下緣切到）時才變黑，只要卡片被切掉一點點就變回
+          黃色（見 camp-scroll-blackout.tsx）。ScrollBlackoutTrigger 包在
+          camp-meeting-sessions.tsx 裡面、只包住那一張卡片。 */}
+      <CampMeetingSessions meetingHref={meetingHref} />
 
       {/* 早晨靈修：首頁只留一個入口，進去之後用頁面裡的 DAY2／DAY3 玻璃
           切換按鈕切換（見 app/camp/devotion/[day]/layout.tsx 的

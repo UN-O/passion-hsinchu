@@ -3,55 +3,82 @@ import Link from "next/link"
 
 import { ScrollBlackoutTrigger } from "@/components/camp-scroll-blackout"
 import { genRyuMin } from "@/app/fonts/gen-ryu-min"
-import { formatCampMeetingDateLabel } from "@/lib/opening-camp-content"
+import {
+  formatCampMeetingDateLabel,
+  formatCampMeetingTimeLabel,
+  getCampMeetingSessions,
+  type CampSession,
+} from "@/lib/opening-camp-content"
 
-type SessionSummary = {
-  id: string
-  label: string
-  image: string
-  startISO: string
+type StatusLabel = {
+  text: string
+  // 灰階（text-white/50）表示「還沒輪到」——尚未開始的場次、已經結束的
+  // 場次都算，只有正在進行／即將開始（下一場）用全白強調，呼應 style.md
+  // 互動狀態用「顏色深淺」表達、不另外發明強調色的規則。
+  toneClass: string
 }
 
-// 4 場正式聚會全部隨時看得到、隨時可以點進去（不再有「還沒輪到不能看」的
-// 時間限制），首頁只放「即將開始」這張大卡片；其餘場次要看全部要去
-// meetingHref 那頁，首頁不重複列。getNextCampMeetingSession 在所有場次都
-// 已經開始後會退回最後一場（見 lib/opening-camp-content.ts），這時候這張
-// 卡片顯示的其實是已經開始（甚至結束）的場次，「即將開始」的字就不對了，
-// 改顯示那個場次的日期，跟拿掉「查看所有活動」之前的樣子一樣。
-export function CampMeetingSessions({
-  nextSession,
-  meetingHref,
-}: {
-  nextSession: SessionSummary
-  meetingHref: string
-}) {
-  const hasStarted = new Date(nextSession.startISO) <= new Date()
+// featuredId：目前最該被注意的那一場（正在進行、或還沒開始的場次裡最近
+// 的一場）。其餘場次一律「尚未開始（時間）」；已經結束的場次改顯示日期，
+// 不再誤標成「即將開始」。
+function getStatusLabel(session: CampSession, now: Date, featuredId: string): StatusLabel {
+  const start = new Date(session.startISO)
+  const end = new Date(session.endISO)
+
+  if (now > end) {
+    return { text: formatCampMeetingDateLabel(session.startISO), toneClass: "text-white/50" }
+  }
+  if (now >= start) {
+    return { text: "正在進行", toneClass: "text-white" }
+  }
+  if (session.id === featuredId) {
+    return { text: "即將開始", toneClass: "text-white" }
+  }
+  return { text: `尚未開始（${formatCampMeetingTimeLabel(session.startISO)}）`, toneClass: "text-white/50" }
+}
+
+// 「活動筆記」：6 場正式聚會全部隨時看得到、隨時可以點進去（不再有「還沒
+// 輪到不能看」的時間限制），首頁列出全部場次的卡片，不用再點去別的頁面看
+// 清單。首頁背景黑化只跟著「featured」那張卡片（正在進行；全部場次都還
+// 沒開始時是最近的下一場；全部都結束時退回最後一場）走，不用整個清單都
+// 露出來才變黑（見 camp-scroll-blackout.tsx），維持跟改版前單卡一樣的
+// 觸發時機。
+export function CampMeetingSessions({ meetingHref }: { meetingHref: string }) {
+  const sessions = getCampMeetingSessions()
+  const now = new Date()
+  const featured = sessions.find((session) => new Date(session.endISO) >= now) ?? sessions[sessions.length - 1]
 
   return (
-    <div className="mt-6">
-      {/* 首頁背景要在「這張卡片整個露出來」時變黑（見 camp-scroll-blackout.tsx）。 */}
-      <ScrollBlackoutTrigger>
-        <Link
-          href={`${meetingHref}/${nextSession.id}`}
-          className="relative flex aspect-[5/4] w-full flex-col justify-end overflow-hidden rounded-3xl p-6"
-        >
-          <Image
-            src={nextSession.image}
-            alt=""
-            fill
-            sizes="(min-width: 640px) 640px, 100vw"
-            className="object-cover"
-            style={{ objectPosition: "50% 30%" }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-          <p className="relative z-10 text-sm text-white/80">
-            {hasStarted ? formatCampMeetingDateLabel(nextSession.startISO) : "即將開始："}
-          </p>
-          <p className={`${genRyuMin.className} relative z-10 mt-2 w-[min(74%,28rem)] text-2xl text-white`}>
-            {nextSession.label}
-          </p>
-        </Link>
-      </ScrollBlackoutTrigger>
+    <div className="mt-6 flex flex-col gap-3">
+      <p className="text-sm text-muted-foreground">活動筆記</p>
+      <div className="flex flex-col gap-4">
+        {sessions.map((session) => {
+          const status = getStatusLabel(session, now, featured.id)
+          const card = (
+            <Link
+              href={`${meetingHref}/${session.id}`}
+              className="relative flex aspect-[16/9] w-full flex-col justify-end overflow-hidden rounded-3xl p-5"
+            >
+              <Image
+                src={session.image}
+                alt=""
+                fill
+                sizes="(min-width: 640px) 640px, 100vw"
+                className="object-cover"
+                style={{ objectPosition: "50% 30%" }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+              <p className={`relative z-10 text-sm ${status.toneClass}`}>{status.text}</p>
+              <p className={`${genRyuMin.className} relative z-10 mt-1 text-xl text-white`}>{session.label}</p>
+            </Link>
+          )
+          return session.id === featured.id ? (
+            <ScrollBlackoutTrigger key={session.id}>{card}</ScrollBlackoutTrigger>
+          ) : (
+            <div key={session.id}>{card}</div>
+          )
+        })}
+      </div>
     </div>
   )
 }
