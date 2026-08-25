@@ -45,7 +45,13 @@ export function CampMeetingDayAccordion({ days }: { days: CampMeetingDaySection[
               aria-expanded={isOpen}
               className="flex w-full items-center justify-between gap-2 text-left"
             >
-              <span className={`${genRyuMin.className} text-xl text-foreground`}>{day.label}</span>
+              {/* text-muted-foreground 不是 text-foreground：這個標題疊在會變
+                  黃底／黑底切換的首頁背景上（見 camp-scroll-blackout.tsx），
+                  --foreground 在 camp-theme 是給黃底配的深色，黑底時沒有跟著
+                  被覆寫會整個看不見；--muted-foreground 才是黑底時會自動反白
+                  的那個變數（見 globals.css 的 [data-blackout="true"]），跟
+                  上面「活動筆記」小標題同一個做法。 */}
+              <span className={`${genRyuMin.className} text-xl text-muted-foreground`}>{day.label}</span>
               {isOpen ? (
                 <ChevronUp className="size-5 text-muted-foreground" aria-hidden />
               ) : (
