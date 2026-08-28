@@ -326,6 +326,14 @@ export function ConferenceMissionHome({
             })}
           </div>
 
+          {/* 已經填過晚餐的人：卡片放在 DAY2 晚場聚會（session-3）卡片前面——
+              晚餐 17:35 開動，緊接在晚場聚會 19:00 之前，跟這裡的時間順序
+              對得上，不需要再置頂搶注意力（上面 title 圖後面那個位置只有
+              還沒填時才用）。 */}
+          {dinnerCompleted && (
+            <ConferenceDinnerPicker registration={dinnerRegistration} onSaved={setDinnerRegistration} />
+          )}
+
           <ConferenceSessionCard session={conferenceSessions[2]} meetingHref={meetingHref} />
         </div>
       </div>
@@ -341,14 +349,6 @@ export function ConferenceMissionHome({
           className="h-auto w-full"
         />
       </div>
-
-      {/* 已經填過晚餐的人：卡片放在頁面最後面（流程表圖片後面），
-          不需要再置頂搶注意力——上面 title 圖後面那個位置只有還沒填時才用。 */}
-      {dinnerCompleted && (
-        <div className="mx-auto max-w-2xl px-[6%] pb-12 sm:px-8">
-          <ConferenceDinnerPicker registration={dinnerRegistration} onSaved={setDinnerRegistration} />
-        </div>
-      )}
 
       <Dialog open={activeWorkshop !== undefined} onOpenChange={(next) => !next && setActiveWorkshopId(null)}>
         <DialogContent
