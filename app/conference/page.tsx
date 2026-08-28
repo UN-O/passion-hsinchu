@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import { ConferenceMissionHome } from "@/components/conference-mission-home"
 import { ProgramPortal } from "@/components/program-portal"
+import { getDinnerRegistration } from "@/lib/conference-dinner"
 import { getFullWorkshopSlots, getWorkshopRegistration } from "@/lib/conference-workshop"
 import { requireFlowAccess } from "@/lib/session"
 import { conference } from "@/lib/site-config"
@@ -19,15 +20,17 @@ export default async function ConferencePage() {
   if (session.completedFlows.includes("conference")) {
     // enrollmentId 一定有值：走到這裡代表 assertFlowAccess 已經確認
     // session.enrollment.conference 是 true。
-    const [workshopRegistration, fullWorkshopSlots] = await Promise.all([
+    const [workshopRegistration, fullWorkshopSlots, dinnerRegistration] = await Promise.all([
       getWorkshopRegistration(session.user.enrollmentId!),
       getFullWorkshopSlots(),
+      getDinnerRegistration(session.user.enrollmentId!),
     ])
 
     return (
       <ConferenceMissionHome
         initialWorkshopRegistration={workshopRegistration}
         fullWorkshopSlots={[...fullWorkshopSlots]}
+        initialDinnerRegistration={dinnerRegistration}
       />
     )
   }

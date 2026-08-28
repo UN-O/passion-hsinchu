@@ -244,3 +244,18 @@ export const conferenceWorkshopCapacity = pgTable(
   },
   (table) => [primaryKey({ columns: [table.workshopId, table.round] })]
 )
+
+// 週六晚餐（8/29 17:35 信徒大樓餐廳）報名，一人一列——跟工作坊不同，
+// 這裡沒有場次的概念，enrollmentId 本身就是唯一鍵。mealType 只有
+// attending 為 true 時才有值（不參加就不需要選葷素），所以是 nullable，
+// 不是額外開一個「未選擇」的 enum 選項。
+export const conferenceDinnerRegistration = pgTable("conference_dinner_registration", {
+  enrollmentId: uuid("enrollment_id")
+    .primaryKey()
+    .references(() => enrollment.id, { onDelete: "cascade" }),
+  attending: boolean("attending").notNull(),
+  mealType: text("meal_type", { enum: ["meat", "veggie"] }),
+  // 帳號被刪掉時記錄要留著，所以是 set null 而不是 cascade。
+  updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})

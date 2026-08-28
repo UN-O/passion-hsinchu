@@ -6,11 +6,13 @@ import Link from "next/link"
 import { Check, X } from "lucide-react"
 
 import { ConferenceCountdown } from "@/components/conference-countdown"
+import { ConferenceDinnerPicker } from "@/components/conference-dinner-picker"
 import { ConferenceLiquidGlassFilter } from "@/components/conference-liquid-glass-filter"
 import { ConferenceWorkshopPicker } from "@/components/conference-workshop-picker"
 import { LocationPinIcon } from "@/components/location-pin-icon"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useDialogBackClose } from "@/hooks/use-dialog-back-close"
+import type { DinnerRegistrationState } from "@/lib/conference-dinner"
 import {
   conferenceSessions,
   conferenceWorkshops,
@@ -78,6 +80,7 @@ export function ConferenceMissionHome({
   meetingHref = "/conference/meeting",
   initialWorkshopRegistration = { R1: null, R2: null },
   fullWorkshopSlots = [],
+  initialDinnerRegistration = { attending: null, mealType: null },
 }: {
   meetingHref?: string
   // 這個人兩場工作坊各自報了什麼，來自 lib/conference-workshop.ts；
@@ -85,11 +88,16 @@ export function ConferenceMissionHome({
   initialWorkshopRegistration?: WorkshopRegistration
   // 額滿、不能再選的工作坊＋場次組合（`${workshopId}:${round}`）。
   fullWorkshopSlots?: string[]
+  // 這個人週六晚餐回覆了什麼，來自 lib/conference-dinner.ts；
+  // playground 頁不查資料庫，維持預設值＝還沒填。
+  initialDinnerRegistration?: DinnerRegistrationState
 } = {}) {
   const [activeWorkshopId, setActiveWorkshopId] = useState<string | null>(null)
   const activeWorkshop = activeWorkshopId ? getConferenceWorkshop(activeWorkshopId) : undefined
   const [workshopRegistration, setWorkshopRegistration] = useState<WorkshopRegistration>(initialWorkshopRegistration)
   const workshopSelectionCompleted = workshopRegistration.R1 !== null && workshopRegistration.R2 !== null
+  const [dinnerRegistration, setDinnerRegistration] = useState<DinnerRegistrationState>(initialDinnerRegistration)
+  const dinnerCompleted = dinnerRegistration.attending !== null
   // 報名通知要照場次顯示「已報名場次一」「已報名場次二」，不是單純顯示
   // 「已報名」，所以要知道具體報了哪幾場，不只是報名與否。
   const registeredRounds = activeWorkshop
@@ -201,6 +209,13 @@ export function ConferenceMissionHome({
               onSaved={setWorkshopRegistration}
               fullSlots={fullWorkshopSlots}
             />
+          )}
+
+          {/* 晚餐回覆卡片跟上面工作坊卡片同一種置頂邏輯：還沒填的人置頂搶
+              注意力，已經填過的人不需要再搶眼提醒，改放到頁面最後面
+              （流程表圖片後面，見下方）。 */}
+          {!dinnerCompleted && (
+            <ConferenceDinnerPicker registration={dinnerRegistration} onSaved={setDinnerRegistration} />
           )}
 
           {/* 倒數計時只留一個、放在最上面（不是每場聚會卡片各自一個）。視覺圖
@@ -326,6 +341,14 @@ export function ConferenceMissionHome({
           className="h-auto w-full"
         />
       </div>
+
+      {/* 已經填過晚餐的人：卡片放在頁面最後面（流程表圖片後面），
+          不需要再置頂搶注意力——上面 title 圖後面那個位置只有還沒填時才用。 */}
+      {dinnerCompleted && (
+        <div className="mx-auto max-w-2xl px-[6%] pb-12 sm:px-8">
+          <ConferenceDinnerPicker registration={dinnerRegistration} onSaved={setDinnerRegistration} />
+        </div>
+      )}
 
       <Dialog open={activeWorkshop !== undefined} onOpenChange={(next) => !next && setActiveWorkshopId(null)}>
         <DialogContent
