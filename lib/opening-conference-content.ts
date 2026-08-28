@@ -290,7 +290,7 @@ export function getWorkshopLocationSummary(workshop: ConferenceWorkshop): string
 // 週六晚餐，一次性活動不像工作坊有場次，時間地點都是固定值。
 export const dinnerDateLabel = "8/29（六）"
 export const dinnerTimeLabel = "17:35"
-export const dinnerLocationLabel = "信徒大樓餐廳"
+export const dinnerLocationLabel = "信徒大樓B1 餐廳"
 
 // 三場正式聚會的場次資料。第三場使用者口頭給的是「SESSION2」，但跟主視覺流程表
 // 圖片（8/29 晚場那場印的是 SESSION 3）對不上，這裡按流程表圖片校正為 SESSION 3。

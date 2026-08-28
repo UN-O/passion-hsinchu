@@ -1,7 +1,7 @@
-import { eq } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 
 import { db } from "@/db"
-import { conferenceDinnerRegistration } from "@/db/schema/app"
+import { conferenceDinnerRegistration, enrollment } from "@/db/schema/app"
 
 export type DinnerMealType = "meat" | "veggie"
 
@@ -47,4 +47,69 @@ export async function saveMyDinnerSelection(
     })
 
   return { attending: input.attending, mealType }
+}
+
+export type DinnerStats = {
+  totalConferenceEnrolled: number
+  attendingCount: number
+  notAttendingCount: number
+  notRespondedCount: number
+  meatCount: number
+  veggieCount: number
+}
+
+// 後台統計：CONFERENCE 報名人數當分母，回覆過的人依「參加與否」「葷素」
+// 分組加總——用一次 group by 撈完，不是分別下好幾支查詢。
+export async function getDinnerStats(): Promise<DinnerStats> {
+  const [[enrolledRow], groups] = await Promise.all([
+    db.select({ count: sql<number>`count(*)::int` }).from(enrollment).where(eq(enrollment.conference, true)),
+    db
+      .select({
+        attending: conferenceDinnerRegistration.attending,
+        mealType: conferenceDinnerRegistration.mealType,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(conferenceDinnerRegistration)
+      .groupBy(conferenceDinnerRegistration.attending, conferenceDinnerRegistration.mealType),
+  ])
+
+  const totalConferenceEnrolled = enrolledRow?.count ?? 0
+  let attendingCount = 0
+  let notAttendingCount = 0
+  let meatCount = 0
+  let veggieCount = 0
+  for (const row of groups) {
+    if (!row.attending) {
+      notAttendingCount += row.count
+      continue
+    }
+    attendingCount += row.count
+    if (row.mealType === "meat") meatCount += row.count
+    if (row.mealType === "veggie") veggieCount += row.count
+  }
+
+  return {
+    totalConferenceEnrolled,
+    attendingCount,
+    notAttendingCount,
+    notRespondedCount: Math.max(totalConferenceEnrolled - attendingCount - notAttendingCount, 0),
+    meatCount,
+    veggieCount,
+  }
+}
+
+export type DinnerRosterEntry = { name: string; church: string }
+
+// 訂便當用的名單，依葷素分開撈，只列出「參加＋選了這個葷素」的人。
+export async function getDinnerRoster(mealType: DinnerMealType): Promise<DinnerRosterEntry[]> {
+  const rows = await db
+    .select({ name: enrollment.name, church: enrollment.church })
+    .from(conferenceDinnerRegistration)
+    .innerJoin(enrollment, eq(enrollment.id, conferenceDinnerRegistration.enrollmentId))
+    .where(
+      and(eq(conferenceDinnerRegistration.attending, true), eq(conferenceDinnerRegistration.mealType, mealType))
+    )
+    .orderBy(enrollment.name)
+
+  return rows
 }
