@@ -12,6 +12,7 @@ import { useDialogBackClose } from "@/hooks/use-dialog-back-close"
 import { saveWorkshopSelection } from "@/lib/conference-workshop-actions"
 import {
   conferenceWorkshops,
+  isWorkshopSelectionClosed,
   workshopDateLabel,
   workshopRoundLabels,
   workshopRoundTimeLabels,
@@ -72,10 +73,14 @@ export function ConferenceWorkshopPicker({
   const [error, setError] = useState<string | null>(null)
 
   const completed = registration.R1 !== null && registration.R2 !== null
+  // 只是用來決定要不要顯示「立即選擇」／「編輯」，真正擋人的驗證在
+  // saveMyWorkshopSelection 那邊（伺服器時間，不能被使用者的裝置時間騙過）。
+  const closed = isWorkshopSelectionClosed()
 
   useDialogBackClose(open, () => setOpen(false))
 
   function openPicker() {
+    if (closed) return
     setDraft(registration)
     // 編輯（已經報名過）跳過介紹，直接進選擇；第一次選才要求先看過介紹。
     setStep(completed ? "R1" : "intro")
@@ -138,10 +143,17 @@ export function ConferenceWorkshopPicker({
           <div className="p-6">
             <div className="flex items-center justify-between gap-3">
               <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold">已報名工作坊</p>
-              <button type="button" onClick={openPicker} className="text-sm font-medium underline underline-offset-4">
-                編輯
-              </button>
+              {!closed && (
+                <button
+                  type="button"
+                  onClick={openPicker}
+                  className="text-sm font-medium underline underline-offset-4"
+                >
+                  編輯
+                </button>
+              )}
             </div>
+            {closed && <p className="mt-1 text-xs text-white/50">已截止更改（場次一開始前 30 分鐘截止）</p>}
             {/* 純文字：場次／時間／名稱／主講人／地點，已報名之後不用再放
                 照片搶注意力（照片是還沒選、需要被吸引去選的時候才用）。 */}
             <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
@@ -163,9 +175,11 @@ export function ConferenceWorkshopPicker({
         ) : (
           <div className="p-6">
             <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold">
-              {workshopDateLabel} 工作坊還沒選
+              {workshopDateLabel} 工作坊{closed ? "已截止選擇" : "還沒選"}
             </p>
-            <p className="mt-1 text-sm text-white/60">兩個場次各選一個工作坊，選完隨時可以再改。</p>
+            <p className="mt-1 text-sm text-white/60">
+              {closed ? "已經超過場次一開始前 30 分鐘的更改期限，無法再選擇。" : "兩個場次各選一個工作坊，選完隨時可以再改。"}
+            </p>
             <div className="mt-4 grid grid-cols-4 gap-2">
               {conferenceWorkshops.map((workshop) => (
                 <div key={workshop.id} className="relative aspect-[4/5] overflow-hidden rounded-2xl">
@@ -173,9 +187,11 @@ export function ConferenceWorkshopPicker({
                 </div>
               ))}
             </div>
-            <Button type="button" size="lg" className="mt-4 w-full" onClick={openPicker}>
-              立即選擇
-            </Button>
+            {!closed && (
+              <Button type="button" size="lg" className="mt-4 w-full" onClick={openPicker}>
+                立即選擇
+              </Button>
+            )}
           </div>
         )}
       </div>
