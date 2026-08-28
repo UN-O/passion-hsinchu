@@ -183,13 +183,16 @@ export const workshopRoundStartISO: Record<ConferenceWorkshopRound, string> = {
   R2: `2026-08-29T${workshopRoundTimeLabels.R2}:00+08:00`,
 }
 
-// 選工作坊的最後更改期限：場次一開始前 30 分鐘。兩場是一次選完、一起送出
-// （見 components/conference-workshop-picker.tsx 的兩步驟流程，「完成」一次
-// 寫入兩場），所以鎖點取場次一（比較早開始的那場），不是場次一、場次二
-// 分別各自鎖一半——那樣「完成」要嘛擋不到場次一已經定案的事實，要嘛得把
-// 兩步驟選擇拆成能各自獨立送出，複雜度不成比例，而且場次一都要開始了，
-// 讓人只改場次二也沒有實際意義。
-export const WORKSHOP_SELECTION_DEADLINE_MS = new Date(workshopRoundStartISO.R1).getTime() - 30 * 60 * 1000
+// 選工作坊的最後更改期限：場次一開始前這麼多分鐘。兩場是一次選完、一起
+// 送出（見 components/conference-workshop-picker.tsx 的兩步驟流程，「完成」
+// 一次寫入兩場），所以鎖點取場次一（比較早開始的那場），不是場次一、場次
+// 二分別各自鎖一半——那樣「完成」要嘛擋不到場次一已經定案的事實，要嘛得
+// 把兩步驟選擇拆成能各自獨立送出，複雜度不成比例，而且場次一都要開始了，
+// 讓人只改場次二也沒有實際意義。畫面上的文字（picker、error message）都
+// 從這個常數帶出分鐘數，改這裡一個地方就會全部跟著改。
+export const WORKSHOP_SELECTION_DEADLINE_MINUTES = 20
+export const WORKSHOP_SELECTION_DEADLINE_MS =
+  new Date(workshopRoundStartISO.R1).getTime() - WORKSHOP_SELECTION_DEADLINE_MINUTES * 60 * 1000
 
 export function isWorkshopSelectionClosed(now: Date = new Date()): boolean {
   return now.getTime() >= WORKSHOP_SELECTION_DEADLINE_MS

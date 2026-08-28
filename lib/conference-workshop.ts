@@ -2,7 +2,12 @@ import { db } from "@/db"
 import { conferenceWorkshopCapacity, conferenceWorkshopRegistration, enrollment } from "@/db/schema/app"
 import { and, eq, sql } from "drizzle-orm"
 
-import { conferenceWorkshops, isWorkshopSelectionClosed, type ConferenceWorkshopRound } from "./opening-conference-content"
+import {
+  conferenceWorkshops,
+  isWorkshopSelectionClosed,
+  WORKSHOP_SELECTION_DEADLINE_MINUTES,
+  type ConferenceWorkshopRound,
+} from "./opening-conference-content"
 
 export type WorkshopRegistrationState = Record<ConferenceWorkshopRound, string | null>
 
@@ -84,7 +89,7 @@ export async function saveMyWorkshopSelection(
   // 真正擋人的一定要在伺服器端再驗一次——不然直接打這支 server action 就
   // 繞過去了。
   if (isWorkshopSelectionClosed()) {
-    throw new Error("已超過選工作坊的更改期限（場次一開始前 30 分鐘截止）")
+    throw new Error(`已超過選工作坊的更改期限（場次一開始前 ${WORKSHOP_SELECTION_DEADLINE_MINUTES} 分鐘截止）`)
   }
 
   const rounds: ConferenceWorkshopRound[] = ["R1", "R2"]

@@ -13,6 +13,7 @@ import { saveWorkshopSelection } from "@/lib/conference-workshop-actions"
 import {
   conferenceWorkshops,
   isWorkshopSelectionClosed,
+  WORKSHOP_SELECTION_DEADLINE_MINUTES,
   workshopDateLabel,
   workshopRoundLabels,
   workshopRoundTimeLabels,
@@ -153,7 +154,11 @@ export function ConferenceWorkshopPicker({
                 </button>
               )}
             </div>
-            {closed && <p className="mt-1 text-xs text-white/50">已截止更改（場次一開始前 30 分鐘截止）</p>}
+            {closed && (
+              <p className="mt-1 text-xs text-white/50">
+                已截止更改（場次一開始前 {WORKSHOP_SELECTION_DEADLINE_MINUTES} 分鐘截止）
+              </p>
+            )}
             {/* 純文字：場次／時間／名稱／主講人／地點，已報名之後不用再放
                 照片搶注意力（照片是還沒選、需要被吸引去選的時候才用）。 */}
             <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
@@ -178,7 +183,9 @@ export function ConferenceWorkshopPicker({
               {workshopDateLabel} 工作坊{closed ? "已截止選擇" : "還沒選"}
             </p>
             <p className="mt-1 text-sm text-white/60">
-              {closed ? "已經超過場次一開始前 30 分鐘的更改期限，無法再選擇。" : "兩個場次各選一個工作坊，選完隨時可以再改。"}
+              {closed
+                ? `已經超過場次一開始前 ${WORKSHOP_SELECTION_DEADLINE_MINUTES} 分鐘的更改期限，無法再選擇。`
+                : "兩個場次各選一個工作坊，選完隨時可以再改。"}
             </p>
             <div className="mt-4 grid grid-cols-4 gap-2">
               {conferenceWorkshops.map((workshop) => (
