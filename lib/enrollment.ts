@@ -3,6 +3,7 @@ import { and, asc, count, eq, ilike, or, sql } from "drizzle-orm"
 
 import { db } from "@/db"
 import { enrollment } from "@/db/schema/app"
+import { user } from "@/db/schema/auth"
 import type { Diff, ExistingRow } from "./enrollment-csv"
 import { normalizeChurch, normalizeName } from "./normalize"
 
@@ -198,4 +199,21 @@ export async function updateEnrollment(id: string, input: EnrollmentInput): Prom
     .returning()
 
   return row
+}
+
+// 有人突然說不能來了，整筆刪掉。相關資料（分隊、工作坊選擇）在 schema 裡
+// 是 enrollment_id 的外鍵 cascade（見 db/schema/app.ts 的 camp_team_member、
+// conference_workshop_registration），刪這一筆 Postgres 會自動一起清掉，
+// 工作坊名額也就自然釋出（人數是即時算 count(*)，不是另外存一個數字）。
+// CAMP 加分是存在隊／區的總分，不記到個人，所以不受影響。
+//
+// user.enrollmentId 不是外鍵（純文字欄位，見 db/schema/auth.ts 的說明），
+// 不會跟著 cascade 清掉，這裡手動清成 null——不然這個人如果之前用 Google
+// 帳號認領過，帳號會卡著一個指向不存在的 enrollment_id，之後要重新認領
+// 也認不了（user_enrollment_id_idx 是唯一索引，舊值卡著會擋掉新的認領）。
+export async function deleteEnrollment(id: string): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx.update(user).set({ enrollmentId: null }).where(eq(user.enrollmentId, id))
+    await tx.delete(enrollment).where(eq(enrollment.id, id))
+  })
 }

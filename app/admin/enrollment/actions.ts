@@ -7,6 +7,7 @@ import {
   CHURCH_LIST_TAG,
   applyDiff,
   createEnrollment,
+  deleteEnrollment,
   getAllForDiff,
   updateEnrollment,
 } from "@/lib/enrollment"
@@ -105,4 +106,24 @@ export async function saveEnrollment(
   // updateTag 而不是 revalidateTag：這是 server action，匯入後要立刻讀到新資料
   updateTag(CHURCH_LIST_TAG)
   return { error: null, message: id ? "已更新" : "已新增" }
+}
+
+// 有人說不能來了，整筆刪掉——相關資料（分隊、工作坊選擇）跟著一起清掉，
+// 見 lib/enrollment.ts 的 deleteEnrollment 說明。畫面上是 AlertDialog 二次
+// 確認後才呼叫，不是這裡再擋一次「真的要刪嗎」，那是前端該做的事；這裡
+// 只管權限跟真正執行刪除。
+export async function deleteEnrollmentAction(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  await requireStaff()
+
+  if (!id) return { ok: false, error: "缺少要刪除的 id" }
+
+  try {
+    await deleteEnrollment(id)
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "刪除失敗" }
+  }
+
+  revalidatePath("/admin/enrollment")
+  updateTag(CHURCH_LIST_TAG)
+  return { ok: true }
 }

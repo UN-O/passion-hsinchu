@@ -3,6 +3,7 @@ import Link from "next/link"
 import { countEnrollments, searchEnrollments } from "@/lib/enrollment"
 import { requireStaff } from "@/lib/session"
 import { CsvImport } from "./csv-import"
+import { DeleteEnrollmentButton } from "./delete-enrollment-button"
 import { EnrollmentRowForm } from "./enrollment-row-form"
 
 const DEFAULT_LIMIT = 50
@@ -94,8 +95,11 @@ export default async function AdminEnrollmentPage({
 
             <ul className="mt-6 flex flex-col gap-8">
               {rows.map((row) => (
-                <li key={row.id}>
+                <li key={row.id} className="flex flex-col gap-2">
                   <EnrollmentRowForm row={row} />
+                  <div className="flex justify-end">
+                    <DeleteEnrollmentButton id={row.id} name={row.name} church={row.church} />
+                  </div>
                 </li>
               ))}
             </ul>
