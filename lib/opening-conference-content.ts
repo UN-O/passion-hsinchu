@@ -198,11 +198,18 @@ export function isWorkshopSelectionClosed(now: Date = new Date()): boolean {
   return now.getTime() >= WORKSHOP_SELECTION_DEADLINE_MS
 }
 
+// 工作坊教室都在同一棟大樓，教室號碼本身依場次而不同（工作坊 D 場次一在
+// 202、場次二卻是 303，不是同一間），所以 location 不是單一字串，是「這個
+// 工作坊在這個場次的教室」——沒有開放那個場次就沒有那個 key。畫面上要不要
+// 帶場次一起顯示分兩種情境（見 getWorkshopLocation／getWorkshopLocationSummary
+// 的說明）。
+export const workshopBuildingName = "教學大樓"
+
 export type ConferenceWorkshop = {
   id: string
   speaker: string
   topic: string
-  location: string
+  location: Partial<Record<ConferenceWorkshopRound, string>>
   rounds: ConferenceWorkshopRound[]
   // 活動組提供的正式工作坊主視覺，4:5 直式去背 PNG，跟橫向捲動卡片的比例
   // 完全吻合不用裁切；主題文字取自視覺上印的正式文案（跟先前使用者口頭
@@ -218,7 +225,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     id: "workshop-a",
     speaker: "陳懷之牧師 Pastor Adriana",
     topic: "預備自己成為對的人，其實很需要勇氣！",
-    location: "地點待公布",
+    location: { R1: "303" },
     rounds: ["R1"],
     image: "/images/conference-workshop-a.webp",
     infoImage: "/images/conference-workshop-info-a.webp",
@@ -227,7 +234,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     id: "workshop-b",
     speaker: "張佩琪姐妹",
     topic: "人生要做出選擇，其實很需要勇氣！",
-    location: "地點待公布",
+    location: { R1: "302", R2: "302" },
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-b.webp",
     infoImage: "/images/conference-workshop-info-b.webp",
@@ -236,7 +243,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     id: "workshop-c",
     speaker: "歐震弟兄",
     topic: "要在職場中活出信仰，其實很需要勇氣！",
-    location: "地點待公布",
+    location: { R1: "301", R2: "301" },
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-c.webp",
     infoImage: "/images/conference-workshop-info-c.webp",
@@ -245,7 +252,7 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
     id: "workshop-d",
     speaker: "孫旭昌弟兄",
     topic: "面對自己的不完美，其實很需要勇氣！",
-    location: "地點待公布",
+    location: { R1: "202", R2: "303" },
     rounds: ["R1", "R2"],
     image: "/images/conference-workshop-d.webp",
     infoImage: "/images/conference-workshop-info-d.webp",
@@ -254,6 +261,30 @@ export const conferenceWorkshops: ConferenceWorkshop[] = [
 
 export function getConferenceWorkshop(id: string): ConferenceWorkshop | undefined {
   return conferenceWorkshops.find((workshop) => workshop.id === id)
+}
+
+// 已經知道是哪一場（下載名單、已報名工作坊卡片）：直接給那個場次的教室，
+// 大樓名稱統一從 workshopBuildingName 帶，不用每個工作坊自己重複打一次。
+export function getWorkshopLocation(workshop: ConferenceWorkshop, round: ConferenceWorkshopRound): string {
+  const room = workshop.location[round]
+  return room ? `${workshopBuildingName} ${room}` : "地點待公布"
+}
+
+// 還不知道是哪一場（工作坊介紹卡、點縮圖看到的資訊欄）：兩個場次教室一樣
+// 就顯示一次就好（工作坊 B、C 都是這樣），教室不一樣（工作坊 D：場次一
+// 202、場次二 303）才需要照場次分開列，不能只顯示其中一場、讓人誤會兩場
+// 都在同一間。
+export function getWorkshopLocationSummary(workshop: ConferenceWorkshop): string {
+  const rooms = workshop.rounds.map((round) => workshop.location[round]).filter((room): room is string => Boolean(room))
+  const uniqueRooms = [...new Set(rooms)]
+
+  if (uniqueRooms.length <= 1) {
+    return uniqueRooms[0] ? `${workshopBuildingName} ${uniqueRooms[0]}` : "地點待公布"
+  }
+
+  return workshop.rounds
+    .map((round) => `${workshopRoundLabels[round]}｜${getWorkshopLocation(workshop, round)}`)
+    .join("　")
 }
 
 // 三場正式聚會的場次資料。第三場使用者口頭給的是「SESSION2」，但跟主視覺流程表

@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server"
 
 import { getWorkshopRoster } from "@/lib/conference-workshop"
-import { conferenceWorkshops, workshopRoundLabels, type ConferenceWorkshopRound } from "@/lib/opening-conference-content"
+import {
+  conferenceWorkshops,
+  getWorkshopLocation,
+  workshopRoundLabels,
+  type ConferenceWorkshopRound,
+} from "@/lib/opening-conference-content"
 import { requireStaff } from "@/lib/session"
 
 // 後台下載工作坊名單，只有工作人員能用。format=txt 直接觸發瀏覽器下載
@@ -28,11 +33,12 @@ export async function GET(request: Request) {
 
   const roster = await getWorkshopRoster(workshopId, validRound)
   const title = workshop.topic || workshop.speaker
+  const location = getWorkshopLocation(workshop, validRound)
 
   if (format === "txt") {
     const lines = [
       title,
-      `${workshop.speaker}｜${workshop.location}`,
+      `${workshop.speaker}｜${location}`,
       `${workshopRoundLabels[validRound]}｜共 ${roster.length} 人`,
       "",
       ...roster.map((r) => `${r.name}\t${r.church}`),
@@ -47,7 +53,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    workshop: { title, speaker: workshop.speaker, location: workshop.location },
+    workshop: { title, speaker: workshop.speaker, location },
     round: validRound,
     roundLabel: workshopRoundLabels[validRound],
     roster,

@@ -12,6 +12,8 @@ import { useDialogBackClose } from "@/hooks/use-dialog-back-close"
 import { saveWorkshopSelection } from "@/lib/conference-workshop-actions"
 import {
   conferenceWorkshops,
+  getWorkshopLocation,
+  getWorkshopLocationSummary,
   isWorkshopSelectionClosed,
   WORKSHOP_SELECTION_DEADLINE_MINUTES,
   workshopDateLabel,
@@ -171,7 +173,7 @@ export function ConferenceWorkshopPicker({
                     </p>
                     <p>{workshop.topic || workshop.speaker}</p>
                     {workshop.topic && <p className="text-white/60">{workshop.speaker}</p>}
-                    <p className="text-white/60">{workshop.location}</p>
+                    <p className="text-white/60">{getWorkshopLocation(workshop, round)}</p>
                   </div>
                 )
               })}
@@ -320,7 +322,7 @@ function WorkshopIntroCard({
       <div className="flex flex-col gap-1.5">
         <span className="inline-flex w-fit items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium">
           <LocationPinIcon className="size-4" />
-          {workshop.location}
+          {getWorkshopLocationSummary(workshop)}
         </span>
         <p className="text-lg font-bold">{breakAfterFirstComma(workshop.topic || workshop.speaker)}</p>
         {workshop.topic && <p className="text-sm text-muted-foreground">{workshop.speaker}</p>}
