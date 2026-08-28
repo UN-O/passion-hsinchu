@@ -4,14 +4,23 @@ import { revalidatePath } from "next/cache"
 
 import {
   applyImportedRegistrations,
+  assignWorkshopForEnrollment,
   getAllRegistrationsForDiff,
+  searchEnrollmentsForWorkshopAssign,
   setWorkshopCapacity,
 } from "@/lib/conference-workshop"
 import { diffWorkshopRegistrations, parseWorkshopCsv, toImportEntries } from "@/lib/conference-workshop-csv"
 import { getAllForDiff } from "@/lib/enrollment"
 import { requireStaff } from "@/lib/session"
 import type { ConferenceWorkshopRound } from "@/lib/opening-conference-content"
-import { emptyPreview, type CapacityState, type PreviewState } from "./state"
+import {
+  emptyAssignSearch,
+  emptyPreview,
+  type AssignSearchState,
+  type AssignState,
+  type CapacityState,
+  type PreviewState,
+} from "./state"
 
 // 第一階段：只解析與比對，不寫入
 export async function previewWorkshopCsv(_prevState: PreviewState, formData: FormData): Promise<PreviewState> {
@@ -87,4 +96,42 @@ export async function saveCapacity(_prevState: CapacityState, formData: FormData
   await setWorkshopCapacity(workshopId, round, capacity)
   revalidatePath("/admin/conference-workshop")
   return { error: null, message: "已更新" }
+}
+
+// 搜尋名冊，帶出這個人兩場目前各自選了什麼工作坊（畫面上才看得出是新增
+// 還是要覆蓋掉原本的選擇）。
+export async function searchForAssign(
+  _prevState: AssignSearchState,
+  formData: FormData
+): Promise<AssignSearchState> {
+  await requireStaff()
+
+  const query = String(formData.get("query") ?? "")
+  if (!query.trim()) return { ...emptyAssignSearch, message: "請輸入姓名或教會" }
+
+  const results = await searchEnrollmentsForWorkshopAssign(query)
+  return { results, message: results.length === 0 ? "找不到符合的人" : null }
+}
+
+// 工作人員手動把搜尋到的人加入某場工作坊，不卡截止時間也不卡人數上限
+// （見 lib/conference-workshop.ts 的 assignWorkshopForEnrollment 說明）。
+export async function assignWorkshop(_prevState: AssignState, formData: FormData): Promise<AssignState> {
+  const session = await requireStaff()
+
+  const enrollmentId = String(formData.get("enrollmentId") ?? "")
+  const round = String(formData.get("round") ?? "") as ConferenceWorkshopRound
+  const workshopId = String(formData.get("workshopId") ?? "")
+
+  if (!enrollmentId || (round !== "R1" && round !== "R2") || !workshopId) {
+    return { error: "缺少必要欄位", message: null }
+  }
+
+  try {
+    await assignWorkshopForEnrollment(enrollmentId, round, workshopId, session.user.id)
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "指派失敗", message: null }
+  }
+
+  revalidatePath("/admin/conference-workshop")
+  return { error: null, message: "已加入" }
 }

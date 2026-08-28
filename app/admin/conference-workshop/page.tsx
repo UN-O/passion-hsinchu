@@ -5,6 +5,7 @@ import {
   type ConferenceWorkshopRound,
 } from "@/lib/opening-conference-content"
 import { requireStaff } from "@/lib/session"
+import { WorkshopAssignSearch } from "./assign-search"
 import { CapacityForm } from "./capacity-form"
 import { WorkshopCsvImport } from "./csv-import"
 import { RegistrationChart } from "./registration-chart"
@@ -96,6 +97,15 @@ export default async function AdminConferenceWorkshopPage() {
           姓名／教會要先在 /admin/enrollment 的名冊裡對得到，才會被匯入。
         </p>
         <WorkshopCsvImport />
+      </section>
+
+      <section className="mt-16">
+        <h2 className="font-heading text-lg font-bold">手動加入工作坊</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          搜尋名冊裡的人，直接幫他選一場工作坊——不卡選工作坊的更改截止時間，也不卡人數上限，現場救援用。
+          只改你選的那個場次，另一場不會被動到。
+        </p>
+        <WorkshopAssignSearch />
       </section>
     </div>
   )

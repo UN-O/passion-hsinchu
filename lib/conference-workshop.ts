@@ -1,7 +1,8 @@
 import { db } from "@/db"
 import { conferenceWorkshopCapacity, conferenceWorkshopRegistration, enrollment } from "@/db/schema/app"
-import { and, eq, sql } from "drizzle-orm"
+import { and, eq, inArray, sql } from "drizzle-orm"
 
+import { searchEnrollments } from "./enrollment"
 import {
   conferenceWorkshops,
   isWorkshopSelectionClosed,
@@ -261,5 +262,74 @@ export async function applyImportedRegistrations(entries: ImportEntry[]): Promis
         updatedAt: new Date(),
       },
       setWhere: eq(conferenceWorkshopRegistration.source, "import"),
+    })
+}
+
+export type EnrollmentWorkshopStatus = {
+  enrollmentId: string
+  name: string
+  church: string
+  registration: WorkshopRegistrationState
+}
+
+// 後台「搜尋名冊、手動加入工作坊」用：搜尋條件跟 /admin/enrollment 共用
+// searchEnrollments（同一套姓名／教會模糊比對），這裡多帶出這個人兩場
+// 目前各自選了什麼，畫面上才看得出「要新增」還是「要覆蓋掉原本的選擇」。
+export async function searchEnrollmentsForWorkshopAssign(query: string): Promise<EnrollmentWorkshopStatus[]> {
+  const trimmed = query.trim()
+  if (!trimmed) return []
+
+  const matches = await searchEnrollments(trimmed, 20)
+  if (matches.length === 0) return []
+
+  const ids = matches.map((m) => m.id)
+  const rows = await db
+    .select({
+      enrollmentId: conferenceWorkshopRegistration.enrollmentId,
+      round: conferenceWorkshopRegistration.round,
+      workshopId: conferenceWorkshopRegistration.workshopId,
+    })
+    .from(conferenceWorkshopRegistration)
+    .where(inArray(conferenceWorkshopRegistration.enrollmentId, ids))
+
+  const byEnrollment = new Map<string, WorkshopRegistrationState>()
+  for (const row of rows) {
+    const state = byEnrollment.get(row.enrollmentId) ?? { ...EMPTY_STATE }
+    state[row.round as ConferenceWorkshopRound] = row.workshopId
+    byEnrollment.set(row.enrollmentId, state)
+  }
+
+  return matches.map((m) => ({
+    enrollmentId: m.id,
+    name: m.name,
+    church: m.church,
+    registration: byEnrollment.get(m.id) ?? { ...EMPTY_STATE },
+  }))
+}
+
+// 工作人員手動把某個人加入某場工作坊，不像 saveMyWorkshopSelection 那樣
+// 卡截止時間、也不卡人數上限——現場救援本來就是要能繞過這兩道給一般人
+// 用的限制（跟 CSV 匯入 applyImportedRegistrations 同一個立場）。一次只
+// 改一場（不像自選一定要兩場一起送），因為這裡通常是「這個人漏選了
+// 其中一場」這種局部修正，不需要連另一場沒問題的也一起重新確認一次。
+// source 標成 "self"：語意上跟使用者自己在系統上改是同一件事（都是「現在
+// 這個人真正的選擇」），之後 CSV 重新匯入舊快照也不會把這筆蓋掉，跟
+// applyImportedRegistrations 的 setWhere 邏輯是一致的。
+export async function assignWorkshopForEnrollment(
+  enrollmentId: string,
+  round: ConferenceWorkshopRound,
+  workshopId: string,
+  staffUserId: string
+): Promise<void> {
+  const workshop = findWorkshop(workshopId)
+  if (!workshop) throw new Error("選到不存在的工作坊")
+  if (!workshop.rounds.includes(round)) throw new Error(`${workshop.topic || workshop.speaker} 沒有開放這個場次`)
+
+  await db
+    .insert(conferenceWorkshopRegistration)
+    .values({ enrollmentId, round, workshopId, source: "self", updatedBy: staffUserId })
+    .onConflictDoUpdate({
+      target: [conferenceWorkshopRegistration.enrollmentId, conferenceWorkshopRegistration.round],
+      set: { workshopId, source: "self", updatedBy: staffUserId, updatedAt: new Date() },
     })
 }

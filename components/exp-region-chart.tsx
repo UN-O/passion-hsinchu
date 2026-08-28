@@ -69,33 +69,38 @@ export function ExpRegionChart({ rows }: { rows: ExpRegionChartRow[] }) {
 
       <figcaption className="sr-only">三區加分總分比較</figcaption>
 
-      <table className="mt-8 w-full text-sm">
-        <caption className="sr-only">三區加分總分與記錄筆數</caption>
-        <thead>
-          <tr className="border-b border-border text-muted-foreground">
-            <th scope="col" className="py-2 text-left font-normal">
-              分區
-            </th>
-            <th scope="col" className="py-2 text-right font-normal">
-              總分
-            </th>
-            <th scope="col" className="py-2 text-right font-normal">
-              筆數
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.region} className="border-b border-border">
-              <th scope="row" className="py-2 text-left font-normal">
-                {expRegionLabel(row.region)}
+      {/* 表格本身不會主動縮到比內容窄，外層沒有 overflow-x-auto 的話，內容一旦
+          比窄螢幕寬（例如分數位數變多），整個頁面會被撐開橫向捲動，不是只有
+          表格自己捲。這裡本來就沒有這層，先補上。 */}
+      <div className="mt-8 overflow-x-auto">
+        <table className="w-full text-sm">
+          <caption className="sr-only">三區加分總分與記錄筆數</caption>
+          <thead>
+            <tr className="border-b border-border text-muted-foreground">
+              <th scope="col" className="py-2 text-left font-normal">
+                分區
               </th>
-              <td className="py-2 text-right tabular-nums">{row.total.toLocaleString("en-US")}</td>
-              <td className="py-2 text-right tabular-nums text-muted-foreground">{row.records}</td>
+              <th scope="col" className="py-2 text-right font-normal">
+                總分
+              </th>
+              <th scope="col" className="py-2 text-right font-normal">
+                筆數
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.region} className="border-b border-border">
+                <th scope="row" className="py-2 text-left font-normal">
+                  {expRegionLabel(row.region)}
+                </th>
+                <td className="py-2 text-right tabular-nums">{row.total.toLocaleString("en-US")}</td>
+                <td className="py-2 text-right tabular-nums text-muted-foreground">{row.records}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   )
 }
