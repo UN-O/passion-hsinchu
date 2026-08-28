@@ -93,8 +93,10 @@ export async function markFlowComplete(userId: string, flow: Flow, payload?: unk
 // 登入成功後該去哪裡。
 //
 // opening 是一次性的開場，做完就不該再被丟回去（之前每次登入都會重跑）。
-// 已完成的人改送到他平常要用的地方：兩場都報名的人回首頁（首頁有兩個入口），
-// 只報一場的人直接進該場次的頁面。想重看開場仍然可以從那裡點進去。
+// 已完成的人改送到他平常要用的地方：兩場都報名、兩場都做完的人回首頁
+// （首頁有兩個入口）；兩場都報名但只做完一場的人，直接進那一場已完成的
+// 場次頁面，不用先回選單；只報一場的人直接進該場次的頁面。想重看開場
+// 仍然可以從那裡點進去。
 export function postSignInPath(session: AppSession): string {
   if (session.user.role !== "attendee") return "/admin/enrollment"
   if (!session.enrollment) return "/claim"
@@ -106,8 +108,14 @@ export function postSignInPath(session: AppSession): string {
   const done = session.completedFlows
 
   if (camp && conference) {
-    // 兩場都走完才回首頁；只完成一場的人還要回選單去做另一場
-    return done.includes("camp") && done.includes("conference") ? "/" : "/opening"
+    const campDone = done.includes("camp")
+    const conferenceDone = done.includes("conference")
+    // 兩場都走完才回首頁；都還沒開始才去選單挑一個開始；只完成其中一場的人
+    // 直接進那一場（另一場之後可以從首頁的「進入 CAMP／CONFERENCE」入口去做）。
+    if (campDone && conferenceDone) return "/"
+    if (conferenceDone) return "/conference"
+    if (campDone) return "/camp"
+    return "/opening"
   }
 
   if (conference) return done.includes("conference") ? "/conference" : "/opening/conference/welcome"
