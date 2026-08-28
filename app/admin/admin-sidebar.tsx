@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils"
 const NAV_ITEMS = [
   { href: "/admin/enrollment", label: "名冊管理" },
   { href: "/admin/points", label: "CAMP 加分" },
+  { href: "/admin/conference-workshop", label: "工作坊報名" },
   { href: "/admin/ig-stories", label: "IG 限動上傳" },
 ] as const
 

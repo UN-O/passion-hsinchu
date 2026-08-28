@@ -198,3 +198,49 @@ export const userProfile = pgTable("user_profile", {
   avatarUpdatedAt: timestamp("avatar_updated_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
+
+// CONFERENCE 工作坊報名。工作坊本身（主題、講員、開放場次）是固定內容，
+// 寫在 lib/opening-conference-content.ts 的 conferenceWorkshops，這裡只存
+// 「誰在哪一場選了哪個工作坊」。一人兩場（R1／R2）各選一個，所以是
+// enrollmentId + round 的唯一鍵，不是 enrollmentId 單一鍵。
+//
+// 用 enrollmentId（不是 userId）當外鍵，跟 camp_team_member 同一個理由：
+// 資料來源常常早於帳號存在——這張表要先用既有 Google 表單回覆（CSV 匯入）
+// 回填，那些人很多還沒登入建帳號。source 記來源是匯入還是使用者自己在
+// 系統上選／改的，方便後台分辨；使用者永遠可以在系統上重新選擇覆蓋掉
+// 匯入的舊值（包含匯入來的），所以不需要另外做「鎖定」欄位。
+export const conferenceWorkshopRegistration = pgTable(
+  "conference_workshop_registration",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    enrollmentId: uuid("enrollment_id")
+      .notNull()
+      .references(() => enrollment.id, { onDelete: "cascade" }),
+    round: text("round", { enum: ["R1", "R2"] }).notNull(),
+    workshopId: text("workshop_id").notNull(),
+    source: text("source", { enum: ["import", "self"] }).notNull(),
+    // 使用者自己在系統上選的才有值；CSV 匯入的這裡是 null。
+    // 帳號被刪掉時記錄要留著，所以是 set null 而不是 cascade。
+    updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("conf_workshop_reg_enrollment_round_idx").on(table.enrollmentId, table.round),
+  ]
+)
+
+// 工作坊／場次人數上限。預設不設上限（這張表沒有該工作坊＋場次的列＝不限），
+// 只有真的額滿要擋新選的才會有一列，目前是工作坊 A 場次一（現場 Google
+// 表單已經在擋了）。上限是後台手動輸入的固定數字，不是自動抓 Google
+// 表單，改動很少見，直接讓工作人員在後台輸入當下人數即可。
+export const conferenceWorkshopCapacity = pgTable(
+  "conference_workshop_capacity",
+  {
+    workshopId: text("workshop_id").notNull(),
+    round: text("round", { enum: ["R1", "R2"] }).notNull(),
+    capacity: integer("capacity").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.workshopId, table.round] })]
+)

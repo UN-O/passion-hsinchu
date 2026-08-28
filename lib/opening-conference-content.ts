@@ -236,18 +236,6 @@ export function getConferenceWorkshop(id: string): ConferenceWorkshop | undefine
   return conferenceWorkshops.find((workshop) => workshop.id === id)
 }
 
-// TODO: 工作坊報名資料之後會從後台上傳，目前還沒有真正的報名資料表。先前用
-// 固定假資料（顯示某人報名了工作坊 A、B）佔位，但那是全站所有人都看到同樣的
-// 「已報名」，不是依登入者查詢的真結果，會誤導還沒報名的人，先關掉。等後台
-// 有真正的報名名單、能依登入者查詢之後，把這裡換成真的查詢邏輯再打開——
-// 回傳值是「這個人在這個工作坊報名了哪幾個場次」，不是單純 true／false，
-// 因為報名通知要照場次顯示「已報名場次一」「已報名場次二」。
-const MOCK_REGISTERED_WORKSHOP_ROUNDS: Record<string, ConferenceWorkshopRound[]> = {}
-
-export function getRegisteredWorkshopRounds(id: string): ConferenceWorkshopRound[] {
-  return MOCK_REGISTERED_WORKSHOP_ROUNDS[id] ?? []
-}
-
 // 三場正式聚會的場次資料。第三場使用者口頭給的是「SESSION2」，但跟主視覺流程表
 // 圖片（8/29 晚場那場印的是 SESSION 3）對不上，這裡按流程表圖片校正為 SESSION 3。
 export type ConferenceSession = {

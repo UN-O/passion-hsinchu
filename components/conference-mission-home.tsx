@@ -7,6 +7,7 @@ import { Check, X } from "lucide-react"
 
 import { ConferenceCountdown } from "@/components/conference-countdown"
 import { ConferenceLiquidGlassFilter } from "@/components/conference-liquid-glass-filter"
+import { ConferenceWorkshopPicker } from "@/components/conference-workshop-picker"
 import { LocationPinIcon } from "@/components/location-pin-icon"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useDialogBackClose } from "@/hooks/use-dialog-back-close"
@@ -17,17 +18,22 @@ import {
   getConferenceWorkshop,
   getNextConferenceCountdownTarget,
   getNextConferenceSession,
-  getRegisteredWorkshopRounds,
   workshopDateLabel,
   workshopRoundLabels,
   workshopRoundTimeLabels,
   type ConferenceSession,
+  type ConferenceWorkshopRound,
 } from "@/lib/opening-conference-content"
 import { siteConfig } from "@/lib/site-config"
 
+type WorkshopRegistration = Record<ConferenceWorkshopRound, string | null>
+const WORKSHOP_ROUNDS: ConferenceWorkshopRound[] = ["R1", "R2"]
+
 // 工作坊資訊欄的標題全部從第一個逗號後面換行，例如「預備自己成為對的人，
 // 其實很需要勇氣！」變成兩行。沒有逗號（例如講員名字當標題的 fallback）
-// 就照原樣單行顯示。
+// 就照原樣單行顯示。ConferenceWorkshopPicker 的介紹步驟有同一份排版邏輯的
+// 獨立副本（兩邊都是純函式、沒有共用狀態，重複這 8 行比互相 import 造成
+// 循環依賴划算）。
 function breakAfterFirstComma(text: string) {
   const commaIndex = text.indexOf("，")
   if (commaIndex === -1) return text
@@ -69,14 +75,25 @@ function ConferenceSessionCard({ session, meetingHref }: { session: ConferenceSe
 
 export function ConferenceMissionHome({
   meetingHref = "/conference/meeting",
+  initialWorkshopRegistration = { R1: null, R2: null },
+  fullWorkshopSlots = [],
 }: {
   meetingHref?: string
+  // 這個人兩場工作坊各自報了什麼，來自 lib/conference-workshop.ts；
+  // playground 頁不查資料庫，維持預設值＝都還沒報名。
+  initialWorkshopRegistration?: WorkshopRegistration
+  // 額滿、不能再選的工作坊＋場次組合（`${workshopId}:${round}`）。
+  fullWorkshopSlots?: string[]
 } = {}) {
   const [activeWorkshopId, setActiveWorkshopId] = useState<string | null>(null)
   const activeWorkshop = activeWorkshopId ? getConferenceWorkshop(activeWorkshopId) : undefined
+  const [workshopRegistration, setWorkshopRegistration] = useState<WorkshopRegistration>(initialWorkshopRegistration)
+  const workshopSelectionCompleted = workshopRegistration.R1 !== null && workshopRegistration.R2 !== null
   // 報名通知要照場次顯示「已報名場次一」「已報名場次二」，不是單純顯示
   // 「已報名」，所以要知道具體報了哪幾場，不只是報名與否。
-  const registeredRounds = activeWorkshop ? getRegisteredWorkshopRounds(activeWorkshop.id) : []
+  const registeredRounds = activeWorkshop
+    ? WORKSHOP_ROUNDS.filter((round) => workshopRegistration[round] === activeWorkshop.id)
+    : []
   // 三場聚會都各自顯示卡片，但彈窗仍然可能點到任何一張，所以用場次 id 記住
   // 點的是哪一張卡片，跟上面 activeWorkshopId 同一個做法。
   const [activeMeetingSessionId, setActiveMeetingSessionId] = useState<string | null>(null)
@@ -172,12 +189,31 @@ export function ConferenceMissionHome({
             className="h-auto w-full"
           />
 
+          {/* 選工作坊卡片只有「還沒選完」時才放在主視覺標題圖後面、倒數
+              計時卡片前面——這是置頂搶注意力的用途，目的是讓還沒選的人
+              一進來就先看到，不會被捲到工作坊橫向捲動列旁邊才發現。已經
+              選完的人不需要這麼搶眼的提醒，卡片改回原本工作坊橫向捲動列
+              前面那個位置（見下面第二個 ConferenceWorkshopPicker）。 */}
+          {!workshopSelectionCompleted && (
+            <ConferenceWorkshopPicker
+              registration={workshopRegistration}
+              onSaved={setWorkshopRegistration}
+              fullSlots={fullWorkshopSlots}
+            />
+          )}
+
           {/* 倒數計時只留一個、放在最上面（不是每場聚會卡片各自一個）。視覺圖
               用下一場還沒開始的聚會（nextSession.image），倒數目標比「下一場
               聚會」更細，還包含工作坊場次（nextCountdownTarget）。點縮圖彈出
-              下一場聚會的 16:9 大圖預覽，跟下面聚會卡片共用同一個彈窗。 */}
-          <div className="mt-6 rounded-3xl bg-slate-300 p-6">
-            <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-black/70">
+              下一場聚會的 16:9 大圖預覽，跟下面聚會卡片共用同一個彈窗。
+              卡片底改成半透明毛玻璃（backdrop-blur＋白色透明底），不是實色
+              灰底：這個頁面背景是主視覺照片＋純色藍，毛玻璃能透出後面的
+              顏色，跟整頁「照片＋玻璃感」的視覺語言一致（工作坊縮圖卡片
+              也是同樣的液態玻璃處理，見下面 conf-glass-surface 的說明）。
+              文字也跟著從深色（灰底適用）換成白色（透明底疊在藍色背景上
+              適用）。 */}
+          <div className="mt-6 rounded-3xl border border-white/15 bg-white/10 p-6 backdrop-blur-xl">
+            <p className="font-[family-name:var(--font-noto-jp)] text-lg font-bold text-white/80">
               距離{nextCountdownTarget.label}開始，還剩...
             </p>
 
@@ -226,6 +262,17 @@ export function ConferenceMissionHome({
           <ConferenceSessionCard session={conferenceSessions[0]} meetingHref={meetingHref} />
           <ConferenceSessionCard session={conferenceSessions[1]} meetingHref={meetingHref} />
 
+          {/* 已經選完的人：卡片改放這裡，緊接在工作坊橫向捲動卡片列前面，
+              不需要再置頂搶注意力（上面 title 圖後面那個位置只有還沒選完
+              時才用）。 */}
+          {workshopSelectionCompleted && (
+            <ConferenceWorkshopPicker
+              registration={workshopRegistration}
+              onSaved={setWorkshopRegistration}
+              fullSlots={fullWorkshopSlots}
+            />
+          )}
+
           {/* 工作坊方框底是真正的液態玻璃折射（.conf-glass-surface，SVG
               feDisplacementMap 讓背景真的扭曲，不是單純模糊；濾鏡定義掛在
               上面的 ConferenceLiquidGlassFilter，這裡直接引用同一個 id），
@@ -237,19 +284,30 @@ export function ConferenceMissionHome({
             className="mt-6 flex gap-4 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{ scrollSnapType: "x mandatory" }}
           >
-            {conferenceWorkshops.map((workshop) => (
-              <button
-                key={workshop.id}
-                type="button"
-                onClick={() => setActiveWorkshopId(workshop.id)}
-                aria-label={workshop.topic || workshop.speaker}
-                className="relative aspect-[4/5] w-[118px] shrink-0 overflow-hidden rounded-3xl border border-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] sm:w-[151px]"
-                style={{ scrollSnapAlign: "start" }}
-              >
-                <div className="conf-glass-surface absolute inset-0 bg-white/10" />
-                <Image src={workshop.image} alt="" fill sizes="151px" className="object-cover" />
-              </button>
-            ))}
+            {conferenceWorkshops.map((workshop) => {
+              // 這張卡是不是這個人兩場裡選的其中一場——badge 不分場次，
+              // 只要選了就顯示，場次細節在點進去的彈窗（registeredRounds）跟
+              // 上面的「已報名工作坊」卡片才看得到。
+              const registered = WORKSHOP_ROUNDS.some((round) => workshopRegistration[round] === workshop.id)
+              return (
+                <button
+                  key={workshop.id}
+                  type="button"
+                  onClick={() => setActiveWorkshopId(workshop.id)}
+                  aria-label={workshop.topic || workshop.speaker}
+                  className="relative aspect-[4/5] w-[118px] shrink-0 overflow-hidden rounded-3xl border border-white/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.7),0_1px_4px_rgba(0,0,0,0.12)] sm:w-[151px]"
+                  style={{ scrollSnapAlign: "start" }}
+                >
+                  <div className="conf-glass-surface absolute inset-0 bg-white/10" />
+                  <Image src={workshop.image} alt="" fill sizes="151px" className="object-cover" />
+                  {registered && (
+                    <span className="absolute top-2 right-2 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                      <Check className="size-3.5" strokeWidth={3} />
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
 
           <ConferenceSessionCard session={conferenceSessions[2]} meetingHref={meetingHref} />
