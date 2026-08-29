@@ -8,6 +8,8 @@ const MEAL_TYPE_LABELS: Record<DinnerMealType, string> = { meat: "葷食", veggi
 
 // 後台下載晚餐訂便當名單，只有工作人員能用。葷素分開下載，直接觸發瀏覽器
 // 下載（<a href> 就能用，不用前端 JS），跟工作坊名單下載同一個做法。
+// format=json 給前端拿去畫圖片版名單／簽到表（見 lib/export-dinner-roster.ts），
+// canvas 只能在瀏覽器畫，這裡只負責把資料撈出來。
 export async function GET(request: Request) {
   try {
     await requireStaff()
@@ -17,12 +19,26 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url)
   const mealType = searchParams.get("mealType")
+  const format = searchParams.get("format") ?? "txt"
   if (mealType !== "meat" && mealType !== "veggie") {
     return NextResponse.json({ ok: false, error: "葷素參數錯誤" }, { status: 400 })
   }
 
   const roster = await getDinnerRoster(mealType)
   const label = MEAL_TYPE_LABELS[mealType]
+
+  if (format === "json") {
+    return NextResponse.json({
+      ok: true,
+      mealType,
+      mealLabel: label,
+      dateLabel: dinnerDateLabel,
+      timeLabel: dinnerTimeLabel,
+      location: dinnerLocationLabel,
+      roster,
+    })
+  }
+
   const lines = [
     `晚餐訂便當名單・${label}`,
     `${dinnerDateLabel} ${dinnerTimeLabel}｜${dinnerLocationLabel}`,

@@ -1,6 +1,7 @@
 import { getDinnerStats } from "@/lib/conference-dinner"
 import { dinnerDateLabel, dinnerLocationLabel, dinnerTimeLabel } from "@/lib/opening-conference-content"
 import { requireStaff } from "@/lib/session"
+import { DinnerRosterImageDialog } from "./roster-image-dialog"
 
 export default async function AdminConferenceDinnerPage() {
   await requireStaff()
@@ -37,23 +38,35 @@ export default async function AdminConferenceDinnerPage() {
 
       <section className="mt-16">
         <h2 className="font-heading text-lg font-bold">下載訂便當名單</h2>
-        <p className="mt-2 text-sm text-muted-foreground">葷素分開下載，方便直接對訂購數量核對名單。</p>
-        <ul className="mt-4 flex flex-col gap-2 text-sm">
-          <li>
-            <a
-              href="/api/admin/conference-dinner/roster?mealType=meat"
-              className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            >
-              下載葷食名單（{stats.meatCount} 人）
-            </a>
+        <p className="mt-2 text-sm text-muted-foreground">
+          葷素分開下載。文字檔方便對訂購數量、圖片版可以直接放進 PPT，簽到表多一欄「是否領取」，現場發便當時核對用。
+        </p>
+        <ul className="mt-4 flex flex-col gap-4 text-sm">
+          <li className="flex flex-col gap-1">
+            <span className="font-medium">葷食（{stats.meatCount} 人）</span>
+            <span className="flex flex-wrap items-center gap-3 text-xs">
+              <a
+                href="/api/admin/conference-dinner/roster?mealType=meat"
+                className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                下載名單（文字）
+              </a>
+              <DinnerRosterImageDialog mealType="meat" withCheckColumn={false} />
+              <DinnerRosterImageDialog mealType="meat" withCheckColumn={true} />
+            </span>
           </li>
-          <li>
-            <a
-              href="/api/admin/conference-dinner/roster?mealType=veggie"
-              className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            >
-              下載素食名單（{stats.veggieCount} 人）
-            </a>
+          <li className="flex flex-col gap-1">
+            <span className="font-medium">素食（{stats.veggieCount} 人）</span>
+            <span className="flex flex-wrap items-center gap-3 text-xs">
+              <a
+                href="/api/admin/conference-dinner/roster?mealType=veggie"
+                className="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                下載名單（文字）
+              </a>
+              <DinnerRosterImageDialog mealType="veggie" withCheckColumn={false} />
+              <DinnerRosterImageDialog mealType="veggie" withCheckColumn={true} />
+            </span>
           </li>
         </ul>
       </section>
